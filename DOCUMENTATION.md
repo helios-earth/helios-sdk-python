@@ -13,7 +13,7 @@ Note: Bold-faced classes and methods are extensions on the core capabilities.
 ## Alerts
 [Documentation](https://helios.earth/developers/api/alerts/)
 
-* [C] Alerts
+* Alerts
     * [index()](#alertsindex)
     * [show()](#alertsshow)
 
@@ -46,7 +46,7 @@ __Alerts.show(__ alert_id __)__
 ## Cameras
 [Documentation](https://helios.earth/developers/api/cameras/)
 
-* [C] Cameras
+* Cameras
     * [index()](#camerasindex)
     * [show()](#camerasshow)
     * [images()](#camerasimages)
@@ -154,17 +154,18 @@ __Cameras.downloadImages(__ urls, out_dir=None, return_image_data=False __)__
 	* return_image_data: *bool, optional*
 		* If true, image data will be read into a numpy array and returned.
 * Returns
-	* None or numpy array of images.
+	* None or list of numpy arrays.
 	
 ------------------
   
 ## Observations
 [Documentation](https://helios.earth/developers/api/observations/)
 
-* [C] Observations
+* Observations
     * [index()](#observationsindex)
     * [show()](#observationsshow)
 	* [preview()](#observationspreview)
+	* [__downloadImages()__](#observationsdownloadimages)
   
 ### Observations.index
 
@@ -200,12 +201,26 @@ __Observations.preview(__ observation_id __)__
 * Returns
 	* Image URL
 
+### Observations.downloadImages
+
+Download images from URLs.
+
+__Observations.downloadImages(__ urls, out_dir=None, return_image_data=False __)__
+* Parameters
+    * urls: *list*
+		* List of image urls to be downloaded.
+	* out_dir: *str, optional*
+		* If a path to an output directory is given, images will be saved to the directory.
+	* return_image_data: *bool, optional*
+		* If true, image data will be read into a numpy array and returned.
+* Returns
+	* None or list of numpy arrays.
 ------------------
   
 ## Collections
 [Documentation](https://helios.earth/developers/api/collections/)
 
-* [C] Collections
+* Collections
     * [index()](#collectionsindex)
     * [show()](#collectionsshow)
     * [create()](#collectionscreate)
@@ -323,7 +338,7 @@ __Collections.downloadImages(__ urls, out_dir=None, return_image_data=False __)_
 	* return_image_data: *bool, optional*
 		* If true, image data will be read into a numpy array and returned.
 * Returns
-	* None or numpy array of images.
+	* None or list of numpy arrays.
 
 ### Collections.addImage
 
