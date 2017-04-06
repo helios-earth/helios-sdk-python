@@ -5,8 +5,13 @@ Helper functions for parsing paths and URLs.
 '''
 import os
 import hashlib
-from urlparse import urlparse
 from datetime import datetime
+
+#Python 2 to 3 fix.
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 
 
 def parseTime(data):

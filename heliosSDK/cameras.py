@@ -83,7 +83,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
             results = self.imagesRange(camera_id, start_time, end_time, limit=limit)
             times = results['times']
             
-            n_p = max([1, cpu_count() / 2])
+            n_p = max([1, int(cpu_count() / 2)])
             if n_p > 1 and len(times) > 10:
                 pool = ProcessingPool(n_p)
                 results2 = pool.map(self.showImage, [camera_id] * len(times), times)

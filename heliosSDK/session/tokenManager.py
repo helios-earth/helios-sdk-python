@@ -7,6 +7,12 @@ import json
 import os
 
 import requests as r
+    
+# Fix for Python 2 and 3 compatibility.
+try:
+    input = raw_input
+except NameError:
+    pass
 
 
 class TokenManager(object):
@@ -78,13 +84,7 @@ class TokenManager(object):
                 self._key_id = data['key_id']
                 self._key_secret = data['key_secret']
         else:
-            # If all else fail, enter credentials.     
-            # Fix for Python 2 and 3 compatibility.
-            try:
-                input = raw_input
-            except NameError:
-                pass
-            
+            # If all else fail, enter credentials. 
             print('\n\nAuthenticate using your API key pair.')
             self._key_id = input('Enter your id key: ')
             self._key_secret = input('Enter your secret key: ')
