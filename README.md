@@ -29,11 +29,10 @@ All Helios API methods require valid authentication and are protected using the 
 ------------------
   
 ## Dependencies
-* Python 2.7.x
-    * Python 3 is currently unsupported.
+* Python 2 or 3
 * pathos = 0.2.0
 * requests = 2.12.4
-* scikit - image = 0.12.3
+* scikit-image = 0.12.3
 
 ## Documentation
 For detailed documentation refer to DOCUMENTATION.md.
