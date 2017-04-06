@@ -3,6 +3,7 @@ Usage Examples
 
 @author: Michael A. Bayer
 '''
+import argparse
 import os
 
 from heliosSDK import Cameras, Collections, Observations, Alerts
@@ -89,13 +90,23 @@ def testCollections(output_dir=''):
        
     collections_test6 = Collections2.downloadImages(collections_test_5['url'], out_dir=os.path.join(output_dir, r'Images_Collection'), return_image_data=True)
              
-    # output = Collections2.copy('d860fa88-a55d-4edb-b769-e1a0b5f3ad01', 'test_collection')         
-             
-if __name__ == '__main__':    
-    d = r''
+    # output = Collections2.copy('d860fa88-a55d-4edb-b769-e1a0b5f3ad01', 'test_collection')
     
-    testAlerts(d)
-    testCameras(d)
-    testObservations(d)
-    testCollections(d)
+def main():
+    parser = argparse.ArgumentParser(description='Wrapper for Annotation Detection.', formatter_class=argparse.RawTextHelpFormatter)
+    required = parser.add_argument_group('Required arguments:')
+    required.add_argument('-o', help='Output directory for test results.', required=True, type=str)
+    args = parser.parse_args()
+    
+    print('Alerts testing...')
+    testAlerts(args.o)
+    print('Cameras testing...')
+    testCameras(args.o)
+    print('Observations testing...')
+    testObservations(args.o)
+    print('Collections testing...')
+    testCollections(args.o)
     print('COMPLETE')
+                
+if __name__ == '__main__':    
+    main()
