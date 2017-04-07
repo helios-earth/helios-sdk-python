@@ -153,7 +153,7 @@ class DownloadImagesMixin(object):
             if not os.path.exists(out_dir):
                 os.mkdir(out_dir)
             
-        n_p = max([1, cpu_count()/2])
+        n_p = max([1, int(cpu_count()/2)])
         if n_p > 1 and len(urls) > 10:
             pool = ProcessingPool(n_p)
             output = pool.map(self._downloader,urls,[out_dir]*len(urls),[return_image_data]*len(urls))
