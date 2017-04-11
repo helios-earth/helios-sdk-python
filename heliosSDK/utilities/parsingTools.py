@@ -34,13 +34,14 @@ def parseCamera(data):
     Returns:
         str: Camera name.
     """
-    split1 = os.path.splitext(os.path.split(data)[-1])[0].split('_')[0]
-    md5_str = hashlib.md5(split1[split1.index('-')+1:].encode('utf-8')).hexdigest()
+    split1_rev = os.path.splitext(os.path.split(data)[-1])[0][::-1]
+    split2 = split1_rev[split1_rev.index('_')+1:][::-1]
+    md5_str = hashlib.md5(split2[split2.index('-')+1:].encode('utf-8')).hexdigest()
     
-    if split1[0:4] == md5_str[0:4]:
-        return split1[5:]
+    if split2[0:4] == md5_str[0:4]:
+        return split2[5:]
     else:
-        return split1
+        return split2
     
 def parseImageName(url):
     """Parses the image name from a URL.
@@ -61,8 +62,3 @@ def parseUrl(url):
         obj: Parsed URL.
     """
     return urlparse(url)
-
-
-if __name__=='__main__':
-    x = r'https://helios-u-exelis.s3.amazonaws.com/collections/9d0bf4fa-affb-4d45-81e7-8c9b11ea9119/TL-15939_20150409185836059.jpg'
-    print(parseTime(x))
