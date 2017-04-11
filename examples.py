@@ -16,7 +16,7 @@ def testAlerts(output_dir=''):
     """
     Alerts2 = Alerts()
       
-    alerts_test_0 = Alerts2.index(aggs='city', state='North Dakota')
+    alerts_test_0 = Alerts2.index(state='Louisiana')
     jsonTools.writeJson(alerts_test_0, os.path.join(output_dir, r'alerts_index.json'))
     
     example_id = alerts_test_0[0]['features'][0]['id']
