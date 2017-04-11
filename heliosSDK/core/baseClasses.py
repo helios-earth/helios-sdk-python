@@ -65,6 +65,10 @@ class IndexMixin(object):
                                                            params_str,
                                                            limit,
                                                            skip)
+            
+            if skip > max_skip:
+                raise RuntimeError('\nAPI error for {}: The maximum skip value is {}. Subset your query to avoid this error.'.format(query_str, max_skip))                
+            
             resp = self.getRequest(query_str,
                             headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
                             verify=self.SSL_VERIFY)
@@ -84,9 +88,10 @@ class IndexMixin(object):
             except:
                 total_count = geo_json_features['total']
                 
-            skip += limit
-            if skip >= max_skip or n == total_count:
+            if n == total_count:
                 break
+            
+            skip += limit
             
         return temp_json
             
