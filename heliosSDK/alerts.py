@@ -9,7 +9,7 @@ from heliosSDK.core import SDKCore, IndexMixin, ShowMixin
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
-    CORE_API = 'alerts'
+    _CORE_API = 'alerts'
     
     def __init__(self):
         pass

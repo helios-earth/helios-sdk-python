@@ -14,7 +14,7 @@ from pathos.multiprocessing import freeze_support, ProcessingPool, cpu_count
 
 
 class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
-    CORE_API = 'cameras'
+    _CORE_API = 'cameras'
     
     def __init__(self):
         pass
@@ -26,14 +26,14 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
         return super(Cameras, self).show(camera_id)
     
     def images(self, camera_id, start_time, limit=500):
-        query_str = '{}/{}/{}/images?time={}&limit={}'.format(self.BASE_API_URL,
-                                                              self.CORE_API,
+        query_str = '{}/{}/{}/images?time={}&limit={}'.format(self._BASE_API_URL,
+                                                              self._CORE_API,
                                                               camera_id,
                                                               start_time,
                                                               limit)
-        resp = self.getRequest(query_str,
+        resp = self._getRequest(query_str,
                                headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
-                               verify=self.SSL_VERIFY) 
+                               verify=self._SSL_VERIFY) 
         json_response = resp.json()
         
         return json_response

@@ -10,28 +10,28 @@ class RequestManager():
         pass
     
     @staticmethod
-    def getRequest(query, **kwargs):
+    def _getRequest(query, **kwargs):
         query = query.replace(' ', '+')
         resp = r.get(query, **kwargs)
         resp.raise_for_status()
         return resp 
     
     @staticmethod
-    def postRequest(query, **kwargs):
+    def _postRequest(query, **kwargs):
         query = query.replace(' ', '+')
         resp = r.post(query, **kwargs)
         resp.raise_for_status()
         return resp
     
     @staticmethod
-    def headRequest(query, **kwargs):
+    def _headRequest(query, **kwargs):
         query = query.replace(' ', '+')
         resp = r.head(query, **kwargs)
         resp.raise_for_status()
         return resp
 
     @staticmethod
-    def deleteRequest(query, **kwargs):
+    def _deleteRequest(query, **kwargs):
         query = query.replace(' ', '+')
         resp = r.delete(query, **kwargs)
         resp.raise_for_status()

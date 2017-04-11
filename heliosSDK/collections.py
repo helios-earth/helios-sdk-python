@@ -14,7 +14,7 @@ from pathos.multiprocessing import freeze_support, ProcessingPool, cpu_count
 
 
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
-    CORE_API = 'collections'
+    _CORE_API = 'collections'
     
     def __init__(self):
         pass
@@ -43,13 +43,13 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         header = {'name':'Content-Type',
                   'value':'application/x-www-form-urlencoded'}
         
-        urltmp = '{}/{}'.format(self.BASE_API_URL,
-                                self.CORE_API)
+        urltmp = '{}/{}'.format(self._BASE_API_URL,
+                                self._CORE_API)
                 
-        resp = self.postRequest(urltmp,
+        resp = self._postRequest(urltmp,
                                 headers=header,
                                 data=parms,
-                                verify=self.SSL_VERIFY)
+                                verify=self._SSL_VERIFY)
         json_response = resp.json()
         
         return json_response
@@ -116,8 +116,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
          
         parms = {'s3_src':img_url, 'access_token':post_token}
         header = {'name':'Content-Type', 'value':'application/x-www-form-urlencoded'}
-        urltmp = '{}/collec/tions/{}/images'.format(self.BASE_API_URL, collection_id)
-        resp = self.postRequest(urltmp, headers=header, data=parms, verify=self.SSL_VERIFY)        
+        urltmp = '{}/collec/tions/{}/images'.format(self._BASE_API_URL, collection_id)
+        resp = self._postRequest(urltmp, headers=header, data=parms, verify=self._SSL_VERIFY)        
         json_response = resp.json()
         
         return json_response
@@ -128,13 +128,13 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return results
     
     def removeImage(self, collection_id, img_url):
-        query_str = '{}/{}/{}/images/{}'.format(self.BASE_API_URL,
-                                                self.CORE_API,
+        query_str = '{}/{}/{}/images/{}'.format(self._BASE_API_URL,
+                                                self._CORE_API,
                                                 collection_id,
                                                 img_url)
-        resp = self.deleteRequest(query_str,
+        resp = self._deleteRequest(query_str,
                                   headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
-                                  verify=self.SSL_VERIFY)
+                                  verify=self._SSL_VERIFY)
         
         json_response = resp.json()
         
@@ -147,12 +147,12 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     
     def copy(self, collection_id, new_collection_name):
      
-        query_str = '{}/{}/{}'.format(self.BASE_API_URL,
-                                      self.CORE_API,
+        query_str = '{}/{}/{}'.format(self._BASE_API_URL,
+                                      self._CORE_API,
                                       collection_id)
-        resp = self.getRequest(query_str,
+        resp = self._getRequest(query_str,
                                headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
-                               verify=self.SSL_VERIFY) 
+                               verify=self._SSL_VERIFY) 
         json_response = resp.json()
         
         output = self.create(new_collection_name, json_response['description'], json_response['tags'])

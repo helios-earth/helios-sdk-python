@@ -15,7 +15,7 @@ import warnings
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
-    CORE_API = 'observations'
+    _CORE_API = 'observations'
     
     def __init__(self):
         pass
@@ -27,17 +27,17 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         return super(Observations, self).show(observation_id) 
     
     def preview(self, observation_id):
-        query_str = '{}/{}/{}/preview'.format(self.BASE_API_URL,
-                                        self.CORE_API,
+        query_str = '{}/{}/{}/preview'.format(self._BASE_API_URL,
+                                        self._CORE_API,
                                         observation_id)
-        resp = self.getRequest(query_str,
+        resp = self._getRequest(query_str,
                                headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
-                               verify=self.SSL_VERIFY) 
+                               verify=self._SSL_VERIFY) 
         
         redirect_url = resp.url[0:resp.url.index('?')]
         
         # Check header for dud statuses. 
-        head_check_resp = self.headRequest(redirect_url)
+        head_check_resp = self._headRequest(redirect_url)
         if 'x-amz-meta-helios' in head_check_resp.headers:
             hdrs = json.loads(head_check_resp.headers['x-amz-meta-helios'])
             

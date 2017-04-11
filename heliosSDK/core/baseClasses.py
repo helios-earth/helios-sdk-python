@@ -20,13 +20,13 @@ class SDKCore(RequestManager):
     This class must be inherited by any additional Core API classes.
     """ 
     
-    BASE_API_URL = r'https://api.helios.earth/v1'
-    SSL_VERIFY = True
+    _BASE_API_URL = r'https://api.helios.earth/v1'
+    _SSL_VERIFY = True
         
     def __init__(self):
         pass
     
-    def parseInputsForQuery(self, input_dict):
+    def _parseInputsForQuery(self, input_dict):
         query_str = ''
         for key in input_dict.keys():
             if isinstance(input_dict[key], (list, tuple)):
@@ -39,7 +39,7 @@ class SDKCore(RequestManager):
     
     
 class IndexMixin(object):
-    CORE_API = ''
+    _CORE_API = ''
     
     def __init__(self):
         pass
@@ -57,21 +57,22 @@ class IndexMixin(object):
             skip = kwargs.pop('skip')
         
         n = 0
-        params_str = self.parseInputsForQuery(kwargs)
+        params_str = self._parseInputsForQuery(kwargs)
         temp_json = []
         while True:
-            query_str = '{}/{}?{}&limit={}&skip={}'.format(self.BASE_API_URL,
-                                                           self.CORE_API,
+            query_str = '{}/{}?{}&limit={}&skip={}'.format(self._BASE_API_URL,
+                                                           self._CORE_API,
                                                            params_str,
                                                            limit,
                                                            skip)
             
             if skip > max_skip:
-                raise RuntimeError('\nAPI error for {}: The maximum skip value is {}. Subset your query to avoid this error.'.format(query_str, max_skip))                
-            
-            resp = self.getRequest(query_str,
+                warnings.warn('API warning for {}: The maximum skip value is {}. Truncated results were returned.'.format(query_str, max_skip), stacklevel=2)
+                break
+                
+            resp = self._getRequest(query_str,
                             headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
-                            verify=self.SSL_VERIFY)
+                            verify=self._SSL_VERIFY)
             
             geo_json_features = resp.json()
             
@@ -96,44 +97,44 @@ class IndexMixin(object):
         return temp_json
             
 class ShowMixin(object):
-    CORE_API = ''
+    _CORE_API = ''
     
     def __init__(self):
         pass
     
     def show(self, id_var, **kwargs):
-        params_str = self.parseInputsForQuery(kwargs)
-        query_str = '{}/{}/{}?{}'.format(self.BASE_API_URL,
-                                      self.CORE_API,
+        params_str = self._parseInputsForQuery(kwargs)
+        query_str = '{}/{}/{}?{}'.format(self._BASE_API_URL,
+                                      self._CORE_API,
                                       id_var,
                                       params_str)
-        resp = self.getRequest(query_str,
+        resp = self._getRequest(query_str,
                       headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
-                      verify=self.SSL_VERIFY) 
+                      verify=self._SSL_VERIFY) 
         geo_json_feature = resp.json()
         
         return geo_json_feature        
         
 class ShowImageMixin(object):
-    CORE_API = ''
+    _CORE_API = ''
     
     def __init__(self):
         pass
     
     def showImage(self, id_var, x, **kwargs):
-        params_str = self.parseInputsForQuery(kwargs)
-        query_str = '{}/{}/{}/images/{}?{}'.format(self.BASE_API_URL,
-                                                self.CORE_API,
+        params_str = self._parseInputsForQuery(kwargs)
+        query_str = '{}/{}/{}/images/{}?{}'.format(self._BASE_API_URL,
+                                                self._CORE_API,
                                                 id_var,
                                                 x,
                                                 params_str) 
-        resp = self.getRequest(query_str,
+        resp = self._getRequest(query_str,
                                headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
-                               verify=self.SSL_VERIFY) 
+                               verify=self._SSL_VERIFY) 
         
         redirect_url = resp.url[0:resp.url.index('?')]
         
-        resp2 = self.headRequest(redirect_url)
+        resp2 = self._headRequest(redirect_url)
         
         # Check header for dud statuses. 
         if 'x-amz-meta-helios' in resp2.headers:
@@ -170,7 +171,7 @@ class DownloadImagesMixin(object):
     
     def _downloader(self, url, out_dir, return_image_data):
         if url is not None:
-            resp = self.getRequest(url)
+            resp = self._getRequest(url)
             if out_dir is not None:
                 _, tail = os.path.split(url)
                 out_file = os.path.join(out_dir, tail)
