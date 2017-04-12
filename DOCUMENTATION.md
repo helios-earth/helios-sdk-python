@@ -28,6 +28,7 @@ __Alerts.index(__ **kwargs __)__
 * Returns
     * GeoJSON feature collections: *list of dictionaries*
         * keys: "type", "features", and "properties".
+		* Warning: If the maximum-skip value of 4000 is exceeded while querying, truncated results will be returned.
   
 ### Alerts.show
 
@@ -66,6 +67,7 @@ __Cameras.index(__ **kwargs __)__
 * Returns
     * GeoJSON feature collections: *list of dictionaries*
         * keys: "type", "features", "bbox", and "properties".
+		* Warning: If the maximum-skip value of 4000 is exceeded while querying, truncated results will be returned.
   
 ### Cameras.show
 
@@ -178,6 +180,7 @@ __Observations.index(__ **kwargs __)__
 * Returns
     * GeoJSON feature collections: *list of dictionaries*
         * keys: "type", "features", "bbox", and "properties".
+		* Warning: If the maximum-skip value of 4000 is exceeded while querying, truncated results will be returned.
   
 ### Observations.show
 
@@ -245,6 +248,7 @@ __Collections.index(__ **kwargs __)__
 * Returns
     * JSON: *list of dictionaries*
         * keys: "results", "total", "skip", and "limit".
+		* Warning: If the maximum-skip value of 4000 is exceeded while querying, truncated results will be returned.
 
 ### Collections.show
 
