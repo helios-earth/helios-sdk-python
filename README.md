@@ -8,7 +8,9 @@ Use the Helios APIs in Python.
 
 [Documentation](https://helios.earth/developers/api/session/)
 
-All Helios API methods require valid authentication and are protected using the OAuth 2.0 "client credentials" flow.The general process for authenticating requests involves first requesting an access token using the developer API key pair, and then requesting protected data using the access token.Contact the [Helios Sales Team](mailto:heliossales@harris.com) if you would like to obtain an API key.
+All Helios API methods require valid authentication and are protected using the OAuth 2.0 "client credentials" flow.  The general process for authenticating requests involves first requesting an access token using the developer API key pair, and then requesting protected data using the access token.  Contact the [Helios Sales Team](mailto:heliossales@harris.com) if you would like to obtain an API key.
+
+Your key pair can be found on the [profile page](https://helios.earth/explore/profile).  You can locate this page by clicking the hamburger drop-down menu and selecting your profile.
 
 ### Using Environment Variables
 1. Open your account environment variables
@@ -30,9 +32,13 @@ All Helios API methods require valid authentication and are protected using the 
   
 ## Dependencies
 * Python 2 or 3
-* pathos = 0.2.0
-* requests = 2.12.4
-* scikit-image = 0.12.3
+* pathos
+* requests
+* scikit-image
+
+Example using Pip:
+
+`pip install pathos requests scikit-image`
 
 ## Documentation
 For detailed documentation refer to DOCUMENTATION.md.
