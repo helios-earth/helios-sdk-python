@@ -116,8 +116,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
          
         parms = {'s3_src':img_url, 'access_token':post_token}
         header = {'name':'Content-Type', 'value':'application/x-www-form-urlencoded'}
-        urltmp = '{}/collec/tions/{}/images'.format(self._BASE_API_URL, collection_id)
-        resp = self._postRequest(urltmp, headers=header, data=parms, verify=self._SSL_VERIFY)        
+        post_url = '{}/collections/{}/images'.format(self._BASE_API_URL, collection_id)
+        resp = self._postRequest(post_url, headers=header, data=parms, verify=self._SSL_VERIFY)        
         json_response = resp.json()
         
         return json_response
