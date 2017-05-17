@@ -5,7 +5,6 @@ functionality for convenience.
 
 @author: Michael A. Bayer
 '''
-from heliosSDK import AUTH_TOKEN
 from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, DownloadImagesMixin
 from heliosSDK.utilities import jsonTools
 
@@ -17,8 +16,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
     _CORE_API = 'cameras'
     
     def __init__(self):
-        pass
-    
+        self._startSession()
+        
     def index(self, **kwargs):
         return super(Cameras, self).index(**kwargs)
     
@@ -32,7 +31,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                                                               start_time,
                                                               limit)
         resp = self._getRequest(query_str,
-                               headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
+                               headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
                                verify=self._SSL_VERIFY) 
         json_response = resp.json()
         

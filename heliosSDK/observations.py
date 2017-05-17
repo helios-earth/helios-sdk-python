@@ -5,21 +5,21 @@ functionality for convenience.
 
 @author: mbayer
 '''
-import os
-from heliosSDK import AUTH_TOKEN
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin
-import json
-import skimage.io
 from io import BytesIO
+import json
+import os
 import warnings
+
+import skimage.io
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     _CORE_API = 'observations'
     
     def __init__(self):
-        pass
-
+        self._startSession()
+        
     def index(self, **kwargs):
         return super(Observations, self).index(**kwargs)
     
@@ -31,7 +31,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
                                         self._CORE_API,
                                         observation_id)
         resp = self._getRequest(query_str,
-                               headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
+                               headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
                                verify=self._SSL_VERIFY) 
         
         redirect_url = resp.url[0:resp.url.index('?')]

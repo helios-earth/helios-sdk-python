@@ -3,7 +3,7 @@ Core and Base objects for the heliosSDK.
 
 @author: Michael A. Bayer
 '''
-from heliosSDK import AUTH_TOKEN
+from heliosSDK.session.tokenManager import TokenManager
 from heliosSDK.core import RequestManager
 from io import BytesIO
 import json
@@ -25,7 +25,10 @@ class SDKCore(RequestManager):
         
     def __init__(self):
         pass
-    
+        
+    def _startSession(self):
+        self._AUTH_TOKEN = TokenManager().startSession()      
+             
     def _parseInputsForQuery(self, input_dict):
         query_str = ''
         for key in input_dict.keys():
@@ -71,7 +74,7 @@ class IndexMixin(object):
                 break
                 
             resp = self._getRequest(query_str,
-                            headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
+                            headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
                             verify=self._SSL_VERIFY)
             
             geo_json_features = resp.json()
@@ -109,7 +112,7 @@ class ShowMixin(object):
                                       id_var,
                                       params_str)
         resp = self._getRequest(query_str,
-                      headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
+                      headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
                       verify=self._SSL_VERIFY) 
         geo_json_feature = resp.json()
         
@@ -129,7 +132,7 @@ class ShowImageMixin(object):
                                                 x,
                                                 params_str) 
         resp = self._getRequest(query_str,
-                               headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
+                               headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
                                verify=self._SSL_VERIFY) 
         
         redirect_url = resp.url[0:resp.url.index('?')]
@@ -152,17 +155,17 @@ class DownloadImagesMixin(object):
         pass
     
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        if not isinstance(urls,list):
+        if not isinstance(urls, list):
             urls = [urls]
         
         if out_dir is not None:
             if not os.path.exists(out_dir):
                 os.mkdir(out_dir)
             
-        n_p = max([1, int(cpu_count()/2)])
+        n_p = max([1, int(cpu_count() / 2)])
         if n_p > 1 and len(urls) > 10:
             pool = ProcessingPool(n_p)
-            output = pool.map(self._downloader,urls,[out_dir]*len(urls),[return_image_data]*len(urls))
+            output = pool.map(self._downloader, urls, [out_dir] * len(urls), [return_image_data] * len(urls))
         else:
             output = [self._downloader(url, out_dir, return_image_data) for url in urls]
             

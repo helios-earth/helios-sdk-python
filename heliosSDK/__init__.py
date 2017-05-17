@@ -1,6 +1,3 @@
-from heliosSDK.session.tokenManager import TokenManager
-AUTH_TOKEN = TokenManager().startSession()
-
 from . import core
 from . import utilities
 from .alerts import Alerts

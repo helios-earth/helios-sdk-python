@@ -6,7 +6,6 @@ functionality for convenience.
 @author: Michael A. Bayer
 '''
 import hashlib
-from heliosSDK import AUTH_TOKEN
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, DownloadImagesMixin
 from heliosSDK.utilities import jsonTools
 
@@ -17,8 +16,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     _CORE_API = 'collections'
     
     def __init__(self):
-        pass
-    
+        self._startSession()
+        
     def index(self, **kwargs):
         return super(Collections, self).index(**kwargs)
     
@@ -30,7 +29,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             tags = ''
         
         # need to strip out the Bearer to work with a POST for collections
-        post_token = AUTH_TOKEN['value'].replace('Bearer ', '')
+        post_token = self._AUTH_TOKEN['value'].replace('Bearer ', '')
         
         # handle more than one tag
         if isinstance(tags, (list, tuple)):
@@ -112,7 +111,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     def addImage(self, collection_id, img_url):
         # need to strip out the Bearer to work with a POST for collections
-        post_token = AUTH_TOKEN['value'].replace('Bearer ', '') 
+        post_token = self._AUTH_TOKEN['value'].replace('Bearer ', '') 
          
         parms = {'s3_src':img_url, 'access_token':post_token}
         header = {'name':'Content-Type', 'value':'application/x-www-form-urlencoded'}
@@ -133,7 +132,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                                 collection_id,
                                                 img_url)
         resp = self._deleteRequest(query_str,
-                                  headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
+                                  headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
                                   verify=self._SSL_VERIFY)
         
         json_response = resp.json()
@@ -151,7 +150,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                       self._CORE_API,
                                       collection_id)
         resp = self._getRequest(query_str,
-                               headers={AUTH_TOKEN['name']:AUTH_TOKEN['value']},
+                               headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
                                verify=self._SSL_VERIFY) 
         json_response = resp.json()
         
