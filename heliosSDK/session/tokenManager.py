@@ -48,6 +48,9 @@ class TokenManager(object):
             data = {'grant_type':'client_credentials'}
             auth = (self._key_id, self._key_secret)
             resp = r.post(token_url_http, data=data, auth=auth, verify=True)
+        
+        # If the token cannot be acquired, raise error.
+        resp.raise_for_status()
             
         token_request = resp.json()
         self._tokstruct = {'name': 'Authorization', 'value': 'Bearer ' + token_request['access_token']}
