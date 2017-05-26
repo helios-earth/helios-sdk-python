@@ -60,6 +60,8 @@ def mergeJson(data, keys):
 
 def _mergeDigger(data, key):
     merged_list = []
+    if not isinstance(data, list):
+        data = [data]
     for json_slice in data:
         temp = json_slice[key]
         if not isinstance(temp, list):
