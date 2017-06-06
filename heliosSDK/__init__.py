@@ -6,4 +6,4 @@ from .collections import Collections
 from .observations import Observations
 
 
-__version__ = '0.1.1'
+__version__ = '0.1.3'
