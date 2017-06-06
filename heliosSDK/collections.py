@@ -9,8 +9,6 @@ import hashlib
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, DownloadImagesMixin
 from heliosSDK.utilities import jsonTools
 
-from pathos.multiprocessing import freeze_support, ProcessingPool, cpu_count
-
 
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
     _CORE_API = 'collections'
@@ -95,13 +93,6 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         imgs = results['images']
         
         # Use hard-coded collections url.  Waiting for show image is too slow.
-#         n_p = max([1, cpu_count()/2])
-#         if n_p > 1 and len(imgs) > 4:
-#             pool = ProcessingPool(n_p)
-#             results2 = pool.map(self.showImage, [collection_id] * len(imgs), imgs)
-#         else:
-#             results2 = [self.showImage(collection_id, im) for im in imgs]
-#         urls = jsonTools.mergeJson(results2, 'url')
         urls = ['https://helios-u-exelis.s3.amazonaws.com/collections/{}/{}'.format(collection_id, im) for im in imgs]
 
         return {'url':urls}
@@ -165,11 +156,3 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         results2 = self.addImages(new_id, urls)
         
         return results2
-        
-if __name__ == '__main__':
-    freeze_support()        
-        
-        
-
-        
-        

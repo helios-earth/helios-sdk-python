@@ -3,14 +3,15 @@ Core and Base objects for the heliosSDK.
 
 @author: Michael A. Bayer
 '''
-from heliosSDK.session.tokenManager import TokenManager
+from Queue import Queue
 from heliosSDK.core import RequestManager
+from heliosSDK.session.tokenManager import TokenManager
 from io import BytesIO
 import json
 import os
+from threading import Thread
 import warnings
 
-from pathos.multiprocessing import cpu_count, ProcessingPool, freeze_support
 import skimage.io
 
 
@@ -161,29 +162,37 @@ class DownloadImagesMixin(object):
         if out_dir is not None:
             if not os.path.exists(out_dir):
                 os.mkdir(out_dir)
+                
+        # Set up the queue
+        q = Queue(maxsize=20)
+        num_threads = min(20, len(urls))
+         
+        # Initialize threads
+        image_data = [[] for x in urls]
+        for i in range(num_threads):
+            worker = Thread(target=self.__downloadRunner, args=(q, image_data))
+            worker.setDaemon(True)
+            worker.start()
             
-        n_p = max([1, int(cpu_count() / 2)])
-        if n_p > 1 and len(urls) > 10:
-            pool = ProcessingPool(n_p)
-            output = pool.map(self._downloader, urls, [out_dir] * len(urls), [return_image_data] * len(urls))
-        else:
-            output = [self._downloader(url, out_dir, return_image_data) for url in urls]
+        for i, url in enumerate(urls):
+            q.put((url, out_dir, return_image_data, i))
+        q.join()
             
         if return_image_data:
-            return output
+            return image_data
     
-    def _downloader(self, url, out_dir, return_image_data):
-        if url is not None:
-            resp = self._getRequest(url)
-            if out_dir is not None:
-                _, tail = os.path.split(url)
-                out_file = os.path.join(out_dir, tail)
-                with open(out_file, 'wb') as f:
-                    for chunk in resp:
-                        f.write(chunk)
-            
-            if return_image_data:
-                return skimage.io.imread(BytesIO(resp.content))
-
-if __name__ == '__main__':
-    freeze_support()
+    def __downloadRunner(self, q, image_data):
+        while True:
+            url, out_dir, return_image_data, index = q.get()
+            if url is not None:
+                resp = self._getRequest(url)
+                if out_dir is not None:
+                    _, tail = os.path.split(url)
+                    out_file = os.path.join(out_dir, tail)
+                    with open(out_file, 'wb') as f:
+                        for chunk in resp:
+                            f.write(chunk)
+                
+                if return_image_data:
+                    image_data[index] = skimage.io.imread(BytesIO(resp.content))
+            q.task_done()

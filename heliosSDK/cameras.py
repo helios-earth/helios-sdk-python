@@ -5,11 +5,12 @@ functionality for convenience.
 
 @author: Michael A. Bayer
 '''
+from Queue import Queue
 from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, DownloadImagesMixin
 from heliosSDK.utilities import jsonTools
+from threading import Thread
 
 from dateutil.parser import parse
-from pathos.multiprocessing import freeze_support, ProcessingPool, cpu_count
 
 
 class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
@@ -78,16 +79,31 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
     def showImage(self, camera_id, time, delta=900000):
         return super(Cameras, self).showImage(camera_id, time, delta=delta)
     
+    def __showImageRunner(self, q, results):
+        while True:
+            camera_id, time, index = q.get()
+            results[index] = self.showImage(camera_id, time)
+            q.task_done()
+    
     def showImages(self, camera_id, start_time, end_time, limit=500):
             results = self.imagesRange(camera_id, start_time, end_time, limit=limit)
             times = results['times']
             
-            n_p = max([1, int(cpu_count() / 2)])
-            if n_p > 1 and len(times) > 10:
-                pool = ProcessingPool(n_p)
-                results2 = pool.map(self.showImage, [camera_id] * len(times), times)
-            else:
-                results2 = [self.showImage(camera_id, time) for time in times]
+            # Set up the queue
+            q = Queue(maxsize=20)
+            num_threads = min(20, len(times))
+             
+            # Initialize threads
+            results2 = [[] for t in times]
+            for i in range(num_threads):
+                worker = Thread(target=self.__showImageRunner, args=(q, results2))
+                worker.setDaemon(True)
+                worker.start()
+                
+            for i, time in enumerate(times):
+                q.put((camera_id, time, i))
+            q.join()
+
             urls = jsonTools.mergeJson(results2, 'url')
             
             json_output = {'url':urls}
@@ -96,6 +112,3 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
         
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         return super(Cameras, self).downloadImages(urls, out_dir=out_dir, return_image_data=return_image_data)
-    
-if __name__ == '__main__':
-    freeze_support()
