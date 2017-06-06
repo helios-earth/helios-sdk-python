@@ -43,10 +43,6 @@ class SDKCore(RequestManager):
     
     
 class IndexMixin(object):
-    _CORE_API = ''
-    
-    def __init__(self):
-        pass
     
     def index(self, **kwargs):
         max_skip = 4000
@@ -69,7 +65,8 @@ class IndexMixin(object):
                                                            params_str,
                                                            limit,
                                                            skip)
-            
+
+            skip += limit
             if skip > max_skip:
                 warnings.warn('API warning for {}: The maximum skip value is {}. Truncated results were returned.'.format(query_str, max_skip), stacklevel=2)
                 break
@@ -96,15 +93,9 @@ class IndexMixin(object):
             if n == total_count:
                 break
             
-            skip += limit
-            
         return temp_json
             
 class ShowMixin(object):
-    _CORE_API = ''
-    
-    def __init__(self):
-        pass
     
     def show(self, id_var, **kwargs):
         params_str = self._parseInputsForQuery(kwargs)
@@ -120,10 +111,6 @@ class ShowMixin(object):
         return geo_json_feature        
         
 class ShowImageMixin(object):
-    _CORE_API = ''
-    
-    def __init__(self):
-        pass
     
     def showImage(self, id_var, x, **kwargs):
         params_str = self._parseInputsForQuery(kwargs)
@@ -151,9 +138,6 @@ class ShowImageMixin(object):
         return {'url' : redirect_url}
         
 class DownloadImagesMixin(object):
-    
-    def __init__(self):
-        pass
     
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         if not isinstance(urls, list):
