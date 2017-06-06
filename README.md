@@ -32,13 +32,12 @@ Your key pair can be found on the [profile page](https://helios.earth/explore/pr
   
 ## Dependencies
 * Python 2 or 3
-* pathos
 * requests
 * scikit-image
 
 Example using Pip:
 
-`pip install pathos requests scikit-image`
+`pip install requests scikit-image`
 
 ## Documentation
 For detailed documentation refer to DOCUMENTATION.md.
