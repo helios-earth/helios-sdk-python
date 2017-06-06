@@ -6,12 +6,8 @@ functionality for convenience.
 @author: mbayer
 '''
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin
-from io import BytesIO
 import json
-import os
 import warnings
-
-import skimage.io
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
