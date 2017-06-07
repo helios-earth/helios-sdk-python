@@ -86,6 +86,10 @@ class IndexMixin(object):
         except:
             total = initial_resp_json['total']
             
+        # Warn the user when truncation occurs. (max_skip is hit)
+        if total > max_skip:
+            warnings.warn('Maximum skip level reached for this query.  Truncated results will be returned.')
+            
         # Don't account for this first query.
         try:
             n = len(initial_resp_json['features'])
@@ -99,7 +103,7 @@ class IndexMixin(object):
         # Determine number of iterations that will be needed.
         n_queries_needed = int(ceil((total - skip) / float(limit))) - 1
         queries = queries[0:n_queries_needed]
-            
+        
         # Set up the queue
         q = Queue(maxsize=0)
         num_threads = min(20, n_queries_needed)
