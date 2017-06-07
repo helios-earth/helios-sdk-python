@@ -47,15 +47,8 @@ class IndexMixin(object):
     
     def index(self, **kwargs):
         max_skip = 4000
-        if 'limit' not in kwargs:
-            limit = 100
-        else:
-            limit = kwargs.pop('limit')
-            
-        if 'skip' not in kwargs:
-            skip = 0
-        else:
-            skip = kwargs.pop('skip')
+        limit = kwargs.get('limit',100)
+        skip = kwargs.get('skip',0)
             
         # Establish all queries.
         params_str = self._parseInputsForQuery(kwargs)
@@ -193,7 +186,7 @@ class DownloadImagesMixin(object):
         num_threads = min(20, len(urls))
          
         # Initialize threads
-        image_data = [[] for x in urls]
+        image_data = [[] for _ in urls]
         for i in range(num_threads):
             worker = Thread(target=self.__downloadRunner, args=(q, image_data))
             worker.setDaemon(True)
