@@ -8,6 +8,7 @@ from heliosSDK.core import RequestManager
 from heliosSDK.session.tokenManager import TokenManager
 from io import BytesIO
 import json
+from math import ceil
 import os
 from threading import Thread
 import warnings
@@ -55,45 +56,81 @@ class IndexMixin(object):
             skip = 0
         else:
             skip = kwargs.pop('skip')
-        
-        n = 0
+            
+        # Establish all queries.
         params_str = self._parseInputsForQuery(kwargs)
-        temp_json = []
-        while True:
+        queries = []
+        for i in range(skip, max_skip, limit):
+            if i + limit > max_skip: 
+                temp_limit = max_skip - i
+            else:
+                temp_limit = limit
+                
             query_str = '{}/{}?{}&limit={}&skip={}'.format(self._BASE_API_URL,
                                                            self._CORE_API,
                                                            params_str,
-                                                           limit,
-                                                           skip)
-
-            skip += limit
-            if skip > max_skip:
-                warnings.warn('API warning for {}: The maximum skip value is {}. Truncated results were returned.'.format(query_str, max_skip), stacklevel=2)
-                break
-                
+                                                           temp_limit,
+                                                           i)
+            
+            queries.append(query_str)
+            
+        
+        # Do first query to find total number of results to expect.
+        initial_resp = self._getRequest(queries.pop(0),
+                                        headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
+                                        verify=self._SSL_VERIFY)
+            
+        initial_resp_json = initial_resp.json()
+        try:
+            total = initial_resp_json['properties']['total']
+        except:
+            total = initial_resp_json['total']
+            
+        # Don't account for this first query.
+        try:
+            n = len(initial_resp_json['features'])
+        except:
+            n = len(initial_resp_json['results'])
+            
+        # If only one query was necessary, return immediately.
+        if n < limit:
+            return [initial_resp_json]
+        
+        # Determine number of iterations that will be needed.
+        n_queries_needed = int(ceil((total - skip) / float(limit))) - 1
+        queries = queries[0:n_queries_needed]
+            
+        # Set up the queue
+        q = Queue(maxsize=0)
+        num_threads = min(20, n_queries_needed)
+        
+        # Initialize threads
+        results = [[] for _ in queries]
+        for i in range(num_threads):
+            worker = Thread(target=self.__indexRunner, args=(q, results))
+            worker.setDaemon(True)
+            worker.start()
+            
+        # Process queries
+        [q.put((x, i)) for i, x in enumerate(queries)]          
+        q.join()
+              
+        # Put initial query back in list.
+        results.insert(0, initial_resp_json)
+        
+        return results
+    
+    def __indexRunner(self, q, results):
+        while True:
+            query_str, index = q.get()
+            
             resp = self._getRequest(query_str,
-                            headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
-                            verify=self._SSL_VERIFY)
+                                    headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
+                                    verify=self._SSL_VERIFY)
             
-            geo_json_features = resp.json()
+            results[index] = resp.json()
             
-            # Collections API return 'results' rather than 'features'
-            # and 'total' rather than 'properties'.'total'
-            try:
-                n += len(geo_json_features['features'])
-            except:
-                n += len(geo_json_features['results'])
-            temp_json.append(geo_json_features)
-            
-            try:
-                total_count = geo_json_features['properties']['total']
-            except:
-                total_count = geo_json_features['total']
-                
-            if n == total_count:
-                break
-            
-        return temp_json
+            q.task_done()
             
 class ShowMixin(object):
     
