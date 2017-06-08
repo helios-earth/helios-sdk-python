@@ -81,14 +81,11 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
     
     def __showImageRunner(self, q, results):
         while True:
-            camera_id, time, index = q.get()
-            results[index] = self.showImage(camera_id, time)
+            camera_id, time, delta, index = q.get()
+            results[index] = self.showImage(camera_id, time, delta=delta)
             q.task_done()
     
-    def showImages(self, camera_id, start_time, end_time, limit=500):
-            results = self.imagesRange(camera_id, start_time, end_time, limit=limit)
-            times = results['times']
-            
+    def showImages(self, camera_id, times, delta=900000):
             # Set up the queue
             q = Queue(maxsize=20)
             num_threads = min(20, len(times))
@@ -101,7 +98,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                 worker.start()
                 
             for i, time in enumerate(times):
-                q.put((camera_id, time, i))
+                q.put((camera_id, time, delta, i))
             q.join()
 
             urls = jsonTools.mergeJson(results2, 'url')

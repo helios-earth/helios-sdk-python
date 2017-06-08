@@ -116,12 +116,14 @@ __Cameras.imagesRange(__ camera_id, start_time, end_time, limit=500 __)__
 
 Return a single image from the media cache. The media cache contains all recent images archived by Helios, either for internal analytics or for end user recording purposes.
 
-__Cameras.showImage(__ camera_id, x __)__
+__Cameras.showImage(__ camera_id, time, delta=900000 __)__
 * Parameters
-   * camera_id: *str*
-       * Camera ID.
-   * x: *str*
-       * Time
+	* camera_id: *str*
+		* Camera ID.
+	* time: *str*
+		* Time
+	* delta: *int*
+		* Max acceptable difference (in milliseconds) between the requested time and the image time. If a match is not found, a 404 status will be returned. If not specified, a default value of 900000 (i.e. 15 minutes) is assumed.
 * Reteurns
     * JSON: *dictionary*
         * key: "url"
@@ -131,17 +133,18 @@ __Cameras.showImage(__ camera_id, x __)__
 
 Return a single images from the media cache for a given time range. The media cache contains all recent images archived by Helios, either for internal analytics or for end user recording purposes.
 
-__Cameras.showImages(__ camera_id, start_time, end_time, limit=500 __)__
+__Cameras.showImages(__ camera_id, start_time, delta=900000 __)__
 * Parameters
     * camera_id: *str*
         * Camera ID.
-    * start_time: *str*
-    * end_time: *str*
-    * limit: *int* 
-        * Optional limit on query.  Default value of 500 is the maximum.  
+	* times: *list*
+		* Image times to search for the given camera_id.
+	* delta: *int*
+		* Max acceptable difference (in milliseconds) between the requested time and the image time. If a match is not found, a 404 status will be returned. If not specified, a default value of 900000 (i.e. 15 minutes) is assumed.
 * Returns
     * JSON: *dictionary*
         * key: "url"
+		* 302 redirect to a signed URL where the camera image can be retrieved. The signed URL is valid for 15 minutes.
 	
 ### Cameras.downloadImages
 
@@ -300,11 +303,11 @@ __Collections.images(__ collection_id, camera=None, old_flag=False __)__
 
 Return a single image from a collection.
 
-__Collections.showImage(__ id_var, x __)__
+__Collections.showImage(__ id_var, image_name __)__
 * Parameters
     * id_var: *str*
         * Collection ID.
-    * x: *str*
+    * image_name: *str*
         * Image Name.
 * Reteurns
     * JSON: *dictionary*
@@ -316,18 +319,16 @@ __Collections.showImage(__ id_var, x __)__
 
 Return a all images from a collection.
 
-__Collections.showImages(__ collection_id, camera=None, old_flag=False __)__
+__Collections.showImages(__ collection_id, image_names __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
-    * camera: *str, optional*
-        * Camera ID: If provided, then only image names from that camera will be returned.
-    * old_flag: *bool, optional*
-        * If true, then image storage name will not look for the md5 hashes at the beginnning of file names.
+	* image_names: *list*
+		* Image names to search for the given collection_id.
 * Returns
     * JSON: *dictionary*
-        * 302 redirect to a signed URL where the image can be retrieved. The signed URL is valid for 15 minutes.
-        * keys: "url"
+        * key: "url"
+		* 302 redirect to a signed URL where the camera image can be retrieved. The signed URL is valid for 15 minutes.
 	
 ### Collections.downloadImages
 
