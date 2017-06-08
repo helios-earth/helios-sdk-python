@@ -109,8 +109,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         
         return json_response
         
-    def addImages(self, collection_id, img_list):
-        results = [self.addImage(collection_id, im) for im in img_list]
+    def addImages(self, collection_id, img_urls):
+        results = [self.addImage(collection_id, im) for im in img_urls]
         
         return results
     
@@ -145,8 +145,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         output = self.create(new_collection_name, json_response['description'], json_response['tags'])
         new_id = output['collection_id']
         
-        # show_images_class = ShowImage()
-        results = self.showImages(collection_id)
+        # Gather images that need to be copied.
+        image_names = self.images(collection_id)
+        results = self.showImages(collection_id, image_names['images'])
         urls = results['url']
         
         # add_image_class = AddImage()

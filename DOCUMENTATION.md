@@ -363,11 +363,11 @@ __Collections.addimage(__ collection_id, img_url __)__
 
 Add multiple images to a collection.
 
-__Collections.addImages(__ collection_id, img_list __)__
+__Collections.addImages(__ collection_id, img_urls __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
-    * img_list: *list*
+    * img_urls: *list*
         * List of image URLs.
 * Returns:
     * JSON: *list of dictionaries*
