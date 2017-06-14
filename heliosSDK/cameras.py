@@ -5,12 +5,17 @@ functionality for convenience.
 
 @author: Michael A. Bayer
 '''
-from Queue import Queue
 from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, DownloadImagesMixin
 from heliosSDK.utilities import jsonTools
 from threading import Thread
 
 from dateutil.parser import parse
+
+# Python 2 and 3 fix
+try:
+    from Queue import Queue
+except ImportError:
+    from queue import Queue
 
 
 class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):

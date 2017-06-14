@@ -3,7 +3,6 @@ Core and Base objects for the heliosSDK.
 
 @author: Michael A. Bayer
 '''
-from Queue import Queue
 from heliosSDK.core import RequestManager
 from heliosSDK.session.tokenManager import TokenManager
 from io import BytesIO
@@ -14,6 +13,12 @@ from threading import Thread
 import warnings
 
 import skimage.io
+
+# Python 2 and 3 fix
+try:
+    from Queue import Queue
+except ImportError:
+    from queue import Queue
 
 
 class SDKCore(RequestManager):
