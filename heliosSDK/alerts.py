@@ -12,7 +12,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
     _CORE_API = 'alerts'
     
     def __init__(self):
-        self._startSession()
+        pass
         
     def index(self, **kwargs):
         return super(Alerts, self).index(**kwargs)

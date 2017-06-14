@@ -13,20 +13,23 @@ All Helios API methods require valid authentication and are protected using the 
 Your key pair can be found on the [profile page](https://helios.earth/explore/profile).  You can locate this page by clicking the hamburger drop-down menu and selecting your profile.
 
 ### Using Environment Variables
-1. Open your account environment variables
-2. Add "HELIOS\_KEY\_ID": __"your ID key"__
-3. Add "HELIOS\_KEY\_SECRET": __"your secret key"__
-4. You may need to log out and log back in for changes to take effect.
+1. Add __"HELIOS\_KEY\_ID"__: "your ID key"
+2. Add __"HELIOS\_KEY\_SECRET"__: "your secret key"
+3. Add __"HELIOS\_API\_URL"__: "API URL associated with your account credentials"
+* __"HELIOS\_API\_URL"__ is optional.
 
 ### Using an Authentication File
 1. Create a ".helios_auth" file in your home directory.
-    * *C:\Users\[username]\.helios_auth* on Windows.
+    * *C:\\Users\\[username]\\.helios_auth* on Windows.
 2. Copy and paste the following to the ".helios_auth" file and fill in your authentication values:
-    * {"key\_id": __"your ID key"__ , "key\_secret": __"your secret key"__}
-
-### Enter Credentials on First Run
-1. If you do not use the environment variables or authentication file you will be prompted to enter your ID key and secret Key when you try	to import the heliosSDK.
-    * Your credentials will then be written to the .helios_auth file mentioned above.
+	```json
+	{
+		"HELIOS_API_URL" : "API URL", 
+		"HELIOS_KEY_ID" : "your ID key" , 
+		"HELIOS_KEY_SECRET" : "your secret key"
+	}
+	```
+* __"HELIOS\_API\_URL"__ is optional.
 
 ------------------
   

@@ -14,7 +14,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     _CORE_API = 'collections'
     
     def __init__(self):
-        self._startSession()
+        pass
         
     def index(self, **kwargs):
         return super(Collections, self).index(**kwargs)

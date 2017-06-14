@@ -22,7 +22,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     _CORE_API = 'observations'
     
     def __init__(self):
-        self._startSession()
+        pass
         
     def index(self, **kwargs):
         return super(Observations, self).index(**kwargs)

@@ -4,7 +4,7 @@ Core and Base objects for the heliosSDK.
 @author: Michael A. Bayer
 '''
 from heliosSDK.core import RequestManager
-from heliosSDK.session.tokenManager import TokenManager
+from heliosSDK import AUTH_TOKEN, BASE_API_URL
 from io import BytesIO
 import json
 from math import ceil
@@ -27,14 +27,12 @@ class SDKCore(RequestManager):
     This class must be inherited by any additional Core API classes.
     """ 
     
-    _BASE_API_URL = r'https://api.helios.earth/v1'
+    _BASE_API_URL = BASE_API_URL
     _SSL_VERIFY = True
+    _AUTH_TOKEN = AUTH_TOKEN
         
     def __init__(self):
-        pass
-        
-    def _startSession(self):
-        self._AUTH_TOKEN = TokenManager().startSession()      
+        pass   
              
     def _parseInputsForQuery(self, input_dict):
         query_str = ''

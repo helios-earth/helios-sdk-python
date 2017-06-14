@@ -22,7 +22,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
     _CORE_API = 'cameras'
     
     def __init__(self):
-        self._startSession()
+        pass
         
     def index(self, **kwargs):
         return super(Cameras, self).index(**kwargs)
