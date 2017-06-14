@@ -170,6 +170,7 @@ __Cameras.downloadImages(__ urls, out_dir=None, return_image_data=False __)__
     * [index()](#observationsindex)
     * [show()](#observationsshow)
 	* [preview()](#observationspreview)
+	* [__previews()__](#observationspreviews)
 	* [__downloadImages()__](#observationsdownloadimages)
   
 ### Observations.index
@@ -199,13 +200,23 @@ __Observations.show(__ observation_id __)__
 		
 ### Observations.preview
 
-Return a preview image for the observation. This API call will attempt to filter out unusable images (e.g. full image text/logos, etc.) and will return the most recent image for the observation time period.
+Return a preview image for the observation. This will return the most recent image for the observation time period.
 
 __Observations.preview(__ observation_id __)__
 * Parameters
 	* observation_id: *str*
 * Returns
 	* Image URL
+	
+### Observations.previews
+
+Return preview images for the observation. This will return the most recent image for the observation time period.
+
+__Observations.previews(__ observations_ids __)__
+* Parameters
+	* observation_ids: *list of str*
+* Returns
+	* Image URLs
 
 ### Observations.downloadImages
 

@@ -6,8 +6,16 @@ functionality for convenience.
 @author: mbayer
 '''
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin
+from heliosSDK.utilities import jsonTools
+from threading import Thread
 import json
 import warnings
+
+# Python 2 and 3 fix
+try:
+    from Queue import Queue
+except ImportError:
+    from queue import Queue
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
@@ -42,6 +50,35 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
                 return {'url' : None}
 
         return {'url' : redirect_url}
+    
+    def previews(self, observation_ids):
+        if not isinstance(observation_ids, list):
+            observation_ids = [observation_ids]
+            
+        # Set up the queue
+        q = Queue(maxsize=20)
+        num_threads = min(20, len(observation_ids))
+         
+        # Initialize threads
+        url_data = [[] for _ in observation_ids]
+        for i in range(num_threads):
+            worker = Thread(target=self.__previewRunner, args=(q, url_data))
+            worker.setDaemon(True)
+            worker.start()
+            
+        for i, obs_id in enumerate(observation_ids):
+            q.put((obs_id, i))
+        q.join()
+        
+        urls = jsonTools.mergeJson(url_data, 'url')
+        
+        return {'url' : urls}
+        
+    def __previewRunner(self, q, url_data):
+        while True:
+            obs_id, index = q.get()
+            url_data[index] = self.preview(obs_id)
+            q.task_done()
             
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         return super(Observations, self).downloadImages(urls, out_dir=out_dir, return_image_data=return_image_data)

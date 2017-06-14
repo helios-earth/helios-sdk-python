@@ -180,7 +180,7 @@ class DownloadImagesMixin(object):
     
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         if not isinstance(urls, list):
-            urls = [urls]
+            raise TypeError('urls should be a list of URL strings.')
         
         if out_dir is not None:
             if not os.path.exists(out_dir):
