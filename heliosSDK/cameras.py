@@ -96,7 +96,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
             num_threads = min(20, len(times))
              
             # Initialize threads
-            results2 = [[] for t in times]
+            results2 = [[] for _ in times]
             for i in range(num_threads):
                 worker = Thread(target=self.__showImageRunner, args=(q, results2))
                 worker.setDaemon(True)
