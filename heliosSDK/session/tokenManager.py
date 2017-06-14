@@ -100,8 +100,8 @@ class TokenManager(object):
                 
                 # Check for API URL override in .helios_auth file
                 if 'HELIOS_API_URL' in data:
-                    self.api_url = data['api_url']
-                    self.token_url = data['api_url'] + '/oauth/token'
+                    self.api_url = data['HELIOS_API_URL']
+                    self.token_url = data['HELIOS_API_URL'] + '/oauth/token'
                 else:
                     self.api_url = self.__default_api_url
                     self.token_url = self.__default_api_url + '/oauth/token'
