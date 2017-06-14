@@ -47,8 +47,8 @@ class IndexMixin(object):
     
     def index(self, **kwargs):
         max_skip = 4000
-        limit = kwargs.get('limit',100)
-        skip = kwargs.get('skip',0)
+        limit = kwargs.get('limit', 100)
+        skip = kwargs.get('skip', 0)
             
         # Establish all queries.
         params_str = self._parseInputsForQuery(kwargs)
@@ -83,7 +83,7 @@ class IndexMixin(object):
         if total > max_skip:
             warnings.warn('Maximum skip level reached for this query.  Truncated results will be returned.')
             
-        # Don't account for this first query.
+        # Get number of results in initial query.
         try:
             n = len(initial_resp_json['features'])
         except:
@@ -209,8 +209,7 @@ class DownloadImagesMixin(object):
                     out_file = os.path.join(out_dir, tail)
                     with open(out_file, 'wb') as f:
                         for chunk in resp:
-                            f.write(chunk)
-                
+                            f.write(chunk)                
                 if return_image_data:
                     image_data[index] = skimage.io.imread(BytesIO(resp.content))
             q.task_done()
