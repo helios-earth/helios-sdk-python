@@ -3,22 +3,30 @@ Core and Base objects for the heliosSDK.
 
 @author: Michael A. Bayer
 '''
-from heliosSDK.core import RequestManager
 from heliosSDK import AUTH_TOKEN, BASE_API_URL
+from heliosSDK.core import RequestManager
 from io import BytesIO
 import json
 from math import ceil
 import os
+import sys
 from threading import Thread
+import traceback
 import warnings
 
 import skimage.io
 
-# Python 2 and 3 fix
+
+# Python 2 and 3 fixes
 try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
+    
+try:
+    import thread
+except ImportError:
+    import _thread as thread
 
 
 class SDKCore(RequestManager):
@@ -123,13 +131,15 @@ class IndexMixin(object):
     def __indexRunner(self, q, results):
         while True:
             query_str, index = q.get()
-            
-            resp = self._getRequest(query_str,
-                                    headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
-                                    verify=self._SSL_VERIFY)
-            
-            results[index] = resp.json()
-            
+            try:
+                resp = self._getRequest(query_str,
+                                        headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
+                                        verify=self._SSL_VERIFY)
+                results[index] = resp.json()
+            except:
+                sys.stderr.write(traceback.format_exc())
+                sys.stderr.flush()  
+                thread.interrupt_main()          
             q.task_done()
             
 class ShowMixin(object):
@@ -206,13 +216,18 @@ class DownloadImagesMixin(object):
         while True:
             url, out_dir, return_image_data, index = q.get()
             if url is not None:
-                resp = self._getRequest(url)
-                if out_dir is not None:
-                    _, tail = os.path.split(url)
-                    out_file = os.path.join(out_dir, tail)
-                    with open(out_file, 'wb') as f:
-                        for chunk in resp:
-                            f.write(chunk)                
-                if return_image_data:
-                    image_data[index] = skimage.io.imread(BytesIO(resp.content))
+                try:
+                    resp = self._getRequest(url)
+                    if out_dir is not None:
+                        _, tail = os.path.split(url)
+                        out_file = os.path.join(out_dir, tail)
+                        with open(out_file, 'wb') as f:
+                            for chunk in resp:
+                                f.write(chunk)                
+                    if return_image_data:
+                        image_data[index] = skimage.io.imread(BytesIO(resp.content))
+                except:
+                    sys.stderr.write(traceback.format_exc())
+                    sys.stderr.flush()
+                    thread.interrupt_main()
             q.task_done()

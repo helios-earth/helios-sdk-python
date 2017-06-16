@@ -7,15 +7,22 @@ functionality for convenience.
 '''
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin
 from heliosSDK.utilities import jsonTools
-from threading import Thread
 import json
-import warnings
+import sys
+from threading import Thread
+import traceback
 
-# Python 2 and 3 fix
+
+# Python 2 and 3 fixes
 try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
+    
+try:
+    import thread
+except ImportError:
+    import _thread as thread
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
@@ -46,7 +53,8 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
             hdrs = json.loads(head_check_resp.headers['x-amz-meta-helios'])
             
             if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
-                warnings.warn('{} returned a dud image.'.format(redirect_url))
+                sys.stderr.write('{} returned a dud image.'.format(redirect_url))
+                sys.stderr.flush()
                 return {'url' : None}
 
         return {'url' : redirect_url}
@@ -73,18 +81,20 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         urls = jsonTools.mergeJson(url_data, 'url')
         
         return {'url' : urls}
-        
+    
     def __previewRunner(self, q, url_data):
         while True:
             obs_id, index = q.get()
-            url_data[index] = self.preview(obs_id)
+            try:
+                url_data[index] = self.preview(obs_id)
+            except:
+                sys.stderr.write(traceback.format_exc())
+                sys.stderr.flush()
+                thread.interrupt_main()
             q.task_done()
-            
+                            
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         return super(Observations, self).downloadImages(urls, out_dir=out_dir, return_image_data=return_image_data)
-
-
-
 
 
 

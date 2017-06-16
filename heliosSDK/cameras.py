@@ -7,15 +7,23 @@ functionality for convenience.
 '''
 from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, DownloadImagesMixin
 from heliosSDK.utilities import jsonTools
+import sys
 from threading import Thread
+import traceback
 
 from dateutil.parser import parse
 
-# Python 2 and 3 fix
+
+# Python 2 and 3 fixes
 try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
+    
+try:
+    import thread
+except ImportError:
+    import _thread as thread
 
 
 class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
@@ -84,12 +92,6 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
     def showImage(self, camera_id, time, delta=900000):
         return super(Cameras, self).showImage(camera_id, time, delta=delta)
     
-    def __showImageRunner(self, q, results):
-        while True:
-            camera_id, time, delta, index = q.get()
-            results[index] = self.showImage(camera_id, time, delta=delta)
-            q.task_done()
-    
     def showImages(self, camera_id, times, delta=900000):
             # Set up the queue
             q = Queue(maxsize=20)
@@ -98,7 +100,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
             # Initialize threads
             results2 = [[] for _ in times]
             for i in range(num_threads):
-                worker = Thread(target=self.__showImageRunner, args=(q, results2))
+                worker = Thread(target=self.__showImagesRunner, args=(q, results2))
                 worker.setDaemon(True)
                 worker.start()
                 
@@ -111,6 +113,17 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
             json_output = {'url':urls}
                 
             return json_output
+        
+    def __showImagesRunner(self, q, results):
+        while True:
+            camera_id, time, delta, index = q.get()
+            try:
+                results[index] = self.showImage(camera_id, time, delta=delta)
+            except:
+                sys.stderr.write(traceback.format_exc())
+                sys.stderr.flush()                
+                thread.interrupt_main()
+            q.task_done()
         
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         return super(Cameras, self).downloadImages(urls, out_dir=out_dir, return_image_data=return_image_data)
