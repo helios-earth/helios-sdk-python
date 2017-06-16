@@ -5,12 +5,14 @@ functionality for convenience.
 
 @author: mbayer
 '''
-from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin
-from heliosSDK.utilities import jsonTools
 import json
+import os
 import sys
 from threading import Thread
 import traceback
+
+from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin
+from heliosSDK.utilities import jsonTools
 
 
 # Python 2 and 3 fixes
@@ -53,7 +55,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
             hdrs = json.loads(head_check_resp.headers['x-amz-meta-helios'])
             
             if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
-                sys.stderr.write('{} returned a dud image.'.format(redirect_url))
+                sys.stderr.write('{} returned a dud image.'.format(redirect_url) + os.linesep)
                 sys.stderr.flush()
                 return {'url' : None}
 
