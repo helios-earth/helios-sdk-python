@@ -133,7 +133,7 @@ __Cameras.showImage(__ camera_id, time, delta=900000 __)__
 
 Return a single images from the media cache for a given time range. The media cache contains all recent images archived by Helios, either for internal analytics or for end user recording purposes.
 
-__Cameras.showImages(__ camera_id, start_time, delta=900000 __)__
+__Cameras.showImages(__ camera_id, times, delta=900000 __)__
 * Parameters
     * camera_id: *str*
         * Camera ID.
@@ -314,9 +314,9 @@ __Collections.images(__ collection_id, camera=None, old_flag=False __)__
 
 Return a single image from a collection.
 
-__Collections.showImage(__ id_var, image_name __)__
+__Collections.showImage(__ collection_id, image_name __)__
 * Parameters
-    * id_var: *str*
+    * collection_id: *str*
         * Collection ID.
     * image_name: *str*
         * Image Name.
