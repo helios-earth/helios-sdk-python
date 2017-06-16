@@ -179,7 +179,8 @@ class ShowImageMixin(object):
             hdrs = json.loads(resp2.headers['x-amz-meta-helios'])
             
             if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
-                warnings.warn('{} returned a dud image.'.format(redirect_url))
+                sys.stderr.write('{} returned a dud image.'.format(redirect_url) + os.linesep)
+                sys.stderr.flush()
                 return {'url' : None}
 
         return {'url' : redirect_url}
