@@ -12,7 +12,6 @@ import os
 import sys
 from threading import Thread
 import traceback
-import warnings
 
 import skimage.io
 
@@ -92,7 +91,8 @@ class IndexMixin(object):
             
         # Warn the user when truncation occurs. (max_skip is hit)
         if total > max_skip:
-            warnings.warn('Maximum skip level reached for this query.  Truncated results will be returned.')
+            sys.stderr.write('Maximum skip level reached for this query.  Truncated results will be returned.' + os.linesep)
+            sys.stderr.flush()
             
         # Get number of results in initial query.
         try:
