@@ -41,7 +41,7 @@ Your key pair can be found on the [profile page](https://helios.earth/explore/pr
 
 Example using Pip:
 
-`pip install requests scikit-image retrying`
+`pip install requests scikit-image retrying scipy`
 
 ## Documentation
 For detailed documentation refer to DOCUMENTATION.md.
