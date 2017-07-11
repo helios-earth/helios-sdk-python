@@ -100,7 +100,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
             # Initialize threads
             results2 = [[] for _ in times]
             for i in range(num_threads):
-                worker = Thread(target=self.__showImagesRunner, args=(q, results2))
+                worker = Thread(target=self.__showImagesWorker, args=(q, results2))
                 worker.setDaemon(True)
                 worker.start()
                 
@@ -114,7 +114,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                 
             return json_output
         
-    def __showImagesRunner(self, q, results):
+    def __showImagesWorker(self, q, results):
         while True:
             camera_id, time, delta, index = q.get()
             try:

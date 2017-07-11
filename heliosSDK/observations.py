@@ -72,7 +72,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         # Initialize threads
         url_data = [[] for _ in observation_ids]
         for i in range(num_threads):
-            worker = Thread(target=self.__previewRunner, args=(q, url_data))
+            worker = Thread(target=self.__previewWorker, args=(q, url_data))
             worker.setDaemon(True)
             worker.start()
             
@@ -84,7 +84,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         
         return {'url' : urls}
     
-    def __previewRunner(self, q, url_data):
+    def __previewWorker(self, q, url_data):
         while True:
             obs_id, index = q.get()
             try:

@@ -115,7 +115,7 @@ class IndexMixin(object):
         # Initialize threads
         results = [[] for _ in queries]
         for i in range(num_threads):
-            worker = Thread(target=self.__indexRunner, args=(q, results))
+            worker = Thread(target=self.__indexWorker, args=(q, results))
             worker.setDaemon(True)
             worker.start()
             
@@ -128,7 +128,7 @@ class IndexMixin(object):
         
         return results
     
-    def __indexRunner(self, q, results):
+    def __indexWorker(self, q, results):
         while True:
             query_str, index = q.get()
             try:
@@ -202,7 +202,7 @@ class DownloadImagesMixin(object):
         # Initialize threads
         image_data = [[] for _ in urls]
         for i in range(num_threads):
-            worker = Thread(target=self.__downloadRunner, args=(q, image_data))
+            worker = Thread(target=self.__downloadWorker, args=(q, image_data))
             worker.setDaemon(True)
             worker.start()
             
@@ -213,7 +213,7 @@ class DownloadImagesMixin(object):
         if return_image_data:
             return image_data
     
-    def __downloadRunner(self, q, image_data):
+    def __downloadWorker(self, q, image_data):
         while True:
             url, out_dir, return_image_data, index = q.get()
             if url is not None:
