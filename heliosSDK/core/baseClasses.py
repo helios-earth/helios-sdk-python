@@ -13,7 +13,7 @@ import sys
 from threading import Thread
 import traceback
 
-import skimage.io
+import scipy.misc
 
 
 # Python 2 and 3 fixes
@@ -227,7 +227,7 @@ class DownloadImagesMixin(object):
                             for chunk in resp:
                                 f.write(chunk)                
                     if return_image_data:
-                        image_data[index] = skimage.io.imread(BytesIO(resp.content))
+                        image_data[index] = scipy.misc.imread(BytesIO(resp.content))
                 except:
                     sys.stderr.write(traceback.format_exc())
                     sys.stderr.flush()
