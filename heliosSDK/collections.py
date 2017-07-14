@@ -143,11 +143,11 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                 thread.interrupt_main()          
             q.task_done()
     
-    def removeImage(self, collection_id, img_names):
+    def removeImage(self, collection_id, img_name):
         query_str = '{}/{}/{}/images/{}'.format(self._BASE_API_URL,
                                                 self._CORE_API,
                                                 collection_id,
-                                                img_names)
+                                                img_name)
         resp = self._deleteRequest(query_str,
                                   headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
                                   verify=self._SSL_VERIFY)

@@ -392,7 +392,7 @@ __Collections.removeImage(__ collection_id, img_name __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
-    * img_names: *str*
+    * img_name: *str*
         * A single image name.
 * Returns
     * JSON: *dictionary*
@@ -406,7 +406,7 @@ __Collections.removeImages(__ collection_id, img_names __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
-    * img_url: *list*
+    * img_names: *list*
         * List of image names.
 * Returns
     * JSON: *list of dictionaries*
