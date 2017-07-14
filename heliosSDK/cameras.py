@@ -8,18 +8,12 @@ functionality for convenience.
 from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, DownloadImagesMixin
 from heliosSDK.utilities import jsonTools
 import sys
-from threading import Thread
 import traceback
 
 from dateutil.parser import parse
 
 
 # Python 2 and 3 fixes
-try:
-    from Queue import Queue
-except ImportError:
-    from queue import Queue
-    
 try:
     import thread
 except ImportError:
@@ -94,21 +88,16 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
     
     def showImages(self, camera_id, times, delta=900000):
             # Set up the queue
-            q = Queue(maxsize=20)
-            num_threads = min(20, len(times))
-             
-            # Initialize threads
-            results2 = [[] for _ in times]
-            for i in range(num_threads):
-                worker = Thread(target=self.__showImagesWorker, args=(q, results2))
-                worker.setDaemon(True)
-                worker.start()
-                
+            data = [[] for _ in times]
+            q = self._createQueue(self.__showImagesWorker,
+                                  data,
+                                  num_threads=min(20, len(times)))
+            
             for i, time in enumerate(times):
                 q.put((camera_id, time, delta, i))
             q.join()
 
-            urls = jsonTools.mergeJson(results2, 'url')
+            urls = jsonTools.mergeJson(data, 'url')
             
             json_output = {'url':urls}
                 

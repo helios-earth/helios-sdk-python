@@ -5,22 +5,15 @@ functionality for convenience.
 
 @author: mbayer
 '''
+from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin
+from heliosSDK.utilities import jsonTools
 import json
 import os
 import sys
-from threading import Thread
 import traceback
-
-from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin
-from heliosSDK.utilities import jsonTools
 
 
 # Python 2 and 3 fixes
-try:
-    from Queue import Queue
-except ImportError:
-    from queue import Queue
-    
 try:
     import thread
 except ImportError:
@@ -66,15 +59,10 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
             observation_ids = [observation_ids]
             
         # Set up the queue
-        q = Queue(maxsize=20)
-        num_threads = min(20, len(observation_ids))
-         
-        # Initialize threads
         url_data = [[] for _ in observation_ids]
-        for i in range(num_threads):
-            worker = Thread(target=self.__previewWorker, args=(q, url_data))
-            worker.setDaemon(True)
-            worker.start()
+        q = self._createQueue(self.__previewWorker,
+                              url_data,
+                              num_threads=min(20, len(observation_ids)))
             
         for i, obs_id in enumerate(observation_ids):
             q.put((obs_id, i))

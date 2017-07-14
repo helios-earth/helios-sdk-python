@@ -52,6 +52,18 @@ class SDKCore(RequestManager):
 
         return query_str
     
+    def _createQueue(self, target_function, shared_data, num_threads=20, max_queue_size=0):
+        # Set up the queue
+        q = Queue(maxsize=max_queue_size)
+         
+        # Initialize threads
+        for _ in range(num_threads):
+            worker = Thread(target=target_function, args=(q, shared_data))
+            worker.setDaemon(True)
+            worker.start()
+            
+        return q
+    
     
 class IndexMixin(object):
     
@@ -108,17 +120,11 @@ class IndexMixin(object):
         n_queries_needed = int(ceil((total - skip) / float(limit))) - 1
         queries = queries[0:n_queries_needed]
         
-        # Set up the queue
-        q = Queue(maxsize=0)
-        num_threads = min(20, n_queries_needed)
-        
-        # Initialize threads
         results = [[] for _ in queries]
-        for i in range(num_threads):
-            worker = Thread(target=self.__indexWorker, args=(q, results))
-            worker.setDaemon(True)
-            worker.start()
-            
+        q = self._createQueue(self.__indexWorker,
+                              results,
+                              num_threads=min(20, n_queries_needed))
+        
         # Process queries
         [q.put((x, i)) for i, x in enumerate(queries)]          
         q.join()
@@ -196,15 +202,10 @@ class DownloadImagesMixin(object):
                 os.mkdir(out_dir)
                 
         # Set up the queue
-        q = Queue(maxsize=20)
-        num_threads = min(20, len(urls))
-         
-        # Initialize threads
         image_data = [[] for _ in urls]
-        for i in range(num_threads):
-            worker = Thread(target=self.__downloadWorker, args=(q, image_data))
-            worker.setDaemon(True)
-            worker.start()
+        q = self._createQueue(self.__downloadWorker,
+                              image_data,
+                              num_threads=min(20, len(urls)))
             
         for i, url in enumerate(urls):
             q.put((url, out_dir, return_image_data, i))
