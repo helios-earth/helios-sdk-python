@@ -7,9 +7,17 @@ functionality for convenience.
 '''
 import hashlib
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, DownloadImagesMixin
-from heliosSDK.utilities import jsonTools
+import sys
+import traceback
 
 
+# Python 2 and 3 fixes
+try:
+    import thread
+except ImportError:
+    import _thread as thread
+    
+    
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
     _CORE_API = 'collections'
     
@@ -110,15 +118,36 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return json_response
         
     def addImages(self, collection_id, img_urls):
-        results = [self.addImage(collection_id, im) for im in img_urls]
+        # Set up the queue
+        data = [[] for _ in img_urls]
+        q = self._createQueue(self.__addImagesWorker,
+                              data,
+                              num_threads=min(20, len(img_urls)))
         
-        return results
+        # Process img_urls
+        [q.put((x, collection_id, i)) for i, x in enumerate(img_urls)]          
+        q.join()
+                
+        return data
     
-    def removeImage(self, collection_id, img_url):
+    def __addImagesWorker(self, q, results):
+        while True:
+            img_url, coll_id, index = q.get()
+            
+            try:
+                resp = self.addImage(coll_id, img_url)
+                results[index] = resp
+            except:
+                sys.stderr.write(traceback.format_exc())
+                sys.stderr.flush()  
+                thread.interrupt_main()          
+            q.task_done()
+    
+    def removeImage(self, collection_id, img_names):
         query_str = '{}/{}/{}/images/{}'.format(self._BASE_API_URL,
                                                 self._CORE_API,
                                                 collection_id,
-                                                img_url)
+                                                img_names)
         resp = self._deleteRequest(query_str,
                                   headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
                                   verify=self._SSL_VERIFY)
@@ -127,10 +156,32 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         
         return json_response
         
-    def removeImages(self, collection_id, img_list):
-        results = [self.removeImage(collection_id, im) for im in img_list]
+    def removeImages(self, collection_id, img_names):
+        # Set up the queue
+        data = [[] for _ in img_names]
+        q = self._createQueue(self.__removeImagesWorker,
+                              data,
+                              num_threads=min(20, len(img_names)))
         
-        return results   
+        # Process img_urls
+        [q.put((x, collection_id, i)) for i, x in enumerate(img_names)]          
+        q.join()
+        
+        return data   
+
+    def __removeImagesWorker(self, q, results):
+        while True:
+            img, coll_id, index = q.get()
+            
+            try:
+                resp = self.removeImage(coll_id, img)
+                results[index] = resp
+            except:
+                sys.stderr.write(traceback.format_exc())
+                sys.stderr.flush()  
+                thread.interrupt_main()          
+            q.task_done()                
+            
     
     def copy(self, collection_id, new_collection_name):
      

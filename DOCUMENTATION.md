@@ -388,12 +388,12 @@ __Collections.addImages(__ collection_id, img_urls __)__
 
 Remove a single image from a collection.
 
-__Collections.removeImage(__ collection_id, img_url __)__
+__Collections.removeImage(__ collection_id, img_name __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
-    * img_url: *str*
-        * Single image URL.
+    * img_names: *str*
+        * A single image name.
 * Returns
     * JSON: *dictionary*
         * key: "ok"
@@ -402,12 +402,12 @@ __Collections.removeImage(__ collection_id, img_url __)__
 
 Remove multiple images from a collection.
 
-__Collections.removeImage(__ collection_id, img_url __)__
+__Collections.removeImages(__ collection_id, img_names __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
-    * img_url: *str*
-        * Single image URL.
+    * img_url: *list*
+        * List of image names.
 * Returns
     * JSON: *list of dictionaries*
         * key: "ok"
