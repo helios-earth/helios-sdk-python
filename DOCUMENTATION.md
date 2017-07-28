@@ -243,7 +243,7 @@ __Observations.downloadImages(__ urls, out_dir=None, return_image_data=False __)
     * [create()](#collectionscreate)
     * __[images()](#collectionsimages)__
     * [showImage()](#collectionsshowimage)
-    * __[showImages()](collectionsshowimages)__
+    * __[showImages()](#collectionsshowimages)__
     * __[downloadImages()](#collectionsdownloadimages)__
     * [addImage()](#collectionsaddimage)
     * __[addImages()](#collectionsaddimages)__
