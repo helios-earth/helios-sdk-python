@@ -12,7 +12,6 @@ from math import ceil
 from multiprocessing.dummy import Pool as ThreadPool
 import os
 import sys
-from threading import Thread
 
 import scipy.misc
 
@@ -47,18 +46,6 @@ class SDKCore(RequestManager):
         query_str = query_str[:-1]
 
         return query_str
-    
-    def _createQueue(self, target_function, shared_data, num_threads=20, max_queue_size=0):
-        # Set up the queue
-        q = Queue(maxsize=max_queue_size)
-         
-        # Initialize threads
-        for _ in range(num_threads):
-            worker = Thread(target=target_function, args=(q, shared_data))
-            worker.setDaemon(True)
-            worker.start()
-            
-        return q
     
 class IndexMixin(object):
     

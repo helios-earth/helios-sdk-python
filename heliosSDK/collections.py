@@ -103,7 +103,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     def addImage(self, collection_id, img_url):
         # need to strip out the Bearer to work with a POST for collections
         post_token = self._AUTH_TOKEN['value'].replace('Bearer ', '') 
-         
+        
+        # Compose post request
         parms = {'s3_src':img_url, 'access_token':post_token}
         header = {'name':'Content-Type', 'value':'application/x-www-form-urlencoded'}
         post_url = '{}/collections/{}/images'.format(self._BASE_API_URL, collection_id)
@@ -124,7 +125,6 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     
     def __addImagesWorker(self, args):
         coll_id, img_url = args
-            
         resp = self.addImage(coll_id, img_url)
         
         return resp
@@ -154,13 +154,11 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     def __removeImagesWorker(self, args):
         coll_id, img = args
-            
         resp = self.removeImage(coll_id, img)
         
         return resp 
     
     def copy(self, collection_id, new_collection_name):
-     
         query_str = '{}/{}/{}'.format(self._BASE_API_URL,
                                       self._CORE_API,
                                       collection_id)
