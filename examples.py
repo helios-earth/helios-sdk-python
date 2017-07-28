@@ -81,7 +81,7 @@ def testCollections(output_dir=''):
         
     # output = Collections2.create('test_collection_new', description='test', ['test','test2','test3'])
      
-    collections_test_3 = CC.images('6a59fd46-bdf0-47e4-a719-992a9e9e988b', 'VADOT-86619', old_flag=False)
+    collections_test_3 = CC.images('6a59fd46-bdf0-47e4-a719-992a9e9e988b')
     jsonTools.writeJson(collections_test_3, os.path.join(output_dir, r'collections_images.json'))
      
     collections_test_4 = CC.showImage('6a59fd46-bdf0-47e4-a719-992a9e9e988b', collections_test_3['images'][0])
