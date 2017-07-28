@@ -118,12 +118,12 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         POOL = ThreadPool(num_threads)
         
         data = POOL.map(self.__addImagesWorker,
-                        zip(repeat(collection_id, img_urls)))
+                        zip(repeat(collection_id), img_urls))
                 
         return data
     
     def __addImagesWorker(self, args):
-        img_url, coll_id = args
+        coll_id, img_url = args
             
         resp = self.addImage(coll_id, img_url)
         
@@ -148,12 +148,12 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         POOL = ThreadPool(num_threads)
         
         data = POOL.map(self.__removeImagesWorker,
-                        zip(repeat(collection_id, img_names)))
+                        zip(repeat(collection_id), img_names))
                 
         return data 
 
     def __removeImagesWorker(self, args):
-        img, coll_id = args
+        coll_id, img = args
             
         resp = self.removeImage(coll_id, img)
         
