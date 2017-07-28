@@ -16,13 +16,6 @@ import sys
 import scipy.misc
 
 
-# Python 2 and 3 fixes
-try:
-    from Queue import Queue
-except ImportError:
-    from queue import Queue
-
-
 class SDKCore(RequestManager):
     """
     Core class for Python interface to Helios Core APIs.
