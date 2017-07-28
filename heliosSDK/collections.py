@@ -7,18 +7,13 @@ functionality for convenience.
 '''
 import hashlib
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, DownloadImagesMixin
-import sys
-import traceback
+from itertools import repeat
+from multiprocessing.dummy import Pool as ThreadPool    
 
 
-# Python 2 and 3 fixes
-try:
-    import thread
-except ImportError:
-    import _thread as thread
-    
-    
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
+    MAX_THREADS = 20
+    
     _CORE_API = 'collections'
     
     def __init__(self):
@@ -118,30 +113,21 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return json_response
         
     def addImages(self, collection_id, img_urls):
-        # Set up the queue
-        data = [[] for _ in img_urls]
-        q = self._createQueue(self.__addImagesWorker,
-                              data,
-                              num_threads=min(20, len(img_urls)))
+        # Create thread pool
+        num_threads = min(self.MAX_THREADS, len(img_urls))
+        POOL = ThreadPool(num_threads)
         
-        # Process img_urls
-        [q.put((x, collection_id, i)) for i, x in enumerate(img_urls)]          
-        q.join()
+        data = POOL.map(self.__addImagesWorker,
+                        zip(repeat(collection_id, img_urls)))
                 
         return data
     
-    def __addImagesWorker(self, q, results):
-        while True:
-            img_url, coll_id, index = q.get()
+    def __addImagesWorker(self, args):
+        img_url, coll_id = args
             
-            try:
-                resp = self.addImage(coll_id, img_url)
-                results[index] = resp
-            except:
-                sys.stderr.write(traceback.format_exc())
-                sys.stderr.flush()  
-                thread.interrupt_main()          
-            q.task_done()
+        resp = self.addImage(coll_id, img_url)
+        
+        return resp
     
     def removeImage(self, collection_id, img_name):
         query_str = '{}/{}/{}/images/{}'.format(self._BASE_API_URL,
@@ -157,31 +143,21 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return json_response
         
     def removeImages(self, collection_id, img_names):
-        # Set up the queue
-        data = [[] for _ in img_names]
-        q = self._createQueue(self.__removeImagesWorker,
-                              data,
-                              num_threads=min(20, len(img_names)))
+        # Create thread pool
+        num_threads = min(self.MAX_THREADS, len(img_names))
+        POOL = ThreadPool(num_threads)
         
-        # Process img_urls
-        [q.put((x, collection_id, i)) for i, x in enumerate(img_names)]          
-        q.join()
-        
-        return data   
+        data = POOL.map(self.__removeImagesWorker,
+                        zip(repeat(collection_id, img_names)))
+                
+        return data 
 
-    def __removeImagesWorker(self, q, results):
-        while True:
-            img, coll_id, index = q.get()
+    def __removeImagesWorker(self, args):
+        img, coll_id = args
             
-            try:
-                resp = self.removeImage(coll_id, img)
-                results[index] = resp
-            except:
-                sys.stderr.write(traceback.format_exc())
-                sys.stderr.flush()  
-                thread.interrupt_main()          
-            q.task_done()                
-            
+        resp = self.removeImage(coll_id, img)
+        
+        return resp 
     
     def copy(self, collection_id, new_collection_name):
      

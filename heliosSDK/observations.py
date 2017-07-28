@@ -10,19 +10,14 @@ from heliosSDK.utilities import jsonTools
 import json
 import os
 import sys
-import traceback
-
-
-# Python 2 and 3 fixes
-try:
-    import thread
-except ImportError:
-    import _thread as thread
+from multiprocessing.dummy import Pool as ThreadPool
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
+    MAX_THREADS = 20
+
     _CORE_API = 'observations'
-    
+        
     def __init__(self):
         pass
         
@@ -58,30 +53,21 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         if not isinstance(observation_ids, list):
             observation_ids = [observation_ids]
             
-        # Set up the queue
-        url_data = [[] for _ in observation_ids]
-        q = self._createQueue(self.__previewWorker,
-                              url_data,
-                              num_threads=min(20, len(observation_ids)))
-            
-        for i, obs_id in enumerate(observation_ids):
-            q.put((obs_id, i))
-        q.join()
+        # Create thread pool
+        num_threads = min(self.MAX_THREADS, len(observation_ids))
+        POOL = ThreadPool(num_threads)
         
-        urls = jsonTools.mergeJson(url_data, 'url')
+        data = POOL.map(self.__previewWorker,
+                        observation_ids)
+        
+        urls = jsonTools.mergeJson(data, 'url')
         
         return {'url' : urls}
     
-    def __previewWorker(self, q, url_data):
-        while True:
-            obs_id, index = q.get()
-            try:
-                url_data[index] = self.preview(obs_id)
-            except:
-                sys.stderr.write(traceback.format_exc())
-                sys.stderr.flush()
-                thread.interrupt_main()
-            q.task_done()
+    def __previewWorker(self, args):
+        obs_id = args
+        
+        return self.preview(obs_id)
                             
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         return super(Observations, self).downloadImages(urls, out_dir=out_dir, return_image_data=return_image_data)

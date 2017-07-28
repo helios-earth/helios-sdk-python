@@ -6,12 +6,13 @@ Core and Base objects for the heliosSDK.
 from heliosSDK import AUTH_TOKEN, BASE_API_URL
 from heliosSDK.core import RequestManager
 from io import BytesIO
+from itertools import repeat
 import json
 from math import ceil
+from multiprocessing.dummy import Pool as ThreadPool
 import os
 import sys
 from threading import Thread
-import traceback
 
 import scipy.misc
 
@@ -21,11 +22,6 @@ try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
-    
-try:
-    import thread
-except ImportError:
-    import _thread as thread
 
 
 class SDKCore(RequestManager):
@@ -63,7 +59,6 @@ class SDKCore(RequestManager):
             worker.start()
             
         return q
-    
     
 class IndexMixin(object):
     
@@ -120,33 +115,23 @@ class IndexMixin(object):
         n_queries_needed = int(ceil((total - skip) / float(limit))) - 1
         queries = queries[0:n_queries_needed]
         
-        results = [[] for _ in queries]
-        q = self._createQueue(self.__indexWorker,
-                              results,
-                              num_threads=min(20, n_queries_needed))
+        # Create thread pool
+        num_threads = min(self.MAX_THREADS, n_queries_needed)
+        POOL = ThreadPool(num_threads)
         
-        # Process queries
-        [q.put((x, i)) for i, x in enumerate(queries)]          
-        q.join()
+        results = POOL.map(self.__indexWorker, queries)
               
         # Put initial query back in list.
         results.insert(0, initial_resp_json)
         
         return results
     
-    def __indexWorker(self, q, results):
-        while True:
-            query_str, index = q.get()
-            try:
-                resp = self._getRequest(query_str,
-                                        headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
-                                        verify=self._SSL_VERIFY)
-                results[index] = resp.json()
-            except:
-                sys.stderr.write(traceback.format_exc())
-                sys.stderr.flush()  
-                thread.interrupt_main()          
-            q.task_done()
+    def __indexWorker(self, args):
+        query_str = args
+        resp = self._getRequest(query_str,
+                                headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
+                                verify=self._SSL_VERIFY)
+        return resp.json()
             
 class ShowMixin(object):
     
@@ -192,7 +177,7 @@ class ShowImageMixin(object):
         return {'url' : redirect_url}
         
 class DownloadImagesMixin(object):
-    
+        
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         if not isinstance(urls, list):
             raise TypeError('urls should be a list of URL strings.')
@@ -200,36 +185,27 @@ class DownloadImagesMixin(object):
         if out_dir is not None:
             if not os.path.exists(out_dir):
                 os.mkdir(out_dir)
-                
-        # Set up the queue
-        image_data = [[] for _ in urls]
-        q = self._createQueue(self.__downloadWorker,
-                              image_data,
-                              num_threads=min(20, len(urls)))
-            
-        for i, url in enumerate(urls):
-            q.put((url, out_dir, return_image_data, i))
-        q.join()
+        
+        # Create thread pool
+        num_threads = min(self.MAX_THREADS, len(urls))
+        POOL = ThreadPool(num_threads)
+        
+        image_data = POOL.map(self.__downloadWorker,
+                              zip(urls, repeat(out_dir), repeat(return_image_data)))
             
         if return_image_data:
             return image_data
     
-    def __downloadWorker(self, q, image_data):
-        while True:
-            url, out_dir, return_image_data, index = q.get()
-            if url is not None:
-                try:
-                    resp = self._getRequest(url)
-                    if out_dir is not None:
-                        _, tail = os.path.split(url)
-                        out_file = os.path.join(out_dir, tail)
-                        with open(out_file, 'wb') as f:
-                            for chunk in resp:
-                                f.write(chunk)                
-                    if return_image_data:
-                        image_data[index] = scipy.misc.imread(BytesIO(resp.content))
-                except:
-                    sys.stderr.write(traceback.format_exc())
-                    sys.stderr.flush()
-                    thread.interrupt_main()
-            q.task_done()
+    def __downloadWorker(self, args):
+        url, out_dir, return_image_data = args
+
+        if url is not None:
+            resp = self._getRequest(url)
+            if out_dir is not None:
+                _, tail = os.path.split(url)
+                out_file = os.path.join(out_dir, tail)
+                with open(out_file, 'wb') as f:
+                    for chunk in resp:
+                        f.write(chunk)                
+            if return_image_data:
+                return scipy.misc.imread(BytesIO(resp.content))
