@@ -36,12 +36,12 @@ Your key pair can be found on the [profile page](https://helios.earth/explore/ac
 ## Dependencies
 * Python 2 or 3
 * requests
-* scikit-image
+* scipy
 * retrying
 
-Example using Pip:
-
+Installation examples:
 `pip install requests retrying scipy`
+`conda install requests retrying scipy`
 
 ## Documentation
 For detailed documentation refer to DOCUMENTATION.md.
