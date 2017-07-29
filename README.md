@@ -41,6 +41,7 @@ Your key pair can be found on the [profile page](https://helios.earth/explore/ac
 
 Installation examples:
 `pip install requests retrying scipy`
+
 `conda install requests retrying scipy`
 
 ## Documentation
