@@ -24,10 +24,7 @@ class SDKCore(RequestManager):
     
     _BASE_API_URL = BASE_API_URL
     _SSL_VERIFY = True
-    _AUTH_TOKEN = AUTH_TOKEN
-        
-    def __init__(self):
-        pass   
+    _AUTH_TOKEN = AUTH_TOKEN 
              
     def _parseInputsForQuery(self, input_dict):
         query_str = ''
