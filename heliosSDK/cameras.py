@@ -81,25 +81,6 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
     
     def showImage(self, camera_id, time, delta=900000):
         return super(Cameras, self).showImage(camera_id, time, delta=delta)
-    
-    def showImages(self, camera_id, times, delta=900000):
-        # Create thread pool
-        num_threads = min(self.MAX_THREADS, len(times))
-        POOL = ThreadPool(num_threads)
-        
-        data = POOL.map(self.__showImagesWorker,
-                        zip(repeat(camera_id), times, repeat(delta)))
-
-        urls = jsonTools.mergeJson(data, 'url')
-        
-        json_output = {'url':urls}
-            
-        return json_output
-        
-    def __showImagesWorker(self, args):
-        camera_id, time, delta = args
-
-        return self.showImage(camera_id, time, delta=delta)
         
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         return super(Cameras, self).downloadImages(urls, out_dir=out_dir, return_image_data=return_image_data)

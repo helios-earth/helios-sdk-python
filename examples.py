@@ -39,7 +39,7 @@ def testCameras(output_dir=''):
     cameras_test_2 = CaC.imagesRange('TL-6140', '2017-01-02T15:00:00.000Z', '2017-01-02T16:00:00.000Z')
     jsonTools.writeJson(cameras_test_2, os.path.join(output_dir, r'cameras_images.json'))
            
-    cameras_test_3 = CaC.showImages('TL-6140', cameras_test_2['times'])
+    cameras_test_3 = CaC.showImage('TL-6140', cameras_test_2['times'])
     jsonTools.writeJson(cameras_test_3, os.path.join(output_dir, r'cameras_showImages.json'))
     
     cameras_test_4 = CaC.downloadImages(cameras_test_3['url'], out_dir=os.path.join(output_dir, r'Images'), return_image_data=True)
@@ -87,7 +87,7 @@ def testCollections(output_dir=''):
     collections_test_4 = CC.showImage('6a59fd46-bdf0-47e4-a719-992a9e9e988b', collections_test_3['images'][0])
     jsonTools.writeJson(collections_test_4, os.path.join(output_dir, r'collections_showImage.json'))
        
-    collections_test_5 = CC.showImages('6a59fd46-bdf0-47e4-a719-992a9e9e988b', collections_test_3['images'])
+    collections_test_5 = CC.showImage('6a59fd46-bdf0-47e4-a719-992a9e9e988b', collections_test_3['images'])
     jsonTools.writeJson(collections_test_5, os.path.join(output_dir, r'collections_showImages.json'))
        
     collections_test6 = CC.downloadImages(collections_test_5['url'], out_dir=os.path.join(output_dir, r'Images_Collection'), return_image_data=True)

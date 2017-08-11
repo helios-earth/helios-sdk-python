@@ -5,6 +5,7 @@ Core and Base objects for the heliosSDK.
 '''
 from heliosSDK import AUTH_TOKEN, BASE_API_URL
 from heliosSDK.core import RequestManager
+from heliosSDK.utilities import jsonTools
 from io import BytesIO
 from itertools import repeat
 import json
@@ -169,12 +170,14 @@ class ShowImageMixin(object):
         if num_threads > 4:
             POOL = ThreadPool(num_threads)
             data = POOL.map(self.__showImagesWorker,
-                            zip(repeat(id_var), data, kwargs))
+                            zip(repeat(id_var), data, repeat(kwargs)))
         else:
-            data = map(self.__showImagesWorker,
-                       zip(repeat(id_var), data, kwargs))
+            data = list(map(self.__showImagesWorker,
+                            zip(repeat(id_var), data, repeat(kwargs))))
             
-        return data
+        url_data = jsonTools.mergeJson(data, 'url')
+            
+        return {'url' : url_data}
     
     def __showImagesWorker(self, args):
         id_var, x, kwargs = args
