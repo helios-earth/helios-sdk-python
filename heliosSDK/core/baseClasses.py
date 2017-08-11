@@ -227,8 +227,8 @@ class ShowImageMixin(object):
 class DownloadImagesMixin(object):
         
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        if not isinstance(urls, list):
-            raise TypeError('urls should be a list of URL strings.')
+        if isinstance(urls, str):
+            urls = [urls]
         
         if out_dir is not None:
             if not os.path.exists(out_dir):

@@ -102,14 +102,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     def showImage(self, collection_id, image_name):
         return super(Collections, self).showImage(collection_id, image_name)
     
-#     def showImages(self, collection_id, image_names):
-#         # Use hard-coded collections url.  Waiting for show image is too slow.
-#         urls = ['https://helios-u-exelis.s3.amazonaws.com/collections/{}/{}'.format(collection_id, im) for im in image_names]
-# 
-#         return {'url':urls}
-    
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        return super(Collections, self).downloadImages(urls, out_dir=out_dir, return_image_data=return_image_data) 
+        return super(Collections, self).downloadImages(urls, out_dir=out_dir, 
+                                                       return_image_data=return_image_data) 
 
     def addImage(self, collection_id, url_data):
         if isinstance(url_data, str):

@@ -34,14 +34,27 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                                                               camera_id,
                                                               start_time,
                                                               limit)
+        
+        # Log query
+        self.logger.info('Query begin: {}'.format(query_str))
+        
         resp = self._getRequest(query_str,
                                headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
                                verify=self._SSL_VERIFY) 
-        json_response = resp.json()
         
-        return json_response
+        # Log error and raise exception.
+        if not resp.ok:
+            self.logger.error('Error {}: {}'.format(resp.status_code, query_str))
+            resp.raise_for_status()
+        
+        # log success
+        self.logger.info('Query complete: {}'.format(query_str))
+        
+        return resp.json()
 
-    def imagesRange(self, camera_id, start_time, end_time, limit=500):             
+    def imagesRange(self, camera_id, start_time, end_time, limit=500): 
+        # Log start
+        self.logger.info('Starting imagesRange query: {}, {}, {}'.format(camera_id, start_time, end_time))            
         end_time = parse(end_time) 
         output_json = []
         count = 0
@@ -76,6 +89,9 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                 good_times = [x for x in times if parse(x) < end_time]
                 output_json.extend(good_times)
                 break
+            
+        # Log end
+        self.logger.info('imagesRange query complete.')
 
         return {'total':len(output_json), 'times':output_json}
     
