@@ -8,6 +8,7 @@ functionality for convenience.
 from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, DownloadImagesMixin
 from heliosSDK.utilities import jsonTools
 from itertools import repeat
+import logging
 from multiprocessing.dummy import Pool as ThreadPool
 
 from dateutil.parser import parse
@@ -19,7 +20,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
     _CORE_API = 'cameras'
     
     def __init__(self):
-        pass
+        self.logger = logging.getLogger(__name__)
         
     def index(self, **kwargs):
         return super(Cameras, self).index(**kwargs)

@@ -6,6 +6,7 @@ functionality for convenience.
 @author: Michael A. Bayer
 '''
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin
+import logging
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
@@ -14,7 +15,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
     _CORE_API = 'alerts'
     
     def __init__(self):
-        pass
+        self.logger = logging.getLogger(__name__)
         
     def index(self, **kwargs):
         return super(Alerts, self).index(**kwargs)

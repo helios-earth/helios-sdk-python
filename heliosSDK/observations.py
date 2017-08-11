@@ -8,9 +8,10 @@ functionality for convenience.
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin
 from heliosSDK.utilities import jsonTools
 import json
+import logging
+from multiprocessing.dummy import Pool as ThreadPool
 import os
 import sys
-from multiprocessing.dummy import Pool as ThreadPool
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
@@ -19,7 +20,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     _CORE_API = 'observations'
         
     def __init__(self):
-        pass
+        self.logger = logging.getLogger(__name__)
         
     def index(self, **kwargs):
         return super(Observations, self).index(**kwargs)
