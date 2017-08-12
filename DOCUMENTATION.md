@@ -170,7 +170,6 @@ __Cameras.downloadImages(__ urls, out_dir=None, return_image_data=False __)__
     * [index()](#observationsindex)
     * [show()](#observationsshow)
 	* [preview()](#observationspreview)
-	* [__previews()__](#observationspreviews)
 	* [__downloadImages()__](#observationsdownloadimages)
   
 ### Observations.index
@@ -190,7 +189,7 @@ __Observations.index(__ **kwargs __)__
 
 Return the attributes for a single observation.
 
-__Observations.show(__ observation_id __)__
+__Observations.show(__ observation_ids __)__
 * Parameters
     * observation_id: *str*
         * Observation ID.
@@ -200,23 +199,13 @@ __Observations.show(__ observation_id __)__
 		
 ### Observations.preview
 
-Return a preview image for the observation. This will return the most recent image for the observation time period.
+Return preview images for observations. This will return the most recent image for the observation time period.
 
-__Observations.preview(__ observation_id __)__
+__Observations.preview(__ observation_ids __)__
 * Parameters
-	* observation_id: *str*
+	* observation_ids: *str* or *list*
 * Returns
-	* Image URL
-	
-### Observations.previews
-
-Return preview images for the observation. This will return the most recent image for the observation time period.
-
-__Observations.previews(__ observations_ids __)__
-* Parameters
-	* observation_ids: *list of str*
-* Returns
-	* Image URLs
+	* Image URL(s)
 
 ### Observations.downloadImages
 
@@ -243,12 +232,9 @@ __Observations.downloadImages(__ urls, out_dir=None, return_image_data=False __)
     * [create()](#collectionscreate)
     * __[images()](#collectionsimages)__
     * [showImage()](#collectionsshowimage)
-    * __[showImages()](#collectionsshowimages)__
     * __[downloadImages()](#collectionsdownloadimages)__
     * [addImage()](#collectionsaddimage)
-    * __[addImages()](#collectionsaddimages)__
     * [removeImage()](#collectionsremoveimage)
-    * __[removeImages()](#collectionsremoveimages)__
     * __[copy()](#collectionscopy)__
   
 ### Collections.index
@@ -312,35 +298,19 @@ __Collections.images(__ collection_id, camera=None, old_flag=False __)__
 	
 ### Collections.showImage
 
-Return a single image from a collection.
+Return image URLs from a collection.
 
-__Collections.showImage(__ collection_id, image_name __)__
+__Collections.showImage(__ collection_id, image_names __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
-    * image_name: *str*
-        * Image Name.
+    * image_names: *str* or *list*
+        * Image Name(s).
 * Reteurns
     * JSON: *dictionary*
         * 302 redirect to a signed URL where the image can be retrieved. The signed URL is valid for 15 minutes.
         * keys: "url"
-
-	
-### Collections.showImages
-
-Return a all images from a collection.
-
-__Collections.showImages(__ collection_id, image_names __)__
-* Parameters
-    * collection_id: *str*
-        * Collection ID.
-	* image_names: *list*
-		* Image names to search for the given collection_id.
-* Returns
-    * JSON: *dictionary*
-        * key: "url"
-		* 302 redirect to a signed URL where the camera image can be retrieved. The signed URL is valid for 15 minutes.
-	
+		
 ### Collections.downloadImages
 
 Download images from URLs.
@@ -358,58 +328,30 @@ __Collections.downloadImages(__ urls, out_dir=None, return_image_data=False __)_
 
 ### Collections.addImage
 
-Add a single image to a collection.
+Add a images to a collection.
 
-__Collections.addimage(__ collection_id, img_url __)__
+__Collections.addimage(__ collection_id, urls __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
-    * img_url: *str*
-	    *  Image url to be added to collection.
+    * urls: *str* or *list*
+	    *  Image url(s) to be added to collection.
 * Reteurns
     * JSON: *dictionary* 
-        * key: "ok"
-   
-### Collections.addImages
-
-Add multiple images to a collection.
-
-__Collections.addImages(__ collection_id, img_urls __)__
-* Parameters
-    * collection_id: *str*
-        * Collection ID.
-    * img_urls: *list*
-        * List of image URLs.
-* Returns:
-    * JSON: *list of dictionaries*
         * key: "ok"
 
 ### Collections.removeImage
 
 Remove a single image from a collection.
 
-__Collections.removeImage(__ collection_id, img_name __)__
+__Collections.removeImage(__ collection_id, names __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
-    * img_name: *str*
-        * A single image name.
+    * names: *str* or *list*
+        * Image name(s) to remove from the specified collection.
 * Returns
     * JSON: *dictionary*
-        * key: "ok"
-	
-### Collections.removeImages
-
-Remove multiple images from a collection.
-
-__Collections.removeImages(__ collection_id, img_names __)__
-* Parameters
-    * collection_id: *str*
-        * Collection ID.
-    * img_names: *list*
-        * List of image names.
-* Returns
-    * JSON: *list of dictionaries*
         * key: "ok"
 
 ### Collections.copy

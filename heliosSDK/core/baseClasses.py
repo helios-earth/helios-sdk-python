@@ -179,10 +179,10 @@ class ShowImageMixin(object):
         # Process urls.
         if num_threads > 4:
             POOL = ThreadPool(num_threads)
-            data = POOL.map(self.__showImagesWorker,
+            data = POOL.map(self.__showImageWorker,
                             zip(repeat(id_var), times_or_names, repeat(kwargs)))
         else:
-            data = list(map(self.__showImagesWorker,
+            data = list(map(self.__showImageWorker,
                             zip(repeat(id_var), times_or_names, repeat(kwargs))))
             
         # Remove errors, if they exist
@@ -195,7 +195,7 @@ class ShowImageMixin(object):
             
         return {'url' : url_data}
     
-    def __showImagesWorker(self, args):
+    def __showImageWorker(self, args):
         id_var, x, kwargs = args
         
         params_str = self._parseInputsForQuery(kwargs)
