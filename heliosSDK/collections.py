@@ -29,7 +29,10 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     def create(self, name, description, tags=None):
         if tags is None:
             tags = ''
-        
+            
+        # Log start
+        self.logger.info('Entering create(name={}, description={}, tags={}'.format(name, description, tags))            
+
         # need to strip out the Bearer to work with a POST for collections
         post_token = self._AUTH_TOKEN['value'].replace('Bearer ', '')
         
@@ -44,34 +47,38 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         header = {'name':'Content-Type',
                   'value':'application/x-www-form-urlencoded'}
         
-        urltmp = '{}/{}'.format(self._BASE_API_URL,
-                                self._CORE_API)
-        
-        # Log
-        self.logger.info('Creating collection: {}'.format(name))
+        post_url = '{}/{}'.format(self._BASE_API_URL,
+                                  self._CORE_API)
                 
-        resp = self._postRequest(urltmp,
+        resp = self._postRequest(post_url,
                                 headers=header,
                                 data=parms,
                                 verify=self._SSL_VERIFY)
+        
+        # Log errors
+        if not resp.ok:
+            self.logger.error('Error {}: {}'.format(resp.status_code, post_url))
+            return None
+        
         json_response = resp.json()
         
         # Log success
-        self.logger.info('Successfully created collection: {}'.format(name))
+        self.logger.info('Leaving create()'.format(json_response['collection_id']))
         
         return json_response
     
     def images(self, collection_id, camera=None, old_flag=False):
         max_limit = 200
-        mark_img = ''    
+        mark_img = ''
+        
+        # Log start
+        self.logger.info('Entering images(collection_id={}, camera={})'.format(collection_id, camera))
+        
         if camera is not None:
             md5_str = hashlib.md5(camera.encode('utf-8')).hexdigest()
             if not old_flag:
                 camera = md5_str[0:4] + '-' + camera
             mark_img = camera
-            
-        # Log start of query
-        self.logger.info('Starting images query: {},{}'.format(collection_id, camera))
         
         good_images = []
         while True:
@@ -97,36 +104,43 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         json_output = {'total':len(good_images),
                        'images':good_images}
         
+        # Log success
+        self.logger.info('Leaving images({} images found)'.format(len(good_images)))
+        
         return json_output
     
-    def showImage(self, collection_id, image_name):
-        return super(Collections, self).showImage(collection_id, image_name)
+    def showImage(self, collection_id, image_names):
+        return super(Collections, self).showImage(collection_id, image_names)
     
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         return super(Collections, self).downloadImages(urls, out_dir=out_dir, 
                                                        return_image_data=return_image_data) 
 
-    def addImage(self, collection_id, url_data):
-        if isinstance(url_data, str):
-            url_data = [url_data]
-        
+    def addImage(self, collection_id, urls):        
+        # Force list
+        if isinstance(urls, str):
+            urls = [urls]
+            
         # Log start
-        self.logger.info('Starting addImage queries for {} images in {}.'.format(len(url_data)), collection_id)
+        self.logger.info('Entering addImage(collection_id={}, N={})'.format(collection_id, len(urls)))            
         
-        # Check number of threads
-        num_threads = min(self.MAX_THREADS, len(url_data))
+        # Get number of threads
+        num_threads = min(self.MAX_THREADS, len(urls))
         
         # Process urls.
         if num_threads > 4:
             POOL = ThreadPool(num_threads)
             data = POOL.map(self.__addImagesWorker,
-                            zip(repeat(collection_id), url_data))
+                            zip(repeat(collection_id), urls))
         else:
             data = map(self.__addImagesWorker,
-                       zip(repeat(collection_id), url_data))
+                       zip(repeat(collection_id), urls))
+            
+        # Remove errors, if they exist
+        data = [x for x in data if x is not None]
         
         # Log success
-        self.logger.info('addImage queries complete. {} out of {} successful.'.format(len([x for x in data if x is not None]), len(url_data)))
+        self.logger.info('Leaving addImage({} out of {} successful)'.format(len(data), len(urls)))
         
         return data
     
@@ -156,27 +170,31 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         
         return resp.json()
     
-    def removeImage(self, collection_id, name_data):
-        if isinstance(name_data, str):
-            name_data = [name_data]
-            
-        # Log start
-        self.logger.info('Starting removeImage queries for {} images in {}.'.format(len(name_data)), collection_id)
+    def removeImage(self, collection_id, names):
+        # Force list
+        if isinstance(names, str):
+            names = [names]
 
-        # Check number of threads
-        num_threads = min(self.MAX_THREADS, len(name_data))
+        # Log start
+        self.logger.info('Entering removeImage(collection_id={}, N={})'.format(collection_id, len(names)))
+
+        # Get number of threads
+        num_threads = min(self.MAX_THREADS, len(names))
         
         # Process urls.
         if num_threads > 4:
             POOL = ThreadPool(num_threads)
             data = POOL.map(self.__addImagesWorker,
-                            zip(repeat(collection_id), name_data))
+                            zip(repeat(collection_id), names))
         else:
             data = map(self.__removeImagesWorker,
-                       zip(repeat(collection_id), name_data))
+                       zip(repeat(collection_id), names))
+            
+        # Remove errors, if they exist
+        data = [x for x in data if x is not None]
             
         # Log success
-        self.logger.info('removeImage queries complete. {} out of {} successful.'.format(len([x for x in data if x is not None]), len(name_data)))            
+        self.logger.info('Leaving removeImage({} out of {} successful)'.format(len(data), len(names)))            
         
         return data
 
@@ -197,7 +215,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         
         # Log errors
         if not resp.ok:
-            self.logger.error('Error {}: {}, {}'.format(resp.status_code, coll_id, img_name))
+            self.logger.error('Error {}: {}'.format(resp.status_code, query_str))
             return None
         
         # Log query
@@ -205,20 +223,20 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                 
         return resp.json()
     
-    def copy(self, collection_id, new_collection_name):
+    def copy(self, collection_id, new_name):
+        # Log start
+        self.logger.info('Entering copy(collection_id={}, new_name={}'.format(collection_id, new_name))
+        
         query_str = '{}/{}/{}'.format(self._BASE_API_URL,
                                       self._CORE_API,
                                       collection_id)
-        
-        # Log start
-        self.logger.info('Starting copy query for {} with new name {}'.format(collection_id, new_collection_name))
         
         resp = self._getRequest(query_str,
                                headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
                                verify=self._SSL_VERIFY) 
         json_response = resp.json()
         
-        output = self.create(new_collection_name, json_response['description'], json_response['tags'])
+        output = self.create(new_name, json_response['description'], json_response['tags'])
         new_id = output['collection_id']
         
         # Gather images that need to be copied.
@@ -230,6 +248,6 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         results2 = self.addImage(new_id, urls)
         
         # Log success
-        self.logger.info('Copying complete.'.format(new_id))
+        self.logger.info('Leaving copy(new_id={})'.format(new_id))
         
         return results2

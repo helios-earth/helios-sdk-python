@@ -29,14 +29,14 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
         return super(Cameras, self).show(camera_id)
     
     def images(self, camera_id, start_time, limit=500):
+        # Log entrance
+        self.logger.info('Entering images(id={}, start_time={})'.format(camera_id, start_time))
+        
         query_str = '{}/{}/{}/images?time={}&limit={}'.format(self._BASE_API_URL,
                                                               self._CORE_API,
                                                               camera_id,
                                                               start_time,
                                                               limit)
-        
-        # Log query
-        self.logger.info('Query begin: {}'.format(query_str))
         
         resp = self._getRequest(query_str,
                                headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
@@ -47,14 +47,15 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
             self.logger.error('Error {}: {}'.format(resp.status_code, query_str))
             resp.raise_for_status()
         
-        # log success
-        self.logger.info('Query complete: {}'.format(query_str))
+        # log exit
+        self.logger.info('Leaving images()')
         
         return resp.json()
 
     def imagesRange(self, camera_id, start_time, end_time, limit=500): 
-        # Log start
-        self.logger.info('Starting imagesRange query: {}, {}, {}'.format(camera_id, start_time, end_time))            
+        # Log entrance
+        self.logger.info('Entering imagesRange(id={}, start_time={}, end_time={})'.format(camera_id, start_time, end_time))
+                
         end_time = parse(end_time) 
         output_json = []
         count = 0
@@ -90,8 +91,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                 output_json.extend(good_times)
                 break
             
-        # Log end
-        self.logger.info('imagesRange query complete.')
+        # Log exit
+        self.logger.info('Leaving imagesRange()')
 
         return {'total':len(output_json), 'times':output_json}
     

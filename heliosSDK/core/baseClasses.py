@@ -43,6 +43,9 @@ class IndexMixin(object):
         max_skip = 4000
         limit = kwargs.get('limit', 100)
         skip = kwargs.get('skip', 0)
+        
+        # Log start
+        self.logger.info('Entering index(kwargs={})'.format(kwargs))
             
         # Establish all queries.
         params_str = self._parseInputsForQuery(kwargs)
@@ -104,6 +107,9 @@ class IndexMixin(object):
         # Put initial query back in list.
         results.insert(0, initial_resp_json)
         
+        # Log success
+        self.logger.info('Leaving index(N={})'.format(total))
+        
         return results
     
     def __indexWorker(self, args):
@@ -130,14 +136,14 @@ class IndexMixin(object):
 class ShowMixin(object):
     
     def show(self, id_var, **kwargs):
+        # Log query
+        self.logger.info('Entering show(id_var={}, kwargs={})'.format(id_var, kwargs))
+        
         params_str = self._parseInputsForQuery(kwargs)
         query_str = '{}/{}/{}?{}'.format(self._BASE_API_URL,
                                       self._CORE_API,
                                       id_var,
                                       params_str)
-        
-        # Log query
-        self.logger.info('Starting show query: {}'.format(query_str))
         
         resp = self._getRequest(query_str,
                       headers={self._AUTH_TOKEN['name']:self._AUTH_TOKEN['value']},
@@ -146,6 +152,7 @@ class ShowMixin(object):
         # Log errors
         if not resp.ok:
             self.logger.error('Error {}: {}'.format(resp.status_code, query_str))
+            return None
         
         # Raise exception if query was unsuccessful.
         resp.raise_for_status()
@@ -153,27 +160,36 @@ class ShowMixin(object):
         geo_json_feature = resp.json()
         
         # Log query success
-        self.logger.info('Completed show query: {}'.format(query_str))
+        self.logger.info('Leaving show()')
         
         return geo_json_feature        
         
 class ShowImageMixin(object):
     
-    def showImage(self, id_var, data, **kwargs):
-        if isinstance(data, str):
-            data = [data]
+    def showImage(self, id_var, times_or_names, **kwargs):
+        if isinstance(times_or_names, str):
+            times_or_names = [times_or_names]
             
-                # Check number of threads
-        num_threads = min(self.MAX_THREADS, len(data))
+        # Log entrance
+        self.logger.info('Entering showImage({} values)'.format(len(times_or_names)))
+            
+        # Get number of threads
+        num_threads = min(self.MAX_THREADS, len(times_or_names))
         
         # Process urls.
         if num_threads > 4:
             POOL = ThreadPool(num_threads)
             data = POOL.map(self.__showImagesWorker,
-                            zip(repeat(id_var), data, repeat(kwargs)))
+                            zip(repeat(id_var), times_or_names, repeat(kwargs)))
         else:
             data = list(map(self.__showImagesWorker,
-                            zip(repeat(id_var), data, repeat(kwargs))))
+                            zip(repeat(id_var), times_or_names, repeat(kwargs))))
+            
+        # Remove errors, if they exist
+        data = [x for x in data if x is not None]
+        
+        # Log success
+        self.logger.info('Leaving showImage({} out of {} successful)'.format(len(data), len(times_or_names)))        
             
         url_data = jsonTools.mergeJson(data, 'url')
             
@@ -227,15 +243,16 @@ class ShowImageMixin(object):
 class DownloadImagesMixin(object):
         
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
+        # Force list
         if isinstance(urls, str):
             urls = [urls]
+        
+        # Log start
+        self.logger.info('Entering downloadImages(N={}, out_dir={}'.format(len(urls), out_dir))
         
         if out_dir is not None:
             if not os.path.exists(out_dir):
                 os.mkdir(out_dir)
-                
-        # Log start
-        self.logger.info('Starting download queries for {} images.'.format(len(urls)))
         
         # Create thread pool
         num_threads = min(self.MAX_THREADS, len(urls))
@@ -244,8 +261,11 @@ class DownloadImagesMixin(object):
         data = POOL.map(self.__downloadWorker,
                         zip(urls, repeat(out_dir), repeat(return_image_data)))
         
+        # Remove errors, if the exist
+        data = [x for x in data if x is not None]
+        
         # Log success
-        self.logger.info('Download queries complete. {} out of {} successful.'.format(len([x for x in data if x is not None]), len(urls)))
+        self.logger.info('Leaving downloadImages({} out of {} successful)'.format(len(data), len(urls)))
             
         return data
     
