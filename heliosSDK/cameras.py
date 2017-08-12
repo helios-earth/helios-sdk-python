@@ -46,11 +46,13 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
         if not resp.ok:
             self.logger.error('Error {}: {}'.format(resp.status_code, query_str))
             resp.raise_for_status()
+            
+        json_resp = resp.json()
         
         # log exit
-        self.logger.info('Leaving images()')
+        self.logger.info('Leaving images(N={})'.format(json_resp['total']))
         
-        return resp.json()
+        return json_resp
 
     def imagesRange(self, camera_id, start_time, end_time, limit=500): 
         # Log entrance
@@ -92,7 +94,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                 break
             
         # Log exit
-        self.logger.info('Leaving imagesRange()')
+        self.logger.info('Leaving imagesRange(N={})'.format(len(output_json)))
 
         return {'total':len(output_json), 'times':output_json}
     
