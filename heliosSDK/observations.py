@@ -53,7 +53,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         
         urls = jsonTools.mergeJson(data, 'url')
         
-        return urls                                   
+        return {'url' : urls}                                  
     
     def __previewWorker(self, args):
         observation_id = args
