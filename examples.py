@@ -61,7 +61,7 @@ def testObservations(output_dir=''):
     observations_test_2 = OC.preview(temp_id)
     jsonTools.writeJson(observations_test_2['url'], os.path.join(output_dir, r'observations_preview.json'))
     
-    observations_test_3 = OC.downloadImages([observations_test_2['url']], out_dir=os.path.join(output_dir, r'Images_Observation'), return_image_data=True)
+    observations_test_3 = OC.downloadImages(observations_test_2['url'], out_dir=os.path.join(output_dir, r'Images_Observation'), return_image_data=True)
 
 def testCollections(output_dir=''):
     """
