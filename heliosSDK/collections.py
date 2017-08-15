@@ -13,7 +13,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 
 
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
-    MAX_THREADS = 20
+    MAX_THREADS = 64
     
     _CORE_API = 'collections'
     
