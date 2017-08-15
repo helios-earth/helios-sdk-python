@@ -36,7 +36,7 @@ if not os.path.exists(_config_file) or _config is None:
     
     _config['handlers'] = {}
     _config['handlers']['console'] = {'class': 'logging.StreamHandler',
-                                     'level': 'ERROR',
+                                     'level': 'WARNING',
                                      'formatter': 'simple',
                                      'stream': 'ext://sys.stdout'}
     _config['handlers']['info_file_handler'] = {'class': 'logging.handlers.RotatingFileHandler',
