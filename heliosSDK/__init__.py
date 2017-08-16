@@ -29,10 +29,11 @@ if not os.path.exists(_config_file) or _config is None:
     # Default logging configuration.    
     _log_file = os.path.join(os.path.expanduser('~'), 'heliosSDK.log')
     _config = {'version': 1,
-               'disable_existing_loggers': 1,
-               'formatters': {}}
+               'disable_existing_loggers': 1}
+    
+    _config['formatters'] = {}
     _config['formatters'] = {'simple': {'format': '%(asctime)s-%(levelname)s-%(module)s-%(name)s-%(funcName)s: %(message)s',
-                                      'datefmt': '%H:%M:%S'}}
+                                        'datefmt': '%H:%M:%S'}}
     
     _config['handlers'] = {}
     _config['handlers']['console'] = {'class': 'logging.StreamHandler',
@@ -43,11 +44,12 @@ if not os.path.exists(_config_file) or _config is None:
                                                'level': 'INFO',
                                                'formatter': 'simple',
                                                'filename': _log_file,
-                                               'maxBytes': 1 * 1024 * 1024,
+                                               'maxBytes': 10 * 1024 * 1024,
                                                'backupCount': 5,
                                                'encoding': 'utf8'}
+    
     _config['root'] = {'level': 'INFO',
-                      'handlers': ['console', 'info_file_handler']}
+                       'handlers': ['console', 'info_file_handler']}
     
     # Write default configuration to file
     try:
