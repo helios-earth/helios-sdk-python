@@ -46,4 +46,4 @@ Installation examples:
 `conda install requests retrying scipy`
 
 ## Documentation
-For detailed documentation refer to DOCUMENTATION.md.
+For detailed documentation refer to [DOCUMENTATION.md](https://github.com/harris-helios/helios-sdk-python/blob/master/DOCUMENTATION.md)
