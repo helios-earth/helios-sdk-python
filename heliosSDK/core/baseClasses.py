@@ -303,3 +303,5 @@ class DownloadImagesMixin(object):
             except:
                 self.logger.error('Error reading downloaded image: {}'.format(url))
                 return None
+        
+        return 1
