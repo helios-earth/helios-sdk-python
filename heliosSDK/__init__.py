@@ -14,7 +14,7 @@ from .collections import Collections
 from .observations import Observations
 
 
-__version__ = '0.1.3'
+__version__ = '1.0.0'
 
 # Attempt to read SDK logging config file
 _config_file = os.path.join(os.path.expanduser('~'), 'heliosSDK_logger_config.json')
