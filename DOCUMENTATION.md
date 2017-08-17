@@ -53,7 +53,6 @@ __Alerts.show(__ alert_id __)__
     * [images()](#camerasimages)
     * [__imagesRange()__](#camerasimagesrange)
     * [showImage()](#camerasshowimage)
-    * [__showImages()__](#camerasshowimages)
     * [__downloadImages()__](#camerasdownloadimages)
   
 ### Cameras.index
