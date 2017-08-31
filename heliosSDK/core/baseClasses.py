@@ -167,7 +167,8 @@ class ShowMixin(object):
 class ShowImageMixin(object):
     
     def showImage(self, id_var, times_or_names):
-        if isinstance(times_or_names, str):
+        # Force list
+        if not isinstance(times_or_names, list):
             times_or_names = [times_or_names]
             
         # Log entrance
@@ -196,14 +197,12 @@ class ShowImageMixin(object):
         return {'url' : url_data}
     
     def __showImageWorker(self, args):
-        id_var, x, kwargs = args
+        id_var, x = args
         
-        params_str = self._parseInputsForQuery(kwargs)
-        query_str = '{}/{}/{}/images/{}?{}'.format(self._BASE_API_URL,
+        query_str = '{}/{}/{}/images/{}'.format(self._BASE_API_URL,
                                                 self._CORE_API,
                                                 id_var,
-                                                x,
-                                                params_str)
+                                                x)
         
         # Log query
         self.logger.info('Starting showImage query: {}'.format(query_str))
@@ -244,7 +243,7 @@ class DownloadImagesMixin(object):
         
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         # Force list
-        if isinstance(urls, str):
+        if not isinstance(urls, list):
             urls = [urls]
         
         # Log start

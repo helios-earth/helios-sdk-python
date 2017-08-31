@@ -29,7 +29,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         return super(Observations, self).show(observation_id)
     
     def preview(self, observation_ids):
-        if isinstance(observation_ids, str):
+        if not isinstance(observation_ids, list):
             observation_ids = [observation_ids]
             
         # Log entrance
