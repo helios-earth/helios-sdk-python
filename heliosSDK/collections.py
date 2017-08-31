@@ -184,7 +184,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         # Process urls.
         if num_threads > 4:
             POOL = ThreadPool(num_threads)
-            data = POOL.map(self.__addImagesWorker,
+            data = POOL.map(self.__removeImagesWorker,
                             zip(repeat(collection_id), names))
         else:
             data = map(self.__removeImagesWorker,
