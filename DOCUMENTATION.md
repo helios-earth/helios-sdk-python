@@ -115,14 +115,12 @@ __Cameras.imagesRange(__ camera_id, start_time, end_time, limit=500 __)__
 
 Return image URLs from the media cache. The media cache contains all recent images archived by Helios, either for internal analytics or for end user recording purposes.
 
-__Cameras.showImage(__ camera_id, times, delta=900000 __)__
+__Cameras.showImage(__ camera_id, times __)__
 * Parameters
 	* camera_id: *str*
 		* Camera ID.
 	* times: *str* or *list*
 		* Times
-	* delta: *int*
-		* Max acceptable difference (in milliseconds) between the requested time and the image time. If a match is not found, a 404 status will be returned. If not specified, a default value of 900000 (i.e. 15 minutes) is assumed.
 * Reteurns
     * JSON: *dictionary*
         * key: "url"

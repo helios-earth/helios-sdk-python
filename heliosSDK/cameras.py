@@ -98,8 +98,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
 
         return {'total':len(output_json), 'times':output_json}
     
-    def showImage(self, camera_id, times, delta=900000):
-        return super(Cameras, self).showImage(camera_id, times, delta=delta)
+    def showImage(self, camera_id, times):
+        return super(Cameras, self).showImage(camera_id, times)
         
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         return super(Cameras, self).downloadImages(urls, out_dir=out_dir, return_image_data=return_image_data)

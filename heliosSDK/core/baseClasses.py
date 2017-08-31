@@ -166,7 +166,7 @@ class ShowMixin(object):
         
 class ShowImageMixin(object):
     
-    def showImage(self, id_var, times_or_names, **kwargs):
+    def showImage(self, id_var, times_or_names):
         if isinstance(times_or_names, str):
             times_or_names = [times_or_names]
             
@@ -180,10 +180,10 @@ class ShowImageMixin(object):
         if num_threads > 4:
             POOL = ThreadPool(num_threads)
             data = POOL.map(self.__showImageWorker,
-                            zip(repeat(id_var), times_or_names, repeat(kwargs)))
+                            zip(repeat(id_var), times_or_names))
         else:
             data = list(map(self.__showImageWorker,
-                            zip(repeat(id_var), times_or_names, repeat(kwargs))))
+                            zip(repeat(id_var), times_or_names)))
             
         # Remove errors, if they exist
         data = [x for x in data if x is not None]
