@@ -38,12 +38,13 @@ Your key pair can be found on the [profile page](https://helios.earth/explore/ac
 * requests
 * pillow
 * retrying
+* numpy
 
 Installation examples:
 
-`pip install requests retrying pillow`
+`pip install requests retrying pillow numpy`
 
-`conda install requests retrying pillow`
+`conda install requests retrying pillow numpy`
 
 ## Documentation
 For detailed documentation refer to [DOCUMENTATION.md](https://github.com/harris-helios/helios-sdk-python/blob/master/DOCUMENTATION.md)
