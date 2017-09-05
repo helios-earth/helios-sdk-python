@@ -13,7 +13,9 @@ from math import ceil
 from multiprocessing.dummy import Pool as ThreadPool
 import os
 
-import scipy.misc
+from PIL import Image
+
+import numpy as np
 
 
 class SDKCore(RequestManager):
@@ -274,6 +276,7 @@ class DownloadImagesMixin(object):
         # Log download query
         self.logger.info('Downloading {}'.format(url))
         
+        # Get image request
         resp = self._getRequest(url)
         
         # Log errors
@@ -281,26 +284,20 @@ class DownloadImagesMixin(object):
             self.logger.error('Error {}: {}'.format(resp.status_code, url))
             return None
         
-        # Log success
-        self.logger.info('Download successful: {}'.format(url))
+        # Read image from response
+        img = Image.open(BytesIO(resp.content))
         
         # Write image to file.
         if out_dir is not None:
             _, tail = os.path.split(url)
             out_file = os.path.join(out_dir, tail)
-            with open(out_file, 'wb') as f:
-                for chunk in resp:
-                    f.write(chunk)
+            img.save(out_file)
         
         # Read and return image data.              
         if return_image_data:
-            try:
-                self.logger.info('Reading image: {}'.format(url))
-                img_data = scipy.misc.imread(BytesIO(resp.content))
-                self.logger.info('Successfully read image: {}'.format(url))
-                return img_data
-            except:
-                self.logger.error('Error reading downloaded image: {}'.format(url))
-                return None
+            return np.array(img)
         
-        return 1
+        # Log success
+        self.logger.info('Download successful: {}'.format(url))
+        
+        return True

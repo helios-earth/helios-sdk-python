@@ -6,10 +6,7 @@ functionality for convenience.
 @author: Michael A. Bayer
 '''
 from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, DownloadImagesMixin
-from heliosSDK.utilities import jsonTools
-from itertools import repeat
 import logging
-from multiprocessing.dummy import Pool as ThreadPool
 
 from dateutil.parser import parse
 

@@ -113,7 +113,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return super(Collections, self).showImage(collection_id, image_names)
     
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        return super(Collections, self).downloadImages(urls, out_dir=out_dir, 
+        return super(Collections, self).downloadImages(urls, out_dir=out_dir,
                                                        return_image_data=return_image_data) 
 
     def addImage(self, collection_id, urls):        

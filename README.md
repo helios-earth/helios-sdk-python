@@ -36,14 +36,14 @@ Your key pair can be found on the [profile page](https://helios.earth/explore/ac
 ## Dependencies
 * Python 2 or 3
 * requests
-* scipy
+* pillow
 * retrying
 
 Installation examples:
 
-`pip install requests retrying scipy`
+`pip install requests retrying pillow`
 
-`conda install requests retrying scipy`
+`conda install requests retrying pillow`
 
 ## Documentation
 For detailed documentation refer to [DOCUMENTATION.md](https://github.com/harris-helios/helios-sdk-python/blob/master/DOCUMENTATION.md)
