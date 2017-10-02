@@ -55,7 +55,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
         # Log entrance
         self.logger.info('Entering imagesRange(id={}, start_time={}, end_time={})'.format(camera_id, start_time, end_time))
                 
-        end_time = parse(end_time) 
+        end_time = parse(end_time).utctimetuple()
         output_json = []
         count = 0
         while True:
@@ -70,8 +70,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
             if json_response['total'] == 0:
                 break
                 
-            first = parse(times[0])
-            last = parse(times[-1])
+            first = parse(times[0]).utctimetuple()
+            last = parse(times[-1]).utctimetuple()
             
             if first > end_time:
                 break
@@ -86,14 +86,14 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                 start_time = times[-1]
                 continue
             else:
-                good_times = [x for x in times if parse(x) < end_time]
+                good_times = [x for x in times if parse(x).utctimetuple() < end_time]
                 output_json.extend(good_times)
                 break
             
         # Log exit
         self.logger.info('Leaving imagesRange(N={})'.format(len(output_json)))
 
-        return {'total':len(output_json), 'times':output_json}
+        return {'total': len(output_json), 'times': output_json}
     
     def showImage(self, camera_id, times):
         return super(Cameras, self).showImage(camera_id, times)

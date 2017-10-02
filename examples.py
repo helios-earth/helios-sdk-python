@@ -23,7 +23,7 @@ def testAlerts(output_dir=''):
     
     alerts_test_1 = AC.show(example_id)
     jsonTools.writeJson(alerts_test_1, os.path.join(output_dir, r'alerts_show.json'))
-    
+
 def testCameras(output_dir=''):
     """
     Cameras Core API Testing
