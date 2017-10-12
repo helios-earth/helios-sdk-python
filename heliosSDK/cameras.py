@@ -12,7 +12,7 @@ from dateutil.parser import parse
 
 
 class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
-    MAX_THREADS = 20
+    MAX_THREADS = 32
     
     _CORE_API = 'cameras'
     

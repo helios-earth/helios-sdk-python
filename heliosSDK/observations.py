@@ -15,7 +15,7 @@ import sys
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
-    MAX_THREADS = 20
+    MAX_THREADS = 32
 
     _CORE_API = 'observations'
         

@@ -10,7 +10,7 @@ import logging
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
-    MAX_THREADS = 20
+    MAX_THREADS = 32
     
     _CORE_API = 'alerts'
     
