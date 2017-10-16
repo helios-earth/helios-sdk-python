@@ -1,8 +1,8 @@
 from heliosSDK.session.tokenManager import TokenManager
+
 AUTH_TOKEN, BASE_API_URL = TokenManager().startSession()
 
 import json
-import logging
 import logging.config
 import os
 
@@ -12,7 +12,6 @@ from .alerts import Alerts
 from .cameras import Cameras
 from .collections import Collections
 from .observations import Observations
-
 
 __version__ = '1.0.0'
 
@@ -28,29 +27,21 @@ if os.path.exists(_config_file):
 if not os.path.exists(_config_file) or _config is None:
     # Default logging configuration.    
     _log_file = os.path.join(os.path.expanduser('~'), 'heliosSDK.log')
-    _config = {'version': 1,
-               'disable_existing_loggers': 1}
-    
+    _config = {'version': 1, 'disable_existing_loggers': 1}
+
     _config['formatters'] = {}
-    _config['formatters'] = {'simple': {'format': '%(asctime)s-%(levelname)s-%(module)s-%(name)s-%(funcName)s: %(message)s',
-                                        'datefmt': '%H:%M:%S'}}
-    
+    _config['formatters']['simple'] = {
+        'format': '%(asctime)s-%(levelname)s-%(module)s-%(name)s-%(funcName)s: %(message)s', 'datefmt': '%H:%M:%S'}
+
     _config['handlers'] = {}
     _config['handlers']['console'] = {'class': 'logging.StreamHandler',
-                                     'level': 'WARNING',
-                                     'formatter': 'simple',
-                                     'stream': 'ext://sys.stdout'}
-    _config['handlers']['info_file_handler'] = {'class': 'logging.handlers.RotatingFileHandler',
-                                               'level': 'INFO',
-                                               'formatter': 'simple',
-                                               'filename': _log_file,
-                                               'maxBytes': 10 * 1024 * 1024,
-                                               'backupCount': 5,
-                                               'encoding': 'utf8'}
-    
+                                      'level': 'WARNING',
+                                      'formatter': 'simple',
+                                      'stream': 'ext://sys.stdout'}
+
     _config['root'] = {'level': 'INFO',
-                       'handlers': ['console', 'info_file_handler']}
-    
+                       'handlers': ['console']}
+
     # Write default configuration to file
     try:
         with open(_config_file, 'w') as f:
