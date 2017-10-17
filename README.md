@@ -6,11 +6,7 @@ Use the Helios APIs in Python.
 
 ## Authentication
 
-[Documentation](https://helios.earth/developers/api/authentication/)
-
-All Helios API methods require valid authentication and are protected using the OAuth 2.0 "client credentials" flow.  The general process for authenticating requests involves first requesting an access token using the developer API key pair, and then requesting protected data using the access token.  Contact the [Helios Sales Team](mailto:heliossales@harris.com) if you would like to obtain an API key.
-
-Your key pair can be found on the [profile page](https://helios.earth/explore/account).  You can locate this page by clicking the hamburger drop-down menu and selecting your profile.
+All Helios API methods require valid authentication and are protected using the OAuth 2.0 "client credentials" flow.  The general process for authenticating requests involves first requesting an access token using the developer API key pair, and then requesting protected data using the access token.  [Request access](https://www.harris.com/forms/sishelioscontactus) if you would like to obtain an API key.
 
 ### Using Environment Variables
 1. Add __"HELIOS\_KEY\_ID"__: "your ID key"
@@ -31,6 +27,8 @@ Your key pair can be found on the [profile page](https://helios.earth/explore/ac
 	```
 * __"HELIOS\_API\_URL"__ is optional.
 
+For more information refer to the authentication [documentation](https://helios.earth/developers/api/authentication/).
+
 ------------------
   
 ## Dependencies
@@ -46,5 +44,5 @@ Installation examples:
 
 `conda install requests retrying pillow numpy`
 
-## Documentation
-For detailed documentation refer to [DOCUMENTATION.md](https://github.com/harris-helios/helios-sdk-python/blob/master/DOCUMENTATION.md)
+## SDK Documentation
+For detailed SDK documentation refer to [DOCUMENTATION.md](https://github.com/harris-helios/helios-sdk-python/blob/master/DOCUMENTATION.md)
