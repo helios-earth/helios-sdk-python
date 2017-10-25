@@ -17,6 +17,7 @@ __version__ = '1.0.0'
 
 # Attempt to read SDK logging config file
 _config_file = os.path.join(os.path.expanduser('~'), 'heliosSDK_logger_config.json')
+_config = None
 if os.path.exists(_config_file):
     try:
         with open(_config_file, 'r') as f:
@@ -24,7 +25,7 @@ if os.path.exists(_config_file):
     except ValueError:
         _config = None
 
-if not os.path.exists(_config_file) or _config is None:
+if _config is None:
     # Default logging configuration.    
     _log_file = os.path.join(os.path.expanduser('~'), 'heliosSDK.log')
     _config = {'version': 1, 'disable_existing_loggers': 1}
