@@ -37,12 +37,13 @@ For more information refer to the authentication [documentation](https://helios.
 * pillow
 * retrying
 * numpy
+* python-dateutil
 
 Installation examples:
 
-`pip install requests retrying pillow numpy`
+`pip install requests retrying pillow numpy python-dateutil`
 
-`conda install requests retrying pillow numpy`
+`conda install requests retrying pillow numpy python-dateutil`
 
 ## SDK Documentation
 For detailed SDK documentation refer to [DOCUMENTATION.md](https://github.com/harris-helios/helios-sdk-python/blob/master/DOCUMENTATION.md)
