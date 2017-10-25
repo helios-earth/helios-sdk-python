@@ -7,12 +7,11 @@ from retrying import retry
 
 
 class RequestManager():
-    
     MAX_RETRIES = 5
-    
+
     def __init__(self):
         pass
-    
+
     @staticmethod
     @retry(wait_random_min=500,
            wait_random_max=1000,
@@ -23,12 +22,12 @@ class RequestManager():
             resp = r.get(query, **kwargs)
             resp.raise_for_status()
         finally:
-            return resp 
-    
+            return resp
+
     @staticmethod
     @retry(wait_random_min=500,
            wait_random_max=1000,
-           stop_max_attempt_number=MAX_RETRIES)    
+           stop_max_attempt_number=MAX_RETRIES)
     def _postRequest(query, **kwargs):
         query = query.replace(' ', '+')
         try:
@@ -36,11 +35,11 @@ class RequestManager():
             resp.raise_for_status()
         finally:
             return resp
-    
+
     @staticmethod
     @retry(wait_random_min=500,
            wait_random_max=1000,
-           stop_max_attempt_number=MAX_RETRIES)    
+           stop_max_attempt_number=MAX_RETRIES)
     def _headRequest(query, **kwargs):
         query = query.replace(' ', '+')
         try:
@@ -52,7 +51,7 @@ class RequestManager():
     @staticmethod
     @retry(wait_random_min=500,
            wait_random_max=1000,
-           stop_max_attempt_number=MAX_RETRIES)    
+           stop_max_attempt_number=MAX_RETRIES)
     def _deleteRequest(query, **kwargs):
         query = query.replace(' ', '+')
         try:
