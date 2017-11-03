@@ -29,10 +29,16 @@ class SDKCore(RequestManager):
     _AUTH_TOKEN = AUTH_TOKEN
 
     def _parseInputsForQuery(self, input_dict):
-        query_str = ''
+        # Check for unique case: sensors
+        if 'sensors' in input_dict.keys():
+            query_str = input_dict.pop('sensors') + '&'
+        else:
+            query_str = ''
+
+        # Parse input_dict into a str
         for key in input_dict.keys():
             if isinstance(input_dict[key], (list, tuple)):
-                query_str += str(key) + ','.join([str(x) for x in input_dict[key]]) + '&'
+                query_str += str(key) + '=' + ','.join([str(x) for x in input_dict[key]]) + '&'
             else:
                 query_str += str(key) + '=' + str(input_dict[key]) + '&'
         query_str = query_str[:-1]
