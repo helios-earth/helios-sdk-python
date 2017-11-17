@@ -102,7 +102,7 @@ def main():
     args = parser.parse_args()
     
     print('Alerts testing...')
-    #testAlerts(args.o)
+    testAlerts(args.o)
     print('Cameras testing...')
     testCameras(args.o)
     print('Observations testing...')
