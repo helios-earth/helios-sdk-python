@@ -32,14 +32,15 @@ def testCameras(output_dir=''):
     
     cameras_test_0 = CaC.index(aggs='city', state='New York')
     jsonTools.writeJson(cameras_test_0, os.path.join(output_dir, r'cameras_index.json'))
+    cam_id = cameras_test_0[0]['features'][0]['id']
        
-    cameras_test_1 = CaC.show('TL-403389')
+    cameras_test_1 = CaC.show(cam_id)
     jsonTools.writeJson(cameras_test_1, os.path.join(output_dir, r'cameras_show.json'))
        
-    cameras_test_2 = CaC.imagesRange('TL-6140', '2017-01-02T15:00:00.000Z', '2017-01-02T16:00:00.000Z')
+    cameras_test_2 = CaC.images(cam_id, '2017-01-02T15:00:00.000Z', limit=10)
     jsonTools.writeJson(cameras_test_2, os.path.join(output_dir, r'cameras_images.json'))
            
-    cameras_test_3 = CaC.showImage('TL-6140', cameras_test_2['times'])
+    cameras_test_3 = CaC.showImage(cam_id, cameras_test_2['times'])
     jsonTools.writeJson(cameras_test_3, os.path.join(output_dir, r'cameras_showImages.json'))
     
     cameras_test_4 = CaC.downloadImages(cameras_test_3['url'], out_dir=os.path.join(output_dir, r'Images'), return_image_data=True)
@@ -101,7 +102,7 @@ def main():
     args = parser.parse_args()
     
     print('Alerts testing...')
-    testAlerts(args.o)
+    #testAlerts(args.o)
     print('Cameras testing...')
     testCameras(args.o)
     print('Observations testing...')
