@@ -3,19 +3,19 @@ Request manager for all the various components of the Helios SDK
 @author: Michael A. Bayer
 '''
 import requests
-from heliosSDK import AUTH_TOKEN, BASE_API_URL
+from heliosSDK import AUTH_TOKEN
 
 
-class RequestManager:
+class RequestManager(object):
     MAX_RETRIES = 5
     SSL_VERIFY = True
 
-    def __init__(self, pool_connections=1):
+    def __init__(self, pool_maxsize=32):
         self.session = requests.Session()
         self.session.headers = {AUTH_TOKEN['name']: AUTH_TOKEN['value']}
         self.session.verify = self.SSL_VERIFY
-        self.session.mount(BASE_API_URL, requests.adapters.HTTPAdapter(pool_connections=pool_connections,
-                                                                       max_retries=self.MAX_RETRIES))
+        self.session.mount('https://', requests.adapters.HTTPAdapter(pool_maxsize=pool_maxsize,
+                                                                     max_retries=self.MAX_RETRIES))
 
     def __del__(self):
         self.session.close()

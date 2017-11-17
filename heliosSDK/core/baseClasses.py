@@ -24,8 +24,11 @@ class SDKCore(RequestManager):
     Core class for Python interface to Helios Core APIs.
     This class must be inherited by any additional Core API classes.
     """
-
+    MAX_THREADS = 32
     _BASE_API_URL = BASE_API_URL
+
+    def __init__(self):
+        super(SDKCore, self).__init__(pool_maxsize=self.MAX_THREADS)
 
     def _parseInputsForQuery(self, input_dict):
         # Check for unique case: sensors

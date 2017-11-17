@@ -13,8 +13,6 @@ from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, Downl
 
 
 class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
-    MAX_THREADS = 32
-
     _CORE_API = 'cameras'
 
     def __init__(self):

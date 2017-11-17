@@ -14,8 +14,6 @@ from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, Downl
 
 
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
-    MAX_THREADS = 64
-
     _CORE_API = 'collections'
 
     def __init__(self):

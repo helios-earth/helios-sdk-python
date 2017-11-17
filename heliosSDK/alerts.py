@@ -11,8 +11,6 @@ from heliosSDK.core import SDKCore, IndexMixin, ShowMixin
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
-    MAX_THREADS = 32
-
     _CORE_API = 'alerts'
 
     def __init__(self):

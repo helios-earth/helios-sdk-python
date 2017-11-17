@@ -16,8 +16,6 @@ from heliosSDK.utilities import jsonTools
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
-    MAX_THREADS = 32
-
     _CORE_API = 'observations'
 
     def __init__(self):
