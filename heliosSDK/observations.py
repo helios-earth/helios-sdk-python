@@ -16,7 +16,7 @@ from heliosSDK.utilities import jsonTools
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
-    _CORE_API = 'observations'
+    CORE_API = 'observations'
 
     def __init__(self):
         super(Observations, self).__init__()
@@ -58,8 +58,8 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     def __previewWorker(self, args):
         observation_id = args
 
-        query_str = '{}/{}/{}/preview'.format(self._BASE_API_URL,
-                                              self._CORE_API,
+        query_str = '{}/{}/{}/preview'.format(self.BASE_API_URL,
+                                              self.CORE_API,
                                               observation_id)
 
         # Log query

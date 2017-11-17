@@ -14,7 +14,7 @@ from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, Downl
 
 
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
-    _CORE_API = 'collections'
+    CORE_API = 'collections'
 
     def __init__(self):
         super(Collections, self).__init__()
@@ -47,8 +47,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
 
-        post_url = '{}/{}'.format(self._BASE_API_URL,
-                                  self._CORE_API)
+        post_url = '{}/{}'.format(self.BASE_API_URL,
+                                  self.CORE_API)
 
         resp = self._postRequest(post_url,
                                  headers=header,
@@ -152,7 +152,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         # Compose post request
         parms = {'s3_src': img_url, 'access_token': post_token}
         header = {'name': 'Content-Type', 'value': 'application/x-www-form-urlencoded'}
-        post_url = '{}/collections/{}/images'.format(self._BASE_API_URL, coll_id)
+        post_url = '{}/collections/{}/images'.format(self.BASE_API_URL, coll_id)
 
         # Log query
         self.logger.info('Query began: {}'.format(post_url))
@@ -200,8 +200,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     def __removeImagesWorker(self, args):
         coll_id, img_name = args
 
-        query_str = '{}/{}/{}/images/{}'.format(self._BASE_API_URL,
-                                                self._CORE_API,
+        query_str = '{}/{}/{}/images/{}'.format(self.BASE_API_URL,
+                                                self.CORE_API,
                                                 coll_id,
                                                 img_name)
 
@@ -224,8 +224,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         # Log start
         self.logger.info('Entering copy(collection_id={}, new_name={}'.format(collection_id, new_name))
 
-        query_str = '{}/{}/{}'.format(self._BASE_API_URL,
-                                      self._CORE_API,
+        query_str = '{}/{}/{}'.format(self.BASE_API_URL,
+                                      self.CORE_API,
                                       collection_id)
 
         resp = self._getRequest(query_str)

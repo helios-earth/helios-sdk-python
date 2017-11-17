@@ -25,7 +25,7 @@ class SDKCore(RequestManager):
     This class must be inherited by any additional Core API classes.
     """
     MAX_THREADS = 32
-    _BASE_API_URL = BASE_API_URL
+    BASE_API_URL = BASE_API_URL
 
     def __init__(self):
         super(SDKCore, self).__init__(pool_maxsize=self.MAX_THREADS)
@@ -66,8 +66,8 @@ class IndexMixin(object):
             else:
                 temp_limit = limit
 
-            query_str = '{}/{}?{}&limit={}&skip={}'.format(self._BASE_API_URL,
-                                                           self._CORE_API,
+            query_str = '{}/{}?{}&limit={}&skip={}'.format(self.BASE_API_URL,
+                                                           self.CORE_API,
                                                            params_str,
                                                            temp_limit,
                                                            i)
@@ -145,8 +145,8 @@ class ShowMixin(object):
         self.logger.info('Entering show(id_var={}, kwargs={})'.format(id_var, kwargs))
 
         params_str = self._parseInputsForQuery(kwargs)
-        query_str = '{}/{}/{}?{}'.format(self._BASE_API_URL,
-                                         self._CORE_API,
+        query_str = '{}/{}/{}?{}'.format(self.BASE_API_URL,
+                                         self.CORE_API,
                                          id_var,
                                          params_str)
 
@@ -202,8 +202,8 @@ class ShowImageMixin(object):
     def __showImageWorker(self, args):
         id_var, x = args
 
-        query_str = '{}/{}/{}/images/{}'.format(self._BASE_API_URL,
-                                                self._CORE_API,
+        query_str = '{}/{}/{}/images/{}'.format(self.BASE_API_URL,
+                                                self.CORE_API,
                                                 id_var,
                                                 x)
 

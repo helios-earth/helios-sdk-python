@@ -13,7 +13,7 @@ from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, Downl
 
 
 class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
-    _CORE_API = 'cameras'
+    CORE_API = 'cameras'
 
     def __init__(self):
         super(Cameras, self).__init__()
@@ -29,8 +29,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
         # Log entrance
         self.logger.info('Entering images(id={}, start_time={})'.format(camera_id, start_time))
 
-        query_str = '{}/{}/{}/images?time={}&limit={}'.format(self._BASE_API_URL,
-                                                              self._CORE_API,
+        query_str = '{}/{}/{}/images?time={}&limit={}'.format(self.BASE_API_URL,
+                                                              self.CORE_API,
                                                               camera_id,
                                                               start_time,
                                                               limit)

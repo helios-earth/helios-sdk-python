@@ -11,7 +11,7 @@ from heliosSDK.core import SDKCore, IndexMixin, ShowMixin
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
-    _CORE_API = 'alerts'
+    CORE_API = 'alerts'
 
     def __init__(self):
         super(Alerts, self).__init__()
