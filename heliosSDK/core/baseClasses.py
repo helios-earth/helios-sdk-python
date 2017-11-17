@@ -11,9 +11,10 @@ from math import ceil
 from multiprocessing.dummy import Pool as ThreadPool
 
 import numpy as np
+import requests
 from PIL import Image
 
-from heliosSDK import AUTH_TOKEN, BASE_API_URL
+from heliosSDK import BASE_API_URL
 from heliosSDK.core import RequestManager
 from heliosSDK.utilities import jsonTools
 
@@ -25,8 +26,6 @@ class SDKCore(RequestManager):
     """
 
     _BASE_API_URL = BASE_API_URL
-    _SSL_VERIFY = True
-    _AUTH_TOKEN = AUTH_TOKEN
 
     def _parseInputsForQuery(self, input_dict):
         # Check for unique case: sensors
@@ -73,9 +72,7 @@ class IndexMixin(object):
             queries.append(query_str)
 
         # Do first query to find total number of results to expect.
-        initial_resp = self._getRequest(queries.pop(0),
-                                        headers={self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']},
-                                        verify=self._SSL_VERIFY)
+        initial_resp = self._getRequest(queries.pop(0))
 
         initial_resp_json = initial_resp.json()
 
@@ -126,9 +123,7 @@ class IndexMixin(object):
         # Log query
         self.logger.info('Starting index query: {}'.format(query_str))
 
-        resp = self._getRequest(query_str,
-                                headers={self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']},
-                                verify=self._SSL_VERIFY)
+        resp = self._getRequest(query_str)
 
         # Log errors
         if not resp.ok:
@@ -152,9 +147,7 @@ class ShowMixin(object):
                                          id_var,
                                          params_str)
 
-        resp = self._getRequest(query_str,
-                                headers={self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']},
-                                verify=self._SSL_VERIFY)
+        resp = self._getRequest(query_str)
 
         # Log errors
         if not resp.ok:
@@ -214,9 +207,7 @@ class ShowImageMixin(object):
         # Log query
         self.logger.info('Starting showImage query: {}'.format(query_str))
 
-        resp = self._getRequest(query_str,
-                                headers={self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']},
-                                verify=self._SSL_VERIFY)
+        resp = self._getRequest(query_str)
 
         # Log errors
         if not resp.ok:
@@ -225,11 +216,12 @@ class ShowImageMixin(object):
 
         redirect_url = resp.url[0:resp.url.index('?')]
 
-        resp2 = self._headRequest(redirect_url)
+        # Revert to standard requests package for this.
+        resp2 = requests.head(redirect_url)
 
         # Log errors
         if not resp2.ok:
-            self.logger.error('Error {}: {}'.format(resp2.status_code, query_str))
+            self.logger.error('Error {}: {}'.format(resp2.status_code, redirect_url))
             return None
 
         # Check header for dud statuses. 
@@ -281,8 +273,8 @@ class DownloadImagesMixin(object):
         # Log download query
         self.logger.info('Downloading {}'.format(url))
 
-        # Get image request
-        resp = self._getRequest(url)
+        # Revert to standard requests package for this.
+        resp = requests.get(url)
 
         # Log errors
         if not resp.ok:

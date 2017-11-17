@@ -18,6 +18,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
     _CORE_API = 'cameras'
 
     def __init__(self):
+        super(Cameras, self).__init__()
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -36,9 +37,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                                                               start_time,
                                                               limit)
 
-        resp = self._getRequest(query_str,
-                                headers={self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']},
-                                verify=self._SSL_VERIFY)
+        resp = self._getRequest(query_str)
 
         # Log error and raise exception.
         if not resp.ok:

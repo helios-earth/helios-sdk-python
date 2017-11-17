@@ -16,6 +16,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
     _CORE_API = 'alerts'
 
     def __init__(self):
+        super(Alerts, self).__init__()
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):

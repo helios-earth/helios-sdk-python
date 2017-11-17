@@ -2,60 +2,52 @@
 Request manager for all the various components of the Helios SDK
 @author: Michael A. Bayer
 '''
-import requests as r
-from retrying import retry
+import requests
+from heliosSDK import AUTH_TOKEN, BASE_API_URL
 
 
-class RequestManager():
+class RequestManager:
     MAX_RETRIES = 5
+    SSL_VERIFY = True
 
-    def __init__(self):
-        pass
+    def __init__(self, pool_connections=1):
+        self.session = requests.Session()
+        self.session.headers = {AUTH_TOKEN['name']: AUTH_TOKEN['value']}
+        self.session.verify = self.SSL_VERIFY
+        self.session.mount(BASE_API_URL, requests.adapters.HTTPAdapter(pool_connections=pool_connections,
+                                                                       max_retries=self.MAX_RETRIES))
 
-    @staticmethod
-    @retry(wait_random_min=500,
-           wait_random_max=1000,
-           stop_max_attempt_number=MAX_RETRIES)
-    def _getRequest(query, **kwargs):
+    def __del__(self):
+        self.session.close()
+
+    def _getRequest(self, query, **kwargs):
         query = query.replace(' ', '+')
         try:
-            resp = r.get(query, **kwargs)
+            resp = self.session.get(query, **kwargs)
             resp.raise_for_status()
         finally:
             return resp
 
-    @staticmethod
-    @retry(wait_random_min=500,
-           wait_random_max=1000,
-           stop_max_attempt_number=MAX_RETRIES)
-    def _postRequest(query, **kwargs):
+    def _postRequest(self, query, **kwargs):
         query = query.replace(' ', '+')
         try:
-            resp = r.post(query, **kwargs)
+            resp = self.session.post(query, **kwargs)
             resp.raise_for_status()
         finally:
             return resp
 
-    @staticmethod
-    @retry(wait_random_min=500,
-           wait_random_max=1000,
-           stop_max_attempt_number=MAX_RETRIES)
-    def _headRequest(query, **kwargs):
+    def _headRequest(self, query, **kwargs):
         query = query.replace(' ', '+')
         try:
-            resp = r.head(query, **kwargs)
+            resp = self.session.head(query, **kwargs)
             resp.raise_for_status()
         finally:
             return resp
 
-    @staticmethod
-    @retry(wait_random_min=500,
-           wait_random_max=1000,
-           stop_max_attempt_number=MAX_RETRIES)
-    def _deleteRequest(query, **kwargs):
+    def _deleteRequest(self, query, **kwargs):
         query = query.replace(' ', '+')
         try:
-            resp = r.delete(query, **kwargs)
+            resp = self.session.delete(query, **kwargs)
             resp.raise_for_status()
         finally:
             return resp

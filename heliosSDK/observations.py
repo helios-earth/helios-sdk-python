@@ -21,6 +21,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     _CORE_API = 'observations'
 
     def __init__(self):
+        super(Observations, self).__init__()
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -66,9 +67,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         # Log query
         self.logger.info('Query began: {}'.format(query_str))
 
-        resp = self._getRequest(query_str,
-                                headers={self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']},
-                                verify=self._SSL_VERIFY)
+        resp = self._getRequest(query_str)
 
         # Log error and raise exception.
         if not resp.ok:

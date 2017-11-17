@@ -19,6 +19,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     _CORE_API = 'collections'
 
     def __init__(self):
+        super(Collections, self).__init__()
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -53,8 +54,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         resp = self._postRequest(post_url,
                                  headers=header,
-                                 data=parms,
-                                 verify=self._SSL_VERIFY)
+                                 data=parms)
 
         # Log errors
         if not resp.ok:
@@ -159,7 +159,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         # Log query
         self.logger.info('Query began: {}'.format(post_url))
 
-        resp = self._postRequest(post_url, headers=header, data=parms, verify=self._SSL_VERIFY)
+        resp = self._postRequest(post_url, headers=header, data=parms)
 
         # Log errors
         if not resp.ok:
@@ -210,9 +210,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         # Log query
         self.logger.info('Query begin: {}'.format(query_str))
 
-        resp = self._deleteRequest(query_str,
-                                   headers={self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']},
-                                   verify=self._SSL_VERIFY)
+        resp = self._deleteRequest(query_str)
 
         # Log errors
         if not resp.ok:
@@ -232,9 +230,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                       self._CORE_API,
                                       collection_id)
 
-        resp = self._getRequest(query_str,
-                                headers={self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']},
-                                verify=self._SSL_VERIFY)
+        resp = self._getRequest(query_str)
         json_response = resp.json()
 
         output = self.create(new_name, json_response['description'], json_response['tags'])
