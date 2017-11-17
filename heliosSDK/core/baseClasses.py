@@ -78,9 +78,10 @@ class IndexMixin(object):
                                         verify=self._SSL_VERIFY)
 
         initial_resp_json = initial_resp.json()
+
         try:
             total = initial_resp_json['properties']['total']
-        except:
+        except KeyError:
             total = initial_resp_json['total']
 
         # Warn the user when truncation occurs. (max_skip is hit)
@@ -91,7 +92,7 @@ class IndexMixin(object):
         # Get number of results in initial query.
         try:
             n = len(initial_resp_json['features'])
-        except:
+        except KeyError:
             n = len(initial_resp_json['results'])
 
         # If only one query was necessary, return immediately.
