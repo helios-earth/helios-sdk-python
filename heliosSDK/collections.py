@@ -10,14 +10,15 @@ import logging
 from itertools import repeat
 from multiprocessing.dummy import Pool as ThreadPool
 
-from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, DownloadImagesMixin
+from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, DownloadImagesMixin, RequestManager
 
 
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
     CORE_API = 'collections'
+    MAX_THREADS = 32
 
     def __init__(self):
-        super(Collections, self).__init__()
+        self.requestManager = RequestManager(pool_maxsize=self.MAX_THREADS)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -50,9 +51,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         post_url = '{}/{}'.format(self.BASE_API_URL,
                                   self.CORE_API)
 
-        resp = self._postRequest(post_url,
-                                 headers=header,
-                                 data=parms)
+        resp = self.requestManager.post(post_url,
+                                        headers=header,
+                                        data=parms)
 
         # Log errors
         if not resp.ok:
@@ -157,7 +158,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         # Log query
         self.logger.info('Query began: {}'.format(post_url))
 
-        resp = self._postRequest(post_url, headers=header, data=parms)
+        resp = self.requestManager.post(post_url,
+                                        headers=header,
+                                        data=parms)
 
         # Log errors
         if not resp.ok:
@@ -208,7 +211,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         # Log query
         self.logger.info('Query begin: {}'.format(query_str))
 
-        resp = self._deleteRequest(query_str)
+        resp = self.requestManager.delete(query_str)
 
         # Log errors
         if not resp.ok:
@@ -228,7 +231,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                       self.CORE_API,
                                       collection_id)
 
-        resp = self._getRequest(query_str)
+        resp = self.requestManager.get(query_str)
         json_response = resp.json()
 
         output = self.create(new_name, json_response['description'], json_response['tags'])

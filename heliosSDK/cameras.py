@@ -9,14 +9,15 @@ import logging
 
 from dateutil.parser import parse
 
-from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, DownloadImagesMixin
+from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, DownloadImagesMixin, RequestManager
 
 
 class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
     CORE_API = 'cameras'
+    MAX_THREADS = 32
 
     def __init__(self):
-        super(Cameras, self).__init__()
+        self.requestManager = RequestManager(pool_maxsize=self.MAX_THREADS)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -35,7 +36,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                                                               start_time,
                                                               limit)
 
-        resp = self._getRequest(query_str)
+        resp = self.requestManager.get(query_str)
 
         # Log error and raise exception.
         if not resp.ok:

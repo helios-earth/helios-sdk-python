@@ -19,16 +19,12 @@ from heliosSDK.core import RequestManager
 from heliosSDK.utilities import jsonTools
 
 
-class SDKCore(RequestManager):
+class SDKCore(object):
     """
     Core class for Python interface to Helios Core APIs.
     This class must be inherited by any additional Core API classes.
     """
-    MAX_THREADS = 32
     BASE_API_URL = BASE_API_URL
-
-    def __init__(self):
-        super(SDKCore, self).__init__(pool_maxsize=self.MAX_THREADS)
 
     def _parseInputsForQuery(self, input_dict):
         # Check for unique case: sensors
@@ -75,7 +71,7 @@ class IndexMixin(object):
             queries.append(query_str)
 
         # Do first query to find total number of results to expect.
-        initial_resp = self._getRequest(queries.pop(0))
+        initial_resp = self.requestManager.get(queries.pop(0))
 
         initial_resp_json = initial_resp.json()
 
@@ -126,7 +122,7 @@ class IndexMixin(object):
         # Log query
         self.logger.info('Starting index query: {}'.format(query_str))
 
-        resp = self._getRequest(query_str)
+        resp = self.requestManager.get(query_str)
 
         # Log errors
         if not resp.ok:
@@ -150,7 +146,7 @@ class ShowMixin(object):
                                          id_var,
                                          params_str)
 
-        resp = self._getRequest(query_str)
+        resp = self.requestManager.get(query_str)
 
         # Log errors
         if not resp.ok:
@@ -210,7 +206,7 @@ class ShowImageMixin(object):
         # Log query
         self.logger.info('Starting showImage query: {}'.format(query_str))
 
-        resp = self._getRequest(query_str)
+        resp = self.requestManager.get(query_str)
 
         # Log errors
         if not resp.ok:

@@ -11,15 +11,16 @@ import os
 import sys
 from multiprocessing.dummy import Pool as ThreadPool
 
-from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin
+from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin, RequestManager
 from heliosSDK.utilities import jsonTools
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     CORE_API = 'observations'
+    MAX_THREADS = 32
 
     def __init__(self):
-        super(Observations, self).__init__()
+        self.requestManager = RequestManager(pool_maxsize=self.MAX_THREADS)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -65,7 +66,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         # Log query
         self.logger.info('Query began: {}'.format(query_str))
 
-        resp = self._getRequest(query_str)
+        resp = self.requestManager.get(query_str)
 
         # Log error and raise exception.
         if not resp.ok:
@@ -74,8 +75,8 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
 
         redirect_url = resp.url[0:resp.url.index('?')]
 
-        # Check header for dud statuses. 
-        head_check_resp = self._headRequest(redirect_url)
+        # Check header for dud statuses.
+        head_check_resp = self.requestManager.head(redirect_url)
         if 'x-amz-meta-helios' in head_check_resp.headers:
             hdrs = json.loads(head_check_resp.headers['x-amz-meta-helios'])
 

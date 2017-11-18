@@ -20,7 +20,7 @@ class RequestManager(object):
     def __del__(self):
         self.session.close()
 
-    def _getRequest(self, query, **kwargs):
+    def get(self, query, **kwargs):
         query = query.replace(' ', '+')
         try:
             resp = self.session.get(query, **kwargs)
@@ -28,7 +28,7 @@ class RequestManager(object):
         finally:
             return resp
 
-    def _postRequest(self, query, **kwargs):
+    def post(self, query, **kwargs):
         query = query.replace(' ', '+')
         try:
             resp = self.session.post(query, **kwargs)
@@ -36,7 +36,7 @@ class RequestManager(object):
         finally:
             return resp
 
-    def _headRequest(self, query, **kwargs):
+    def head(self, query, **kwargs):
         query = query.replace(' ', '+')
         try:
             resp = self.session.head(query, **kwargs)
@@ -44,7 +44,7 @@ class RequestManager(object):
         finally:
             return resp
 
-    def _deleteRequest(self, query, **kwargs):
+    def delete(self, query, **kwargs):
         query = query.replace(' ', '+')
         try:
             resp = self.session.delete(query, **kwargs)
