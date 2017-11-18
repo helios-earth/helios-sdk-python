@@ -26,6 +26,7 @@ class RequestManager(object):
 
     def __del__(self):
         self.apiSession.close()
+        self.session.close()
 
     def get(self, query, use_api_cred=True, **kwargs):
         query = query.replace(' ', '+')
