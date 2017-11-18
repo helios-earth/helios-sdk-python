@@ -15,7 +15,6 @@ import requests
 from PIL import Image
 
 from heliosSDK import BASE_API_URL
-from heliosSDK.core import RequestManager
 from heliosSDK.utilities import jsonTools
 
 
