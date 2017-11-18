@@ -11,7 +11,6 @@ from math import ceil
 from multiprocessing.dummy import Pool as ThreadPool
 
 import numpy as np
-import requests
 from PIL import Image
 
 from heliosSDK import BASE_API_URL
@@ -215,14 +214,14 @@ class ShowImageMixin(object):
         redirect_url = resp.url[0:resp.url.index('?')]
 
         # Revert to standard requests package for this.
-        resp2 = requests.head(redirect_url)
+        resp2 = self.requestManager.get(redirect_url, use_api_cred=False)
 
         # Log errors
         if not resp2.ok:
             self.logger.error('Error {}: {}'.format(resp2.status_code, redirect_url))
             return None
 
-        # Check header for dud statuses. 
+        # Check header for dud statuses.
         if 'x-amz-meta-helios' in resp2.headers:
             hdrs = json.loads(resp2.headers['x-amz-meta-helios'])
 
@@ -272,7 +271,7 @@ class DownloadImagesMixin(object):
         self.logger.info('Downloading {}'.format(url))
 
         # Revert to standard requests package for this.
-        resp = requests.get(url)
+        resp = self.requestManager.get(url, use_api_cred=False)
 
         # Log errors
         if not resp.ok:

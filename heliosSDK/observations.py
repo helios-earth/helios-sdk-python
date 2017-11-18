@@ -11,8 +11,6 @@ import os
 import sys
 from multiprocessing.dummy import Pool as ThreadPool
 
-import requests
-
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin, RequestManager
 from heliosSDK.utilities import jsonTools
 
@@ -78,7 +76,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         redirect_url = resp.url[0:resp.url.index('?')]
 
         # Revert to standard requests package for this.
-        resp2 = requests.head(redirect_url)
+        resp2 = self.requestManager.head(redirect_url, use_api_cred=False)
 
         # Log errors
         if not resp2.ok:
