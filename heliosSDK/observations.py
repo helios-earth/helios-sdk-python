@@ -11,6 +11,8 @@ import os
 import sys
 from multiprocessing.dummy import Pool as ThreadPool
 
+import requests
+
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin, RequestManager
 from heliosSDK.utilities import jsonTools
 
@@ -75,10 +77,17 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
 
         redirect_url = resp.url[0:resp.url.index('?')]
 
+        # Revert to standard requests package for this.
+        resp2 = requests.head(redirect_url)
+
+        # Log errors
+        if not resp2.ok:
+            self.logger.error('Error {}: {}'.format(resp2.status_code, redirect_url))
+            return None
+
         # Check header for dud statuses.
-        head_check_resp = self.requestManager.head(redirect_url)
-        if 'x-amz-meta-helios' in head_check_resp.headers:
-            hdrs = json.loads(head_check_resp.headers['x-amz-meta-helios'])
+        if 'x-amz-meta-helios' in resp2.headers:
+            hdrs = json.loads(resp2.headers['x-amz-meta-helios'])
 
             if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
                 sys.stderr.write('{} returned a dud image.'.format(redirect_url) + os.linesep)
