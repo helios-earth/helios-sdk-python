@@ -163,31 +163,31 @@ class ShowMixin(object):
 
 
 class ShowImageMixin(object):
-    def showImage(self, id_var, times_or_names):
+    def showImage(self, id_var, samples):
         # Force list
-        if not isinstance(times_or_names, list):
-            times_or_names = [times_or_names]
+        if not isinstance(samples, list):
+            samples = [samples]
 
         # Log entrance
-        self.logger.info('Entering showImage({} values)'.format(len(times_or_names)))
+        self.logger.info('Entering showImage({} values)'.format(len(samples)))
 
         # Get number of threads
-        num_threads = min(self.MAX_THREADS, len(times_or_names))
+        num_threads = min(self.MAX_THREADS, len(samples))
 
         # Process urls.
         if num_threads > 4:
             POOL = ThreadPool(num_threads)
             data = POOL.map(self.__showImageWorker,
-                            zip(repeat(id_var), times_or_names))
+                            zip(repeat(id_var), samples))
         else:
             data = list(map(self.__showImageWorker,
-                            zip(repeat(id_var), times_or_names)))
+                            zip(repeat(id_var), samples)))
 
         # Remove errors, if they exist
         data = [x for x in data if x is not None]
 
         # Log success
-        self.logger.info('Leaving showImage({} out of {} successful)'.format(len(data), len(times_or_names)))
+        self.logger.info('Leaving showImage({} out of {} successful)'.format(len(data), len(samples)))
 
         url_data = jsonTools.mergeJson(data, 'url')
 
