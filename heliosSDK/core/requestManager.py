@@ -8,6 +8,7 @@ from heliosSDK import AUTH_TOKEN
 
 class RequestManager(object):
     MAX_RETRIES = 5
+    TIMEOUT = 5
     SSL_VERIFY = True
 
     def __init__(self, pool_maxsize=32):
@@ -30,6 +31,8 @@ class RequestManager(object):
 
     def get(self, query, use_api_cred=True, **kwargs):
         query = query.replace(' ', '+')
+        kwargs['timeout'] = kwargs.get('timeout', self.TIMEOUT)
+        resp = None
         try:
             if use_api_cred:
                 resp = self.apiSession.get(query, **kwargs)
@@ -41,6 +44,8 @@ class RequestManager(object):
 
     def post(self, query, use_api_cred=True, **kwargs):
         query = query.replace(' ', '+')
+        kwargs['timeout'] = kwargs.get('timeout', self.TIMEOUT)
+        resp = None
         try:
             if use_api_cred:
                 resp = self.apiSession.post(query, **kwargs)
@@ -52,6 +57,8 @@ class RequestManager(object):
 
     def head(self, query, use_api_cred=True, **kwargs):
         query = query.replace(' ', '+')
+        kwargs['timeout'] = kwargs.get('timeout', self.TIMEOUT)
+        resp = None
         try:
             if use_api_cred:
                 resp = self.apiSession.head(query, **kwargs)
@@ -63,6 +70,8 @@ class RequestManager(object):
 
     def delete(self, query, use_api_cred=True, **kwargs):
         query = query.replace(' ', '+')
+        kwargs['timeout'] = kwargs.get('timeout', self.TIMEOUT)
+        resp = None
         try:
             if use_api_cred:
                 resp = self.apiSession.delete(query, **kwargs)
