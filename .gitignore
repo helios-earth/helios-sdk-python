@@ -1,4 +1,9 @@
+*.pyc
+
+# test-related
+.cache
+
+# developer environments
+.idea
 .project
 .pydevproject
-*.pyc
-.idea
