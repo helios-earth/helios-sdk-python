@@ -128,13 +128,12 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         num_threads = min(self.MAX_THREADS, len(urls))
 
         # Process urls.
-        if num_threads > 4:
+        if num_threads > 1:
             with ThreadPool(num_threads) as POOL:
                 data = POOL.map(self.__addImagesWorker,
                                 zip(repeat(collection_id), urls))
         else:
-            data = map(self.__addImagesWorker,
-                       zip(repeat(collection_id), urls))
+            data = [self.__addImagesWorker((collection_id, urls[0]))]
 
         # Remove errors, if they exist
         data = [x for x in data if x is not None]
@@ -184,13 +183,12 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         num_threads = min(self.MAX_THREADS, len(names))
 
         # Process urls.
-        if num_threads > 4:
+        if num_threads > 1:
             with ThreadPool(num_threads) as POOL:
                 data = POOL.map(self.__removeImagesWorker,
                                 zip(repeat(collection_id), names))
         else:
-            data = map(self.__removeImagesWorker,
-                       zip(repeat(collection_id), names))
+            data = [self.__removeImagesWorker((collection_id, names[0]))]
 
         # Remove errors, if they exist
         data = [x for x in data if x is not None]

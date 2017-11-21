@@ -102,8 +102,11 @@ class IndexMixin(object):
 
         # Create thread pool and get results
         num_threads = min(self.MAX_THREADS, n_queries_needed)
-        with ThreadPool(num_threads) as POOL:
-            results = POOL.map(self.__indexWorker, queries)
+        if num_threads > 1:
+            with ThreadPool(num_threads) as POOL:
+                results = POOL.map(self.__indexWorker, queries)
+        else:
+            results = [self.__indexWorker(queries[0])]
 
         # Put initial query back in list.
         results.insert(0, initial_resp_json)
@@ -174,13 +177,12 @@ class ShowImageMixin(object):
         num_threads = min(self.MAX_THREADS, len(samples))
 
         # Process urls.
-        if num_threads > 4:
+        if num_threads > 1:
             with ThreadPool(num_threads) as POOL:
                 data = POOL.map(self.__showImageWorker,
                                 zip(repeat(id_var), samples))
         else:
-            data = list(map(self.__showImageWorker,
-                            zip(repeat(id_var), samples)))
+            data = [self.__showImageWorker((id_var, samples[0]))]
 
         # Remove errors, if they exist
         data = [x for x in data if x is not None]
@@ -250,9 +252,12 @@ class DownloadImagesMixin(object):
 
         # Create thread pool
         num_threads = min(self.MAX_THREADS, len(urls))
-        with ThreadPool(num_threads) as POOL:
-            data = POOL.map(self.__downloadWorker,
-                            zip(urls, repeat(out_dir), repeat(return_image_data)))
+        if num_threads > 1:
+            with ThreadPool(num_threads) as POOL:
+                data = POOL.map(self.__downloadWorker,
+                                zip(urls, repeat(out_dir), repeat(return_image_data)))
+        else:
+            data = [self.__downloadWorker((urls[0], out_dir, return_image_data))]
 
         # Remove errors, if the exist
         data = [x for x in data if x is not None]

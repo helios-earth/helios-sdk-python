@@ -40,11 +40,11 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         num_threads = min(self.MAX_THREADS, len(observation_ids))
 
         # Process ids.
-        if num_threads > 4:
+        if num_threads > 1:
             with ThreadPool(num_threads) as POOL:
                 data = POOL.map(self.__previewWorker, observation_ids)
         else:
-            data = map(self.__previewWorker, observation_ids)
+            data = [self.__previewWorker(observation_ids[0])]
 
         # Remove errors, if they exist
         data = [x for x in data if x is not None]
