@@ -100,11 +100,10 @@ class IndexMixin(object):
         # Log number of queries required.
         self.logger.info('{} index queries required for: {}'.format(n_queries_needed, kwargs))
 
-        # Create thread pool
+        # Create thread pool and get results
         num_threads = min(self.MAX_THREADS, n_queries_needed)
-        POOL = ThreadPool(num_threads)
-
-        results = POOL.map(self.__indexWorker, queries)
+        with ThreadPool(num_threads) as POOL:
+            results = POOL.map(self.__indexWorker, queries)
 
         # Put initial query back in list.
         results.insert(0, initial_resp_json)
@@ -176,9 +175,9 @@ class ShowImageMixin(object):
 
         # Process urls.
         if num_threads > 4:
-            POOL = ThreadPool(num_threads)
-            data = POOL.map(self.__showImageWorker,
-                            zip(repeat(id_var), samples))
+            with ThreadPool(num_threads) as POOL:
+                data = POOL.map(self.__showImageWorker,
+                                zip(repeat(id_var), samples))
         else:
             data = list(map(self.__showImageWorker,
                             zip(repeat(id_var), samples)))
@@ -251,10 +250,9 @@ class DownloadImagesMixin(object):
 
         # Create thread pool
         num_threads = min(self.MAX_THREADS, len(urls))
-        POOL = ThreadPool(num_threads)
-
-        data = POOL.map(self.__downloadWorker,
-                        zip(urls, repeat(out_dir), repeat(return_image_data)))
+        with ThreadPool(num_threads) as POOL:
+            data = POOL.map(self.__downloadWorker,
+                            zip(urls, repeat(out_dir), repeat(return_image_data)))
 
         # Remove errors, if the exist
         data = [x for x in data if x is not None]
