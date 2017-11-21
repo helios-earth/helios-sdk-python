@@ -2,6 +2,10 @@
 
 Use the Helios APIs in Python.
 
+Helios® weather analytics from Harris Corporation provide fast and accurate local ground weather intelligence to assist organizations with real-time decision making. Helios analyzes content from thousands of existing public and private video cameras, providing immediate confirmation of ground weather condition changes at a detailed local level.
+
+For more information visit [helios.earth](https://helios.earth/).
+
 ------------------
 
 ## Authentication
