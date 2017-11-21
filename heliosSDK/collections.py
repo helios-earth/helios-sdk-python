@@ -88,7 +88,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             images_found = results['images']
 
             if camera is not None:
-                imgs_found_temp = list(filter(lambda x: x.split('_')[0] == camera, images_found))
+                imgs_found_temp = [x for x in images_found if x.split('_')[0] == camera]
             else:
                 imgs_found_temp = images_found
 
