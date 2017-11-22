@@ -15,7 +15,7 @@ from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, Downl
 
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
     CORE_API = 'collections'
-    MAX_THREADS = 64
+    MAX_THREADS = 32
 
     def __init__(self):
         self.requestManager = RequestManager(pool_maxsize=self.MAX_THREADS)
@@ -48,22 +48,13 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
 
-        post_url = '{}/{}'.format(self.BASE_API_URL,
-                                  self.CORE_API)
+        post_url = '{}/{}'.format(self.BASE_API_URL, self.CORE_API)
 
-        resp = self.requestManager.post(post_url,
-                                        headers=header,
-                                        data=parms)
-
-        # Log errors
-        if not resp.ok:
-            self.logger.error('Error {}: {}'.format(resp.status_code, post_url))
-            return None
-
+        resp = self.requestManager.post(post_url, headers=header, data=parms)
         json_response = resp.json()
 
         # Log success
-        self.logger.info('Leaving create()'.format(json_response['collection_id']))
+        self.logger.info('Leaving create(new_id={})'.format(json_response['collection_id']))
 
         return json_response
 
@@ -117,15 +108,16 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                                        return_image_data=return_image_data)
 
     def addImage(self, collection_id, urls):
-        # Force list
-        if isinstance(urls, str):
+        # Force iterable
+        if not isinstance(urls, (list, tuple)):
             urls = [urls]
+        n_urls = len(urls)
 
         # Log start
-        self.logger.info('Entering addImage(collection_id={}, N={})'.format(collection_id, len(urls)))
+        self.logger.info('Entering addImage(collection_id={}, N={})'.format(collection_id, n_urls))
 
         # Get number of threads
-        num_threads = min(self.MAX_THREADS, len(urls))
+        num_threads = min(self.MAX_THREADS, n_urls)
 
         # Process urls.
         if num_threads > 1:
@@ -136,10 +128,18 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             data = [self.__addImagesWorker((collection_id, urls[0]))]
 
         # Remove errors, if they exist
-        data = [x for x in data if x is not None]
+        data = [x for x in data if x != -1]
 
-        # Log success
-        self.logger.info('Leaving addImage({} out of {} successful)'.format(len(data), len(urls)))
+        # Check results for errors
+        n_data = len(data)
+        message = 'Leaving addImage({} out of {} successful)'.format(n_data, n_urls)
+        if n_data == 0:
+            self.logger.error(message)
+            return -1
+        elif n_data < n_urls:
+            self.logger.warning(message)
+        else:
+            self.logger.info(message)
 
         return data
 
@@ -154,33 +154,24 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         header = {'name': 'Content-Type', 'value': 'application/x-www-form-urlencoded'}
         post_url = '{}/collections/{}/images'.format(self.BASE_API_URL, coll_id)
 
-        # Log query
-        self.logger.info('Query began: {}'.format(post_url))
-
-        resp = self.requestManager.post(post_url,
-                                        headers=header,
-                                        data=parms)
-
-        # Log errors
-        if not resp.ok:
-            self.logger.error('Error {}: {}, {}'.format(resp.status_code, coll_id, img_url))
-            return None
-
-        # Log success
-        self.logger.info('Query complete: {}'.format(post_url))
+        try:
+            resp = self.requestManager.post(post_url, headers=header, data=parms)
+        except Exception:
+            return -1
 
         return resp.json()
 
     def removeImage(self, collection_id, names):
-        # Force list
-        if isinstance(names, str):
+        # Force iterable
+        if not isinstance(names, (list, tuple)):
             names = [names]
+        n_names = len(names)
 
         # Log start
-        self.logger.info('Entering removeImage(collection_id={}, N={})'.format(collection_id, len(names)))
+        self.logger.info('Entering removeImage(collection_id={}, N={})'.format(collection_id, n_names))
 
         # Get number of threads
-        num_threads = min(self.MAX_THREADS, len(names))
+        num_threads = min(self.MAX_THREADS, n_names)
 
         # Process urls.
         if num_threads > 1:
@@ -191,10 +182,18 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             data = [self.__removeImagesWorker((collection_id, names[0]))]
 
         # Remove errors, if they exist
-        data = [x for x in data if x is not None]
+        data = [x for x in data if x != -1]
 
-        # Log success
-        self.logger.info('Leaving removeImage({} out of {} successful)'.format(len(data), len(names)))
+        # Check results for errors
+        n_data = len(data)
+        message = 'Leaving removeImage({} out of {} successful)'.format(n_data, n_names)
+        if n_data == 0:
+            self.logger.error(message)
+            return -1
+        elif n_data < n_names:
+            self.logger.warning(message)
+        else:
+            self.logger.info(message)
 
         return data
 
@@ -206,18 +205,10 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                                 coll_id,
                                                 img_name)
 
-        # Log query
-        self.logger.info('Query begin: {}'.format(query_str))
-
-        resp = self.requestManager.delete(query_str)
-
-        # Log errors
-        if not resp.ok:
-            self.logger.error('Error {}: {}'.format(resp.status_code, query_str))
-            return None
-
-        # Log query
-        self.logger.info('Query complete: {}'.format(query_str))
+        try:
+            resp = self.requestManager.delete(query_str)
+        except Exception:
+            return -1
 
         return resp.json()
 

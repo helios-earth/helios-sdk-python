@@ -37,12 +37,6 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                                                               limit)
 
         resp = self.requestManager.get(query_str)
-
-        # Log error and raise exception.
-        if not resp.ok:
-            self.logger.error('Error {}: {}'.format(resp.status_code, query_str))
-            resp.raise_for_status()
-
         json_resp = resp.json()
 
         # log exit
@@ -59,15 +53,13 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
         output_json = []
         count = 0
         while True:
-            json_response = self.images(camera_id,
-                                        start_time,
-                                        limit=limit)
+            data = self.images(camera_id, start_time, limit=limit)
 
-            times = json_response['times']
-            n = json_response['total']
+            times = data['times']
+            n = data['total']
             count += n
 
-            if json_response['total'] == 0:
+            if data['total'] == 0:
                 break
 
             first = parse(times[0]).utctimetuple()

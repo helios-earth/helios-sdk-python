@@ -30,14 +30,16 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         return super(Observations, self).show(observation_id)
 
     def preview(self, observation_ids):
-        if not isinstance(observation_ids, list):
+        # Force iterable
+        if not isinstance(observation_ids, (list, tuple)):
             observation_ids = [observation_ids]
+        n_obs = len(observation_ids)
 
         # Log entrance
-        self.logger.info('Entering preview({} observation_ids)'.format(len(observation_ids)))
+        self.logger.info('Entering preview({} observation_ids)'.format(n_obs))
 
         # Get number of threads
-        num_threads = min(self.MAX_THREADS, len(observation_ids))
+        num_threads = min(self.MAX_THREADS, n_obs)
 
         # Process ids.
         if num_threads > 1:
@@ -47,14 +49,20 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
             data = [self.__previewWorker(observation_ids[0])]
 
         # Remove errors, if they exist
-        data = [x for x in data if x is not None]
+        data = [x for x in data if x != -1]
 
-        # Log success
-        self.logger.info('Leaving preview({} out of {} successful)'.format(len(data), len(observation_ids)))
+        # Check results
+        n_data = len(data)
+        message = 'Leaving preview({} out of {} successful)'.format(n_data, n_obs)
+        if n_data == 0:
+            self.logger.error(message)
+            return -1
+        elif n_data < n_obs:
+            self.logger.warning(message)
+        else:
+            self.logger.info(message)
 
-        urls = jsonTools.mergeJson(data, 'url')
-
-        return {'url': urls}
+        return {'url': data}
 
     def __previewWorker(self, args):
         observation_id = args
@@ -63,25 +71,13 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
                                               self.CORE_API,
                                               observation_id)
 
-        # Log query
-        self.logger.info('Query began: {}'.format(query_str))
-
-        resp = self.requestManager.get(query_str)
-
-        # Log error and raise exception.
-        if not resp.ok:
-            self.logger.error('Error {}: {}'.format(resp.status_code, query_str))
-            return None
-
-        redirect_url = resp.url[0:resp.url.index('?')]
-
-        # Revert to standard requests package for this.
-        resp2 = self.requestManager.head(redirect_url, use_api_cred=False)
-
-        # Log errors
-        if not resp2.ok:
-            self.logger.error('Error {}: {}'.format(resp2.status_code, redirect_url))
-            return None
+        try:
+            resp = self.requestManager.get(query_str)
+            redirect_url = resp.url[0:resp.url.index('?')]
+            # Redirect URLs do not use api credentials
+            resp2 = self.requestManager.head(redirect_url, use_api_cred=False)
+        except Exception:
+            return -1
 
         # Check header for dud statuses.
         if 'x-amz-meta-helios' in resp2.headers:
@@ -91,9 +87,6 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
                 sys.stderr.write('{} returned a dud image.'.format(redirect_url) + os.linesep)
                 sys.stderr.flush()
                 return {'url': None}
-
-        # Log success
-        self.logger.info('Query complete: {}'.format(query_str))
 
         return {'url': redirect_url}
 

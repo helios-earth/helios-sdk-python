@@ -14,7 +14,6 @@ import numpy as np
 from PIL import Image
 
 from heliosSDK import BASE_API_URL
-from heliosSDK.utilities import jsonTools
 
 
 class SDKCore(object):
@@ -70,7 +69,6 @@ class IndexMixin(object):
 
         # Do first query to find total number of results to expect.
         initial_resp = self.requestManager.get(queries.pop(0))
-
         initial_resp_json = initial_resp.json()
 
         try:
@@ -119,18 +117,8 @@ class IndexMixin(object):
     def __indexWorker(self, args):
         query_str = args
 
-        # Log query
-        self.logger.info('Starting index query: {}'.format(query_str))
-
+        # Perform query
         resp = self.requestManager.get(query_str)
-
-        # Log errors
-        if not resp.ok:
-            self.logger.error('Error {}: {}'.format(resp.status_code, query_str))
-            return None
-
-        # Log query success
-        self.logger.info('Completed index query: {}'.format(query_str))
 
         return resp.json()
 
@@ -147,15 +135,6 @@ class ShowMixin(object):
                                          params_str)
 
         resp = self.requestManager.get(query_str)
-
-        # Log errors
-        if not resp.ok:
-            self.logger.error('Error {}: {}'.format(resp.status_code, query_str))
-            return None
-
-        # Raise exception if query was unsuccessful.
-        resp.raise_for_status()
-
         geo_json_feature = resp.json()
 
         # Log query success
@@ -166,15 +145,16 @@ class ShowMixin(object):
 
 class ShowImageMixin(object):
     def showImage(self, id_var, samples):
-        # Force list
-        if not isinstance(samples, list):
+        # Force iterable
+        if not isinstance(samples, (list, tuple)):
             samples = [samples]
+        n_samples = len(samples)
 
         # Log entrance
-        self.logger.info('Entering showImage({} values)'.format(len(samples)))
+        self.logger.info('Entering showImage({} values)'.format(n_samples))
 
         # Get number of threads
-        num_threads = min(self.MAX_THREADS, len(samples))
+        num_threads = min(self.MAX_THREADS, n_samples)
 
         # Process urls.
         if num_threads > 1:
@@ -185,14 +165,20 @@ class ShowImageMixin(object):
             data = [self.__showImageWorker((id_var, samples[0]))]
 
         # Remove errors, if they exist
-        data = [x for x in data if x is not None]
+        data = [x for x in data if x != -1]
 
-        # Log success
-        self.logger.info('Leaving showImage({} out of {} successful)'.format(len(data), len(samples)))
+        # Check results for errors
+        n_data = len(data)
+        message = 'Leaving showImage({} out of {} successful)'.format(n_data, n_samples)
+        if n_data == 0:
+            self.logger.error(message)
+            return -1
+        elif n_data < n_samples:
+            self.logger.warning(message)
+        else:
+            self.logger.info(message)
 
-        url_data = jsonTools.mergeJson(data, 'url')
-
-        return {'url': url_data}
+        return {'url': data}
 
     def __showImageWorker(self, args):
         id_var, x = args
@@ -202,56 +188,41 @@ class ShowImageMixin(object):
                                                 id_var,
                                                 x)
 
-        # Log query
-        self.logger.info('Starting showImage query: {}'.format(query_str))
-
-        resp = self.requestManager.get(query_str)
-
-        # Log errors
-        if not resp.ok:
-            self.logger.error('Error {}: {}'.format(resp.status_code, query_str))
-            return None
-
-        redirect_url = resp.url[0:resp.url.index('?')]
-
-        # Revert to standard requests package for this.
-        resp2 = self.requestManager.get(redirect_url, use_api_cred=False)
-
-        # Log errors
-        if not resp2.ok:
-            self.logger.error('Error {}: {}'.format(resp2.status_code, redirect_url))
-            return None
+        try:
+            resp = self.requestManager.get(query_str)
+            redirect_url = resp.url[0:resp.url.index('?')]
+            # Redirect URLs do not use api credentials
+            resp2 = self.requestManager.get(redirect_url, use_api_cred=False)
+        except Exception:
+            return -1
 
         # Check header for dud statuses.
         if 'x-amz-meta-helios' in resp2.headers:
             hdrs = json.loads(resp2.headers['x-amz-meta-helios'])
-
             if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
                 # Log dud
                 self.logger.info('showImage query returned dud image: {}'.format(query_str))
-                return {'url': None}
+                return None
 
-        # Log query success
-        self.logger.info('Completed showImage query: {}'.format(query_str))
-
-        return {'url': redirect_url}
+        return redirect_url
 
 
 class DownloadImagesMixin(object):
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        # Force list
-        if not isinstance(urls, list):
+        # Force iterable
+        if not isinstance(urls, (list, tuple)):
             urls = [urls]
+        n_urls = len(urls)
 
         # Log start
-        self.logger.info('Entering downloadImages(N={}, out_dir={}'.format(len(urls), out_dir))
+        self.logger.info('Entering downloadImages(N={}, out_dir={}'.format(n_urls, out_dir))
 
         if out_dir is not None:
             if not os.path.exists(out_dir):
                 os.mkdir(out_dir)
 
         # Create thread pool
-        num_threads = min(self.MAX_THREADS, len(urls))
+        num_threads = min(self.MAX_THREADS, n_urls)
         if num_threads > 1:
             with ThreadPool(num_threads) as POOL:
                 data = POOL.map(self.__downloadWorker,
@@ -260,26 +231,31 @@ class DownloadImagesMixin(object):
             data = [self.__downloadWorker((urls[0], out_dir, return_image_data))]
 
         # Remove errors, if the exist
-        data = [x for x in data if x is not None]
+        if not return_image_data:
+            data = [x for x in data if x != -1]
+        else:
+            data = [x for x in data if isinstance(x, np.ndarray)]
 
-        # Log success
-        self.logger.info('Leaving downloadImages({} out of {} successful)'.format(len(data), len(urls)))
+        # Check results for errors
+        n_data = len(data)
+        message = 'Leaving downloadImages({} out of {} successful)'.format(n_data, n_urls)
+        if n_data == 0:
+            self.logger.error(message)
+            return -1
+        elif n_data < n_urls:
+            self.logger.warning(message)
+        else:
+            self.logger.info(message)
 
         return data
 
     def __downloadWorker(self, args):
         url, out_dir, return_image_data = args
 
-        # Log download query
-        self.logger.info('Downloading {}'.format(url))
-
-        # Revert to standard requests package for this.
-        resp = self.requestManager.get(url, use_api_cred=False)
-
-        # Log errors
-        if not resp.ok:
-            self.logger.error('Error {}: {}'.format(resp.status_code, url))
-            return None
+        try:
+            resp = self.requestManager.get(url, use_api_cred=False)
+        except Exception:
+            return -1
 
         # Read image from response
         img = Image.open(BytesIO(resp.content))
@@ -293,8 +269,5 @@ class DownloadImagesMixin(object):
         # Read and return image data.              
         if return_image_data:
             return np.array(img)
-
-        # Log success
-        self.logger.info('Download successful: {}'.format(url))
 
         return True
