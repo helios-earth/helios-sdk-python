@@ -1,14 +1,15 @@
 from datetime import datetime, timedelta
 
-import heliosSDK
 import pytest
+
+import heliosSDK
 
 
 @pytest.fixture(scope='module')
 def utcNow():
     f = '%Y-%m-%d'
     end_date = datetime.utcnow()
-    begin_date = end_date - timedelta(days=1)
+    begin_date = end_date - timedelta(days=2)
 
     end_date = end_date.strftime(f)
     begin_date = begin_date.strftime(f)
