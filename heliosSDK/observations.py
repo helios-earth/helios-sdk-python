@@ -86,9 +86,9 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
             if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
                 sys.stderr.write('{} returned a dud image.'.format(redirect_url) + os.linesep)
                 sys.stderr.flush()
-                return {'url': None}
+                return None
 
-        return {'url': redirect_url}
+        return redirect_url
 
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
         return super(Observations, self).downloadImages(urls, out_dir=out_dir, return_image_data=return_image_data)
