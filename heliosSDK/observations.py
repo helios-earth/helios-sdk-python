@@ -82,10 +82,9 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         # Check header for dud statuses.
         if 'x-amz-meta-helios' in resp2.headers:
             hdrs = json.loads(resp2.headers['x-amz-meta-helios'])
-
             if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
-                sys.stderr.write('{} returned a dud image.'.format(redirect_url) + os.linesep)
-                sys.stderr.flush()
+                # Log dud
+                self.logger.info('preview query returned dud image: {}'.format(query_str))
                 return None
 
         return redirect_url
