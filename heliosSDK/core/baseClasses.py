@@ -88,7 +88,7 @@ class IndexMixin(object):
             n = len(initial_resp_json['results'])
 
         # If only one query was necessary, return immediately.
-        if n <= limit:
+        if n < limit:
             return [initial_resp_json]
 
         # Determine number of iterations that will be needed.
