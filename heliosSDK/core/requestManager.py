@@ -55,6 +55,10 @@ class RequestManager(object):
                 resp = sess_alias.head(query, **kwargs)
             elif request_type == 'delete':
                 resp = sess_alias.delete(query, **kwargs)
+            elif request_type == 'patch':
+                resp = sess_alias.patch(query, **kwargs)
+            else:
+                raise ValueError('Unsupported query of type: {}'.format(request_type))
             resp.raise_for_status()
         # Log exceptions and return
         except requests.exceptions.HTTPError:
@@ -88,4 +92,10 @@ class RequestManager(object):
         return self.__request(query,
                               use_api_cred=use_api_cred,
                               request_type='delete',
+                              **kwargs)
+
+    def patch(self, query, use_api_cred=True, **kwargs):
+        return self.__request(query,
+                              use_api_cred=use_api_cred,
+                              request_type='patch',
                               **kwargs)
