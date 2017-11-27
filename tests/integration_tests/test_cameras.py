@@ -22,7 +22,7 @@ def test_cameras(utcNow):
     cameras = heliosSDK.Cameras()
 
     # Perform index query
-    index_results = cameras.index()
+    index_results = cameras.index(state='new york')
 
     # Extract id from index query
     id_ = index_results[0]['features'][0]['id']
