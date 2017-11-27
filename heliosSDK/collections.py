@@ -28,23 +28,22 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return super(Collections, self).show(collection_id, limit=limit, marker=marker)
 
     def create(self, name, description, tags=None):
-        if tags is None:
-            tags = ''
-
         # Log start
         self.logger.info('Entering create(name={}, description={}, tags={}'.format(name, description, tags))
 
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self._AUTH_TOKEN['value'].replace('Bearer ', '')
+        post_token = self.requestManager._AUTH_TOKEN['value'].replace('Bearer ', '')
 
         # handle more than one tag
         if isinstance(tags, (list, tuple)):
             tags = ','.join(tags)
 
-        parms = {'name': name,
-                 'description': description,
-                 'tags': tags,
-                 'access_token': post_token}
+        # Compose parms block
+        parms = {'name': name, 'description': description}
+        if tags is not None:
+            parms['tags'] = tags
+        parms['access_token'] = post_token
+
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
 
