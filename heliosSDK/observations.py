@@ -7,12 +7,9 @@ functionality for convenience.
 '''
 import json
 import logging
-import os
-import sys
 from multiprocessing.dummy import Pool as ThreadPool
 
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin, RequestManager
-from heliosSDK.utilities import jsonTools
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
