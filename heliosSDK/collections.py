@@ -189,7 +189,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         coll_id, img_url = args
 
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self._AUTH_TOKEN['value'].replace('Bearer ', '')
+        post_token = self.requestManager._AUTH_TOKEN['value'].replace('Bearer ', '')
 
         # Compose post request
         parms = {'s3_src': img_url, 'access_token': post_token}
