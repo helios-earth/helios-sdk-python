@@ -67,7 +67,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                                                                            description,
                                                                                            tags))
 
-        # need to strip out the Bearer to work with a POST for collections
+        # need to strip out the Bearer to work with a PATCH for collections
         patch_token = self.requestManager._AUTH_TOKEN['value'].replace('Bearer ', '')
 
         # handle more than one tag
