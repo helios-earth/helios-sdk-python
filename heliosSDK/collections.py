@@ -28,23 +28,22 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return super(Collections, self).show(collection_id, limit=limit, marker=marker)
 
     def create(self, name, description, tags=None):
-        if tags is None:
-            tags = ''
-
         # Log start
         self.logger.info('Entering create(name={}, description={}, tags={}'.format(name, description, tags))
 
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self._AUTH_TOKEN['value'].replace('Bearer ', '')
+        post_token = self.requestManager._AUTH_TOKEN['value'].replace('Bearer ', '')
 
         # handle more than one tag
         if isinstance(tags, (list, tuple)):
             tags = ','.join(tags)
 
-        parms = {'name': name,
-                 'description': description,
-                 'tags': tags,
-                 'access_token': post_token}
+        # Compose parms block
+        parms = {'name': name, 'description': description}
+        if tags is not None:
+            parms['tags'] = tags
+        parms['access_token'] = post_token
+
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
 
@@ -55,6 +54,49 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         # Log success
         self.logger.info('Leaving create(new_id={})'.format(json_response['collection_id']))
+
+        return json_response
+
+    def update(self, collections_id, name=None, description=None, tags=None):
+        if name is None and description is None and tags is None:
+            raise ValueError('Update requires at least one named argument to be set.')
+
+        # Log start
+        self.logger.info('Entering update(id={}, name={}, description={}, tags={})'.format(collections_id,
+                                                                                           name,
+                                                                                           description,
+                                                                                           tags))
+
+        # need to strip out the Bearer to work with a PATCH for collections
+        patch_token = self.requestManager._AUTH_TOKEN['value'].replace('Bearer ', '')
+
+        # handle more than one tag
+        if isinstance(tags, (list, tuple)):
+            tags = ','.join(tags)
+
+        # Compose parms block
+        parms = {}
+        if name is not None:
+            parms['name'] = name
+        if description is not None:
+            parms['description'] = description
+        if tags is not None:
+            parms['tags'] = tags
+        parms['access_token'] = patch_token
+
+        header = {'name': 'Content-Type',
+                  'value': 'application/x-www-form-urlencoded'}
+
+        patch_url = '{}/{}/{}'.format(self.BASE_API_URL, self.CORE_API, collections_id)
+
+        resp = self.requestManager.patch(patch_url, headers=header, data=parms)
+        json_response = resp.json()
+
+        # Log success
+        self.logger.info('Leaving update(id={}, name={}, description={}, tags={})'.format(collections_id,
+                                                                                          name,
+                                                                                          description,
+                                                                                          tags))
 
         return json_response
 
@@ -147,7 +189,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         coll_id, img_url = args
 
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self._AUTH_TOKEN['value'].replace('Bearer ', '')
+        post_token = self.requestManager._AUTH_TOKEN['value'].replace('Bearer ', '')
 
         # Compose post request
         parms = {'s3_src': img_url, 'access_token': post_token}
