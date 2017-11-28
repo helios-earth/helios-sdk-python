@@ -101,8 +101,12 @@ class IndexMixin(object):
         # Create thread pool and get results
         num_threads = min(self.MAX_THREADS, n_queries_needed)
         if num_threads > 1:
-            with ThreadPool(num_threads) as POOL:
-                results = POOL.map(self.__indexWorker, queries)
+            try:
+                thread_pool = ThreadPool(num_threads)
+                results = thread_pool.map(self.__indexWorker, queries)
+            finally:
+                thread_pool.close()
+                thread_pool.join()
         else:
             results = [self.__indexWorker(queries[0])]
 
@@ -158,9 +162,13 @@ class ShowImageMixin(object):
 
         # Process urls.
         if num_threads > 1:
-            with ThreadPool(num_threads) as POOL:
-                data = POOL.map(self.__showImageWorker,
-                                zip(repeat(id_var), samples))
+            try:
+                thread_pool = ThreadPool(num_threads)
+                data = thread_pool.map(self.__showImageWorker,
+                                       zip(repeat(id_var), samples))
+            finally:
+                thread_pool.close()
+                thread_pool.join()
         else:
             data = [self.__showImageWorker((id_var, samples[0]))]
 
@@ -224,9 +232,13 @@ class DownloadImagesMixin(object):
         # Create thread pool
         num_threads = min(self.MAX_THREADS, n_urls)
         if num_threads > 1:
-            with ThreadPool(num_threads) as POOL:
-                data = POOL.map(self.__downloadWorker,
-                                zip(urls, repeat(out_dir), repeat(return_image_data)))
+            try:
+                thread_pool = ThreadPool(num_threads)
+                data = thread_pool.map(self.__downloadWorker,
+                                       zip(urls, repeat(out_dir), repeat(return_image_data)))
+            finally:
+                thread_pool.close()
+                thread_pool.join()
         else:
             data = [self.__downloadWorker((urls[0], out_dir, return_image_data))]
 

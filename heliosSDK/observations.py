@@ -40,8 +40,12 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
 
         # Process ids.
         if num_threads > 1:
-            with ThreadPool(num_threads) as POOL:
-                data = POOL.map(self.__previewWorker, observation_ids)
+            try:
+                thread_pool = ThreadPool(num_threads)
+                data = thread_pool.map(self.__previewWorker, observation_ids)
+            finally:
+                thread_pool.close()
+                thread_pool.join()
         else:
             data = [self.__previewWorker(observation_ids[0])]
 
