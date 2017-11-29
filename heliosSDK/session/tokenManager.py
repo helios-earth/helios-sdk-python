@@ -14,6 +14,13 @@ class TokenManager(object):
     __default_api_url = r'https://api.helios.earth/v1/'
 
     def __init__(self):
+        self.api_url = None
+        self.token_url = None
+        self.token = None
+
+        self._key_id = None
+        self._key_secret = None
+
         self.getAuthCredentials()
 
     def startSession(self):
@@ -29,7 +36,7 @@ class TokenManager(object):
         else:
             self.getToken()
 
-        return self._tokstruct, self.api_url
+        return self.token, self.api_url
 
     def getToken(self):
         try:
@@ -46,23 +53,23 @@ class TokenManager(object):
         resp.raise_for_status()
 
         token_request = resp.json()
-        self._tokstruct = {'name': 'Authorization', 'value': 'Bearer ' + token_request['access_token']}
+        self.token = {'name': 'Authorization', 'value': 'Bearer ' + token_request['access_token']}
 
         self.writeToken()
 
     def readToken(self):
         with open(self._token_file, 'r') as f:
-            self._tokstruct = json.load(f)
+            self.token = json.load(f)
 
     def writeToken(self):
         with open(self._token_file, 'w+') as f:
-            json.dump(self._tokstruct, f)
+            json.dump(self.token, f)
 
     def deleteToken(self):
         os.remove(self._token_file)
 
     def verifyToken(self):
-        resp = r.get(self.api_url + '/session', headers={self._tokstruct['name']: self._tokstruct['value']},
+        resp = r.get(self.api_url + '/session', headers={self.token['name']: self.token['value']},
                      verify=True)
         resp.raise_for_status()
 

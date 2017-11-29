@@ -21,7 +21,8 @@ class SDKCore(object):
 
     BASE_API_URL = BASE_API_URL
 
-    def _parseInputsForQuery(self, input_dict):
+    @staticmethod
+    def _parseInputsForQuery(input_dict):
         # Check for unique case: sensors
         if 'sensors' in input_dict.keys():
             query_str = input_dict.pop('sensors') + '&'
@@ -81,12 +82,12 @@ class IndexMixin(object):
 
         # Get number of results in initial query.
         try:
-            n = len(initial_resp_json['features'])
+            n_features = len(initial_resp_json['features'])
         except KeyError:
-            n = len(initial_resp_json['results'])
+            n_features = len(initial_resp_json['results'])
 
         # If only one query was necessary, return immediately.
-        if n < limit:
+        if n_features < limit:
             return [initial_resp_json]
 
         # Determine number of iterations that will be needed.

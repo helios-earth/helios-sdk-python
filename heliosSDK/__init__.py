@@ -16,40 +16,37 @@ from .observations import Observations
 __version__ = '1.1.1'
 
 # Attempt to read SDK logging config file
-_config_file = os.path.join(os.path.expanduser('~'), 'heliosSDK_logger_config.json')
-_config = None
-if os.path.exists(_config_file):
+CONFIG_FILE = os.path.join(os.path.expanduser('~'), 'heliosSDK_logger_config.json')
+CONFIG = None
+if os.path.exists(CONFIG_FILE):
     try:
-        with open(_config_file, 'r') as f:
-            _config = json.load(f)
+        with open(CONFIG_FILE, 'r') as f:
+            CONFIG = json.load(f)
     except ValueError:
-        _config = None
+        CONFIG = None
 
-if _config is None:
+if CONFIG is None:
     # Default logging configuration.
-    _log_file = os.path.join(os.path.expanduser('~'), 'heliosSDK.log')
-    _config = {'version': 1, 'disable_existing_loggers': 1}
+    CONFIG = {'version': 1, 'disable_existing_loggers': 1}
 
-    _config['formatters'] = {}
-    _config['formatters']['simple'] = {
-        'format': '%(asctime)s-%(levelname)s-%(module)s-%(name)s-%(funcName)s: %(message)s', 'datefmt': '%H:%M:%S'}
+    CONFIG['formatters'] = {}
+    CONFIG['formatters']['simple'] = {'format': '%(asctime)s-%(levelname)s-%(module)s-%(name)s-%(funcName)s: %(message)s', 'datefmt': '%H:%M:%S'}
 
-    _config['handlers'] = {}
-    _config['handlers']['console'] = {'class': 'logging.StreamHandler',
-                                      'level': 'WARNING',
-                                      'formatter': 'simple',
-                                      'stream': 'ext://sys.stdout'}
+    CONFIG['handlers'] = {}
+    CONFIG['handlers']['console'] = {'class': 'logging.StreamHandler',
+                                     'level': 'WARNING',
+                                     'formatter': 'simple',
+                                     'stream': 'ext://sys.stdout'}
 
-    _config['root'] = {'level': 'INFO',
-                       'handlers': ['console']}
+    CONFIG['root'] = {'level': 'INFO',
+                      'handlers': ['console']}
 
     # Write default configuration to file
     try:
-        with open(_config_file, 'w') as f:
-            json.dump(_config, f)
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(CONFIG, f)
     except IOError:
         pass
 
 # Initialize logging
-logging.config.dictConfig(_config)
-logger = logging.getLogger(__name__)
+logging.config.dictConfig(CONFIG)

@@ -41,8 +41,8 @@ def parseCamera(data):
 
     if split2[0:4] == md5_str[0:4]:
         return split2[5:]
-    else:
-        return split2
+
+    return split2
 
 
 def parseImageName(url):

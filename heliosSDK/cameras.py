@@ -56,8 +56,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
             data = self.images(camera_id, start_time, limit=limit)
 
             times = data['times']
-            n = data['total']
-            count += n
+            total = data['total']
+            count += total
 
             if data['total'] == 0:
                 break
