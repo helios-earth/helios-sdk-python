@@ -51,14 +51,13 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
 
         end_time = parse(end_time).utctimetuple()
         output_json = []
-        count = 0
         while True:
             data = self.images(camera_id, start_time, limit=limit)
 
+            # Create new name for brevity.
             times = data['times']
-            total = data['total']
-            count += total
 
+            # If not times exist, break and return.
             if data['total'] == 0:
                 break
 
