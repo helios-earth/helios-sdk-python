@@ -1,8 +1,4 @@
-"""
-Usage Examples.
-
-@author: Michael A. Bayer
-"""
+"""Usage Examples."""
 import argparse
 import os
 
