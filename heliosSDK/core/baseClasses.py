@@ -22,7 +22,7 @@ class SDKCore(object):
     BASE_API_URL = BASE_API_URL
 
     @staticmethod
-    def _parseInputsForQuery(input_dict):
+    def parseInputsForQuery(input_dict):
         # Check for unique case: sensors
         if 'sensors' in input_dict.keys():
             query_str = input_dict.pop('sensors') + '&'
@@ -50,7 +50,7 @@ class IndexMixin(object):
         self.logger.info('Entering index(kwargs={})'.format(kwargs))
 
         # Establish all queries.
-        params_str = self._parseInputsForQuery(kwargs)
+        params_str = self.parseInputsForQuery(kwargs)
         queries = []
         for i in range(skip, max_skip, limit):
             if i + limit > max_skip:
@@ -131,7 +131,7 @@ class ShowMixin(object):
         # Log query
         self.logger.info('Entering show(id_var={}, kwargs={})'.format(id_var, kwargs))
 
-        params_str = self._parseInputsForQuery(kwargs)
+        params_str = self.parseInputsForQuery(kwargs)
         query_str = '{}/{}/{}?{}'.format(self.BASE_API_URL,
                                          self.CORE_API,
                                          id_var,
