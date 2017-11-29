@@ -1,8 +1,8 @@
-'''
-Usage Examples
+"""
+Usage Examples.
 
 @author: Michael A. Bayer
-'''
+"""
 import argparse
 import os
 
@@ -11,9 +11,7 @@ from heliosSDK.utilities import jsonTools
 
 
 def testAlerts(output_dir=''):
-    """
-    Alerts Core API Testing
-    """
+    """Alerts Core API Testing."""
     AC = Alerts()
 
     alerts_test_0 = AC.index(country='United States')
@@ -26,9 +24,7 @@ def testAlerts(output_dir=''):
 
 
 def testCameras(output_dir=''):
-    """
-    Cameras Core API Testing
-    """
+    """Cameras Core API Testing."""
     CaC = Cameras()
 
     cameras_test_0 = CaC.index(aggs='city', state='New York')
@@ -49,9 +45,7 @@ def testCameras(output_dir=''):
 
 
 def testObservations(output_dir=''):
-    """
-    Observations Core API Testing
-    """
+    """Observations Core API Testing."""
     OC = Observations()
 
     observations_test_0 = OC.index(aggs='city', bbox='-77.564,42.741,-76.584,43.193')
@@ -71,10 +65,7 @@ def testObservations(output_dir=''):
 
 
 def testCollections(output_dir=''):
-    """
-    Collections Core API Testing
-    """
-
+    """Collections Core API Testing."""
     CC = Collections()
 
     collections_test_0 = CC.index(q='raindrops')
@@ -105,6 +96,7 @@ def testCollections(output_dir=''):
 
 
 def main():
+    """Run example queries."""
     parser = argparse.ArgumentParser(description='Wrapper for Annotation Detection.',
                                      formatter_class=argparse.RawTextHelpFormatter)
     required = parser.add_argument_group('Required arguments:')

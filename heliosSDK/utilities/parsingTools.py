@@ -1,8 +1,4 @@
-'''
-Helper functions for parsing paths and URLs.
-
-@author: Michael A. Bayer
-'''
+"""Helper functions for paths and URLs."""
 import os
 import hashlib
 from datetime import datetime
@@ -15,12 +11,14 @@ except ImportError:
 
 
 def parseTime(data):
-    """Parses the time from a URL or image name.
+    """
+    Parse time from a URL or image name.
 
     Args:
         data (str): Image URL or name.
     Returns:
         datetime: The parsed time as a datetime object.
+
     """
     time_string = os.path.splitext(os.path.split(data)[-1])[0].split('_')[-1]
     time_stamp = datetime.strptime(time_string, '%Y%m%d%H%M%S%f')
@@ -28,12 +26,14 @@ def parseTime(data):
 
 
 def parseCamera(data):
-    """Parses the camera name from a URL or image name.
+    """
+    Parse camera name from a URL or image name.
 
     Args:
         data (str): Image URL or name.
     Returns:
         str: Camera name.
+
     """
     split1_rev = os.path.splitext(os.path.split(data)[-1])[0][::-1]
     split2 = split1_rev[split1_rev.index('_')+1:][::-1]
@@ -46,22 +46,26 @@ def parseCamera(data):
 
 
 def parseImageName(url):
-    """Parses the image name from a URL.
+    """
+    Parse image name from a URL.
 
     Args:
         url (str): Image URL.
     Returns:
         str: Image name.
+
     """
     return os.path.split(url)[-1]
 
 
 def parseUrl(url):
-    """Parses a URL into its components.
+    """
+    Parse a URL into its components.
 
     Args:
         url (str): Image URL.
     Returns:
         obj: Parsed URL.
+
     """
     return urlparse(url)

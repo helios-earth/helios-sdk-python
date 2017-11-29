@@ -1,7 +1,4 @@
-'''
-Request manager for all the various components of the Helios SDK
-@author: Michael A. Bayer
-'''
+"""Request manager for all the various components of the Helios SDK."""
 import logging
 
 import requests

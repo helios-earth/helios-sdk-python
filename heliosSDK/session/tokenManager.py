@@ -1,8 +1,4 @@
-'''
-Manager for the authorization token required to access the Helios API
-
-@author: Michael A. Bayer
-'''
+"""Manager for the authorization token required to access the Helios API."""
 import json
 import os
 

@@ -1,10 +1,10 @@
-'''
-SDK for the Helios Observations API.  Methods are meant to represent the core
-functionality in the developer documentation.  Some may have additional
+"""
+SDK for the Helios Observations API.
+
+Methods are meant to represent the core functionality in the developer documentation.  Some may have additional
 functionality for convenience.
 
-@author: mbayer
-'''
+"""
 import json
 import logging
 from multiprocessing.dummy import Pool as ThreadPool

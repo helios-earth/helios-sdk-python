@@ -1,8 +1,4 @@
-'''
-Core and Base objects for the heliosSDK.
-
-@author: Michael A. Bayer
-'''
+"""Mixins and core functionality."""
 import json
 import os
 from io import BytesIO
@@ -19,8 +15,10 @@ from heliosSDK import BASE_API_URL
 class SDKCore(object):
     """
     Core class for Python interface to Helios Core APIs.
+
     This class must be inherited by any additional Core API classes.
     """
+
     BASE_API_URL = BASE_API_URL
 
     def _parseInputsForQuery(self, input_dict):

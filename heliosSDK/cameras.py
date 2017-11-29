@@ -1,10 +1,10 @@
-'''
-SDK for the Helios Cameras API.  Methods are meant to represent the core
-functionality in the developer documentation.  Some may have additional
+"""
+SDK for the Helios Cameras API.
+
+Methods are meant to represent the core functionality in the developer documentation.  Some may have additional
 functionality for convenience.
 
-@author: Michael A. Bayer
-'''
+"""
 import logging
 
 from dateutil.parser import parse
