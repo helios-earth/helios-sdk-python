@@ -1,7 +1,7 @@
 '''
 SDK for the Helios Cameras API.  Methods are meant to represent the core
 functionality in the developer documentation.  Some may have additional
-functionality for convenience.  
+functionality for convenience.
 
 @author: Michael A. Bayer
 '''
@@ -72,7 +72,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                 output_json.extend(times)
                 break
 
-            # the last image is still newer than our end time, keep looking    
+            # the last image is still newer than our end time, keep looking
             if last < end_time:
                 output_json.extend(times)
                 start_time = times[-1]

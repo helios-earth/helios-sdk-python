@@ -1,5 +1,5 @@
 '''
-Manager for the authorization token required to access the Helios API 
+Manager for the authorization token required to access the Helios API
 
 @author: Michael A. Bayer
 '''
@@ -28,7 +28,7 @@ class TokenManager(object):
                 valid_token = self.verifyToken()
                 if not valid_token:
                     self.getToken()
-            except:
+            except Exception:
                 raise
         else:
             self.getToken()
@@ -40,7 +40,7 @@ class TokenManager(object):
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
             resp = r.post(self.token_url, data=data, auth=auth, verify=True)
-        except:
+        except Exception:
             token_url_http = 'http' + self.token_url.split('https')[1]
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)

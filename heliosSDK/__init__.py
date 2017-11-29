@@ -26,7 +26,7 @@ if os.path.exists(_config_file):
         _config = None
 
 if _config is None:
-    # Default logging configuration.    
+    # Default logging configuration.
     _log_file = os.path.join(os.path.expanduser('~'), 'heliosSDK.log')
     _config = {'version': 1, 'disable_existing_loggers': 1}
 

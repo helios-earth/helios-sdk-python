@@ -1,5 +1,5 @@
 '''
-Core and Base objects for the heliosSDK. 
+Core and Base objects for the heliosSDK.
 
 @author: Michael A. Bayer
 '''
@@ -278,7 +278,7 @@ class DownloadImagesMixin(object):
             out_file = os.path.join(out_dir, tail)
             img.save(out_file)
 
-        # Read and return image data.              
+        # Read and return image data.
         if return_image_data:
             return np.array(img)
 
