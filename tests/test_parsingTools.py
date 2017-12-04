@@ -22,32 +22,32 @@ def name():
 
 
 def test_parseTime_from_url(url):
-    result = parsingTools.parseTime(url)
+    result = parsingTools.parse_time(url)
     assert (result == datetime(2017, 11, 28, 15, 34, 7))
 
 
 def test_parseTime_from_name(name):
-    result = parsingTools.parseTime(name)
+    result = parsingTools.parse_time(name)
     assert (result == datetime(2017, 11, 28, 15, 34, 7))
 
 
 def test_parseCamera_from_url(url):
-    result = parsingTools.parseCamera(url)
+    result = parsingTools.parse_camera(url)
     assert (result == 'CODOT-11150-13689')
 
 
 def test_parseCamera_from_name(name):
-    result = parsingTools.parseCamera(name)
+    result = parsingTools.parse_camera(name)
     assert (result == 'CODOT-11150-13689')
 
 
 def test_parseImageName(url, name):
-    result = parsingTools.parseImageName(url)
+    result = parsingTools.parse_image_name(url)
     assert (result == name)
 
 
 def test_parseUrl(url):
-    result = parsingTools.parseUrl(url)
+    result = parsingTools.parse_url(url)
     assert (result == urlparse(url))
 
 

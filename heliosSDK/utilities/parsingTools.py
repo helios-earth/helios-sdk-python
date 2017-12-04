@@ -10,7 +10,7 @@ except ImportError:
     from urllib.parse import urlparse
 
 
-def parseTime(data):
+def parse_time(data):
     """
     Parse time from a URL or image name.
 
@@ -20,12 +20,12 @@ def parseTime(data):
         datetime: The parsed time as a datetime object.
 
     """
-    time_string = os.path.splitext(os.path.split(data)[-1])[0].split('_')[-1]
+    time_string = str(os.path.splitext(os.path.split(data)[-1])[0].split('_')[-1])
     time_stamp = datetime.strptime(time_string, '%Y%m%d%H%M%S%f')
     return time_stamp
 
 
-def parseCamera(data):
+def parse_camera(data):
     """
     Parse camera name from a URL or image name.
 
@@ -46,7 +46,7 @@ def parseCamera(data):
     return split2
 
 
-def parseImageName(url):
+def parse_image_name(url):
     """
     Parse image name from a URL.
 
@@ -59,7 +59,7 @@ def parseImageName(url):
     return os.path.split(url)[-1]
 
 
-def parseUrl(url):
+def parse_url(url):
     """
     Parse a URL into its components.
 
