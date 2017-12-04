@@ -2,7 +2,7 @@
 import json
 
 
-def readJsonFile(json_file, **kwargs):
+def read_json_file(json_file, **kwargs):
     """
     Read a json file.
 
@@ -17,7 +17,7 @@ def readJsonFile(json_file, **kwargs):
         return json.load(f, **kwargs)
 
 
-def readJsonString(json_string, **kwargs):
+def read_json_string(json_string, **kwargs):
     """
     Convert JSON formatted string to JSON.
 
@@ -31,7 +31,7 @@ def readJsonString(json_string, **kwargs):
     return json.loads(json_string, **kwargs)
 
 
-def writeJson(json_dict, f_path, **kwargs):
+def write_json(json_dict, f_path, **kwargs):
     """
     Write JSON dictionary to file.
 
@@ -46,7 +46,7 @@ def writeJson(json_dict, f_path, **kwargs):
         json.dump(json_dict, f, **kwargs)
 
 
-def mergeJson(data, keys):
+def merge_json(data, keys):
     """
     Merge JSON fields into a single list.
 
@@ -64,11 +64,11 @@ def mergeJson(data, keys):
     if not isinstance(keys, list):
         keys = [keys]
     for k in keys:
-        data = _mergeDigger(data, k)
+        data = _merge_digger(data, k)
     return data
 
 
-def _mergeDigger(data, key):
+def _merge_digger(data, key):
     merged_list = []
     if not isinstance(data, list):
         data = [data]
