@@ -31,19 +31,20 @@ def read_json_string(json_string, **kwargs):
     return json.loads(json_string, **kwargs)
 
 
-def write_json(json_dict, f_path, **kwargs):
+def write_json(json_dict, file_name, **kwargs):
     """
     Write JSON dictionary to file.
 
     Args:
         json_dict (dict): JSON formatted dictionary.
+        file_name (str): Output file name.
         **kwargs: Any keyword argument from the json.dump method.
     Returns:
         None
 
     """
-    with open(f_path, 'w+') as f:
-        json.dump(json_dict, f, **kwargs)
+    with open(file_name, 'w+') as output_file:
+        json.dump(json_dict, output_file, **kwargs)
 
 
 def merge_json(data, keys):
