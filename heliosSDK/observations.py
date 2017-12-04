@@ -7,6 +7,7 @@ documentation.  Some may have additional functionality for convenience.
 """
 import json
 import logging
+from contextlib import closing
 from multiprocessing.dummy import Pool as ThreadPool
 
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin, RequestManager
@@ -40,12 +41,8 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
 
         # Process ids.
         if num_threads > 1:
-            try:
-                thread_pool = ThreadPool(num_threads)
+            with closing(ThreadPool(num_threads)) as thread_pool:
                 data = thread_pool.map(self.__previewWorker, observation_ids)
-            finally:
-                thread_pool.close()
-                thread_pool.join()
         else:
             data = [self.__previewWorker(observation_ids[0])]
 

@@ -1,6 +1,7 @@
 """Mixins and core functionality."""
 import json
 import os
+from contextlib import closing
 from io import BytesIO
 from itertools import repeat
 from math import ceil
@@ -100,12 +101,8 @@ class IndexMixin(object):
         # Create thread pool and get results
         num_threads = min(self.MAX_THREADS, n_queries_needed)
         if num_threads > 1:
-            try:
-                thread_pool = ThreadPool(num_threads)
+            with closing(ThreadPool(num_threads)) as thread_pool:
                 results = thread_pool.map(self.__indexWorker, queries)
-            finally:
-                thread_pool.close()
-                thread_pool.join()
         else:
             results = [self.__indexWorker(queries[0])]
 
@@ -161,13 +158,9 @@ class ShowImageMixin(object):
 
         # Process urls.
         if num_threads > 1:
-            try:
-                thread_pool = ThreadPool(num_threads)
+            with closing(ThreadPool(num_threads)) as thread_pool:
                 data = thread_pool.map(self.__showImageWorker,
                                        zip(repeat(id_var), samples))
-            finally:
-                thread_pool.close()
-                thread_pool.join()
         else:
             data = [self.__showImageWorker((id_var, samples[0]))]
 
@@ -231,13 +224,10 @@ class DownloadImagesMixin(object):
         # Create thread pool
         num_threads = min(self.MAX_THREADS, n_urls)
         if num_threads > 1:
-            try:
-                thread_pool = ThreadPool(num_threads)
+            with closing(ThreadPool(num_threads)) as thread_pool:
                 data = thread_pool.map(self.__downloadWorker,
-                                       zip(urls, repeat(out_dir), repeat(return_image_data)))
-            finally:
-                thread_pool.close()
-                thread_pool.join()
+                                       zip(urls, repeat(out_dir),
+                                           repeat(return_image_data)))
         else:
             data = [self.__downloadWorker((urls[0], out_dir, return_image_data))]
 

@@ -7,6 +7,7 @@ documentation.  Some may have additional functionality for convenience.
 """
 import hashlib
 import logging
+from contextlib import closing
 from itertools import repeat
 from multiprocessing.dummy import Pool as ThreadPool
 
@@ -163,13 +164,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         # Process urls.
         if num_threads > 1:
-            try:
-                thread_pool = ThreadPool(num_threads)
+            with closing(ThreadPool(num_threads)) as thread_pool:
                 data = thread_pool.map(self.__addImagesWorker,
                                        zip(repeat(collection_id), urls))
-            finally:
-                thread_pool.close()
-                thread_pool.join()
         else:
             data = [self.__addImagesWorker((collection_id, urls[0]))]
 
@@ -221,13 +218,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         # Process urls.
         if num_threads > 1:
-            try:
-                thread_pool = ThreadPool(num_threads)
+            with closing(ThreadPool(num_threads)) as thread_pool:
                 data = thread_pool.map(self.__removeImagesWorker,
                                        zip(repeat(collection_id), names))
-            finally:
-                thread_pool.close()
-                thread_pool.join()
         else:
             data = [self.__removeImagesWorker((collection_id, names[0]))]
 
