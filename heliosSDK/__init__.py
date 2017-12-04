@@ -31,10 +31,9 @@ if CONFIG is None:
     CONFIG = {'version': 1, 'disable_existing_loggers': 1}
 
     CONFIG['formatters'] = {}
-    format_str = '%(asctime)s-%(levelname)s-%(module)s-%(name)s-%(funcName)s: '
-    '%(message)s'
-
-    CONFIG['formatters']['simple'] = {'format': format_str,
+    CONFIG['formatters']['simple'] = {'format': '%(asctime)s-%(levelname)s'
+                                                '-%(module)s-%(name)s'
+                                                '-%(funcName)s: %(message)s',
                                       'datefmt': '%H:%M:%S'}
 
     CONFIG['handlers'] = {}
@@ -55,3 +54,7 @@ if CONFIG is None:
 
 # Initialize logging
 logging.config.dictConfig(CONFIG)
+
+# Cleanup unused constants
+del CONFIG
+del CONFIG_FILE
