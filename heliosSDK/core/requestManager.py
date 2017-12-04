@@ -19,22 +19,25 @@ class RequestManager(object):
 
         # Create API session with authentication credentials
         self.apiSession = requests.Session()
-        self.apiSession.headers = {self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']}
+        self.apiSession.headers = {
+            self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']}
         self.apiSession.verify = self.SSL_VERIFY
-        self.apiSession.mount('https://', requests.adapters.HTTPAdapter(pool_maxsize=pool_maxsize,
-                                                                        max_retries=self.MAX_RETRIES))
+        self.apiSession.mount('https://', requests.adapters.HTTPAdapter(
+            pool_maxsize=pool_maxsize, max_retries=self.MAX_RETRIES))
 
         # Create bare session without credentials
         self.session = requests.Session()
         self.session.verify = self.SSL_VERIFY
-        self.session.mount('https://', requests.adapters.HTTPAdapter(pool_maxsize=pool_maxsize,
-                                                                     max_retries=self.MAX_RETRIES))
+        self.session.mount('https://', requests.adapters.HTTPAdapter(
+            pool_maxsize=pool_maxsize, max_retries=self.MAX_RETRIES))
 
     def __del__(self):
         self.apiSession.close()
         self.session.close()
 
-    def __request(self, query, use_api_cred=True, request_type='get', **kwargs):
+    def __request(self, query, use_api_cred=True, request_type='get',
+                  **kwargs):
+
         query = query.replace(' ', '+')
         kwargs['timeout'] = kwargs.get('timeout', self.TIMEOUT)
 
@@ -57,11 +60,13 @@ class RequestManager(object):
             elif request_type == 'patch':
                 resp = sess_alias.patch(query, **kwargs)
             else:
-                raise ValueError('Unsupported query of type: {}'.format(request_type))
+                raise ValueError('Unsupported query of type: {}'.format(
+                    request_type))
             resp.raise_for_status()
         # Log exceptions and return
         except requests.exceptions.HTTPError:
-            self.logger.error('HTTPError {}: {}'.format(resp.status_code, query))
+            self.logger.error('HTTPError {}: {}'.format(
+                resp.status_code, query))
             raise
         except Exception as e:
             self.logger.error('Error: {}'.format(str(e)))

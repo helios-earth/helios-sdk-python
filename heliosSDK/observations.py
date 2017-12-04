@@ -10,7 +10,8 @@ import logging
 from contextlib import closing
 from multiprocessing.dummy import Pool as ThreadPool
 
-from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin, RequestManager
+from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, \
+    DownloadImagesMixin, RequestManager
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
@@ -51,7 +52,9 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
 
         # Check results
         n_data = len(data)
-        message = 'Leaving preview({} out of {} successful)'.format(n_data, n_obs)
+        message = 'Leaving preview({} out of {} successful)'.format(
+            n_data, n_obs)
+
         if n_data == 0:
             self.logger.error(message)
             return -1
@@ -65,9 +68,8 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     def __previewWorker(self, args):
         observation_id = args
 
-        query_str = '{}/{}/{}/preview'.format(self.BASE_API_URL,
-                                              self.CORE_API,
-                                              observation_id)
+        query_str = '{}/{}/{}/preview'.format(
+            self.BASE_API_URL, self.CORE_API, observation_id)
 
         try:
             resp = self.requestManager.get(query_str)
@@ -82,10 +84,12 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
             hdrs = json.loads(resp2.headers['x-amz-meta-helios'])
             if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
                 # Log dud
-                self.logger.info('preview query returned dud image: {}'.format(query_str))
+                self.logger.info('preview query returned dud image: {}'.format(
+                    query_str))
                 return None
 
         return redirect_url
 
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        return super(Observations, self).downloadImages(urls, out_dir=out_dir, return_image_data=return_image_data)
+        return super(Observations, self).downloadImages(
+            urls, out_dir=out_dir, return_image_data=return_image_data)

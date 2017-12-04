@@ -33,9 +33,12 @@ class SDKCore(object):
         # Parse input_dict into a str
         for key in input_dict.keys():
             if isinstance(input_dict[key], (list, tuple)):
-                query_str += str(key) + '=' + ','.join([str(x) for x in input_dict[key]]) + '&'
+                query_str += (str(key)
+                              + '='
+                              + ','.join([str(x) for x in input_dict[key]])
+                              + '&')
             else:
-                query_str += str(key) + '=' + str(input_dict[key]) + '&'
+                query_str += (str(key) + '=' + str(input_dict[key]) + '&')
         query_str = query_str[:-1]
 
         return query_str
@@ -59,11 +62,8 @@ class IndexMixin(object):
             else:
                 temp_limit = limit
 
-            query_str = '{}/{}?{}&limit={}&skip={}'.format(self.BASE_API_URL,
-                                                           self.CORE_API,
-                                                           params_str,
-                                                           temp_limit,
-                                                           i)
+            query_str = '{}/{}?{}&limit={}&skip={}'.format(
+                self.BASE_API_URL, self.CORE_API, params_str, temp_limit, i)
 
             queries.append(query_str)
 
@@ -79,7 +79,8 @@ class IndexMixin(object):
         # Warn the user when truncation occurs. (max_skip is hit)
         if total > max_skip:
             # Log truncation warning
-            self.logger.warn('Maximum skip level. Truncated results will be returned for: {}'.format(kwargs))
+            self.logger.warn(
+                'Maximum skip level. Truncated results for: {}'.format(kwargs))
 
         # Get number of results in initial query.
         try:
@@ -96,7 +97,8 @@ class IndexMixin(object):
         queries = queries[0:n_queries_needed]
 
         # Log number of queries required.
-        self.logger.info('{} index queries required for: {}'.format(n_queries_needed, kwargs))
+        self.logger.info('{} index queries required for: {}'.format(
+            n_queries_needed, kwargs))
 
         # Create thread pool and get results
         num_threads = min(self.MAX_THREADS, n_queries_needed)
@@ -126,13 +128,12 @@ class IndexMixin(object):
 class ShowMixin(object):
     def show(self, id_var, **kwargs):
         # Log query
-        self.logger.info('Entering show(id_var={}, kwargs={})'.format(id_var, kwargs))
+        self.logger.info('Entering show(id_var={}, kwargs={})'.format(
+            id_var, kwargs))
 
         params_str = self.parseInputsForQuery(kwargs)
-        query_str = '{}/{}/{}?{}'.format(self.BASE_API_URL,
-                                         self.CORE_API,
-                                         id_var,
-                                         params_str)
+        query_str = '{}/{}/{}?{}'.format(
+            self.BASE_API_URL, self.CORE_API, id_var, params_str)
 
         resp = self.requestManager.get(query_str)
         geo_json_feature = resp.json()
@@ -167,9 +168,11 @@ class ShowImageMixin(object):
         # Remove errors, if they exist
         data = [x for x in data if x != -1]
 
-        # Check results for errors
+        # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving showImage({} out of {} successful)'.format(n_data, n_samples)
+        message = 'Leaving showImage({} out of {} successful)'.format(
+            n_data, n_samples)
+
         if n_data == 0:
             self.logger.error(message)
             return -1
@@ -183,10 +186,8 @@ class ShowImageMixin(object):
     def __showImageWorker(self, args):
         id_var, x = args
 
-        query_str = '{}/{}/{}/images/{}'.format(self.BASE_API_URL,
-                                                self.CORE_API,
-                                                id_var,
-                                                x)
+        query_str = '{}/{}/{}/images/{}'.format(
+            self.BASE_API_URL, self.CORE_API, id_var, x)
 
         try:
             resp = self.requestManager.get(query_str)
@@ -201,7 +202,8 @@ class ShowImageMixin(object):
             hdrs = json.loads(resp2.headers['x-amz-meta-helios'])
             if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
                 # Log dud
-                self.logger.info('showImage query returned dud image: {}'.format(query_str))
+                self.logger.info(
+                    'showImage query returned dud image: {}'.format(query_str))
                 return None
 
         return redirect_url
@@ -215,7 +217,8 @@ class DownloadImagesMixin(object):
         n_urls = len(urls)
 
         # Log start
-        self.logger.info('Entering downloadImages(N={}, out_dir={}'.format(n_urls, out_dir))
+        self.logger.info('Entering downloadImages(N={}, out_dir={}'.format(
+            n_urls, out_dir))
 
         if out_dir is not None:
             if not os.path.exists(out_dir):
@@ -229,7 +232,9 @@ class DownloadImagesMixin(object):
                                        zip(urls, repeat(out_dir),
                                            repeat(return_image_data)))
         else:
-            data = [self.__downloadWorker((urls[0], out_dir, return_image_data))]
+            data = [self.__downloadWorker((urls[0],
+                                           out_dir,
+                                           return_image_data))]
 
         # Remove errors, if the exist
         if not return_image_data:
@@ -237,9 +242,11 @@ class DownloadImagesMixin(object):
         else:
             data = [x for x in data if isinstance(x, np.ndarray)]
 
-        # Check results for errors
+        # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving downloadImages({} out of {} successful)'.format(n_data, n_urls)
+        message = 'Leaving downloadImages({} out of {} successful)'.format(
+            n_data, n_urls)
+
         if n_data == 0:
             self.logger.error(message)
             return -1

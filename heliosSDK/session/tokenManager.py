@@ -53,7 +53,8 @@ class TokenManager(object):
         resp.raise_for_status()
 
         token_request = resp.json()
-        self.token = {'name': 'Authorization', 'value': 'Bearer ' + token_request['access_token']}
+        self.token = {'name': 'Authorization',
+                      'value': 'Bearer ' + token_request['access_token']}
 
         self.writeToken()
 
@@ -69,7 +70,8 @@ class TokenManager(object):
         os.remove(self._token_file)
 
     def verifyToken(self):
-        resp = r.get(self.api_url + '/session', headers={self.token['name']: self.token['value']},
+        resp = r.get(self.api_url + '/session',
+                     headers={self.token['name']: self.token['value']},
                      verify=True)
         resp.raise_for_status()
 
@@ -110,5 +112,6 @@ class TokenManager(object):
                     self.api_url = self.__default_api_url
                     self.token_url = self.__default_api_url + '/oauth/token'
         else:
-            raise Exception(
-                'No credentials could be found. Be sure to set environment variables or .helios_auth file correctly.')
+            raise Exception('No credentials could be found. Be sure to set '
+                            'environment variables or .helios_auth file '
+                            'correctly.')

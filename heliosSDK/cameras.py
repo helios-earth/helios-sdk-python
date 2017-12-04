@@ -9,10 +9,12 @@ import logging
 
 from dateutil.parser import parse
 
-from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, DownloadImagesMixin, RequestManager
+from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, \
+    DownloadImagesMixin, RequestManager
 
 
-class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
+class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
+              SDKCore):
     CORE_API = 'cameras'
     MAX_THREADS = 32
 
@@ -28,13 +30,11 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
 
     def images(self, camera_id, start_time, limit=500):
         # Log entrance
-        self.logger.info('Entering images(id={}, start_time={})'.format(camera_id, start_time))
+        self.logger.info('Entering images(id={}, start_time={})'.format(
+            camera_id, start_time))
 
-        query_str = '{}/{}/{}/images?time={}&limit={}'.format(self.BASE_API_URL,
-                                                              self.CORE_API,
-                                                              camera_id,
-                                                              start_time,
-                                                              limit)
+        query_str = '{}/{}/{}/images?time={}&limit={}'.format(
+            self.BASE_API_URL, self.CORE_API, camera_id, start_time, limit)
 
         resp = self.requestManager.get(query_str)
         json_resp = resp.json()
@@ -47,7 +47,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
     def imagesRange(self, camera_id, start_time, end_time, limit=500):
         # Log entrance
         self.logger.info(
-            'Entering imagesRange(id={}, start_time={}, end_time={})'.format(camera_id, start_time, end_time))
+            'Entering imagesRange(id={}, start_time={}, end_time={})'.format(
+                camera_id, start_time, end_time))
 
         end_time = parse(end_time).utctimetuple()
         output_json = []
@@ -77,7 +78,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
                 start_time = times[-1]
                 continue
             else:
-                good_times = [x for x in times if parse(x).utctimetuple() < end_time]
+                good_times = [x for x in times if parse(x).utctimetuple()
+                              < end_time]
                 output_json.extend(good_times)
                 break
 
@@ -90,4 +92,5 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCor
         return super(Cameras, self).showImage(camera_id, times)
 
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        return super(Cameras, self).downloadImages(urls, out_dir=out_dir, return_image_data=return_image_data)
+        return super(Cameras, self).downloadImages(
+            urls, out_dir=out_dir, return_image_data=return_image_data)

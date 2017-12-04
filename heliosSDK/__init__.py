@@ -16,7 +16,8 @@ from .observations import Observations
 __version__ = '1.1.1'
 
 # Attempt to read SDK logging config file
-CONFIG_FILE = os.path.join(os.path.expanduser('~'), 'heliosSDK_logger_config.json')
+CONFIG_FILE = os.path.join(os.path.expanduser('~'),
+                           'heliosSDK_logger_config.json')
 CONFIG = None
 if os.path.exists(CONFIG_FILE):
     try:
@@ -30,7 +31,11 @@ if CONFIG is None:
     CONFIG = {'version': 1, 'disable_existing_loggers': 1}
 
     CONFIG['formatters'] = {}
-    CONFIG['formatters']['simple'] = {'format': '%(asctime)s-%(levelname)s-%(module)s-%(name)s-%(funcName)s: %(message)s', 'datefmt': '%H:%M:%S'}
+    format_str = '%(asctime)s-%(levelname)s-%(module)s-%(name)s-%(funcName)s: '
+    '%(message)s'
+
+    CONFIG['formatters']['simple'] = {'format': format_str,
+                                      'datefmt': '%H:%M:%S'}
 
     CONFIG['handlers'] = {}
     CONFIG['handlers']['console'] = {'class': 'logging.StreamHandler',

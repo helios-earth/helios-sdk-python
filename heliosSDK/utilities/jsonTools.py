@@ -50,11 +50,13 @@ def mergeJson(data, keys):
     """
     Merge JSON fields into a single list.
 
-    Keys can either be a single string or a list of strings signifying a chain of "keys" into the dictionary.
+    Keys can either be a single string or a list of strings signifying a chain
+    of "keys" into the dictionary.
 
     Args:
         data (list): Dictionary to merge data from.
-        keys (list,str): List of keys or str for single key.  signifying a chain of keys into the dictionary
+        keys (list,str): List of keys or str for single key.  signifying a
+                         chain of keys into the dictionary
     Returns:
         list: Merged values.
 

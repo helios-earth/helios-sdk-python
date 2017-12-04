@@ -11,10 +11,12 @@ from contextlib import closing
 from itertools import repeat
 from multiprocessing.dummy import Pool as ThreadPool
 
-from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, DownloadImagesMixin, RequestManager
+from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, \
+    DownloadImagesMixin, RequestManager
 
 
-class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
+class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
+                  SDKCore):
     CORE_API = 'collections'
     MAX_THREADS = 32
 
@@ -26,14 +28,19 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return super(Collections, self).index(**kwargs)
 
     def show(self, collection_id, limit=200, marker=None):
-        return super(Collections, self).show(collection_id, limit=limit, marker=marker)
+        return super(Collections, self).show(collection_id,
+                                             limit=limit,
+                                             marker=marker)
 
     def create(self, name, description, tags=None):
         # Log start
-        self.logger.info('Entering create(name={}, description={}, tags={}'.format(name, description, tags))
+        self.logger.info(
+            'Entering create(name={}, description={}, tags={})'.format(
+                name, description, tags))
 
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self.requestManager._AUTH_TOKEN['value'].replace('Bearer ', '')
+        post_token = self.requestManager._AUTH_TOKEN['value'].replace(
+            'Bearer ', '')
 
         # handle more than one tag
         if isinstance(tags, (list, tuple)):
@@ -54,22 +61,23 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         json_response = resp.json()
 
         # Log success
-        self.logger.info('Leaving create(new_id={})'.format(json_response['collection_id']))
+        self.logger.info('Leaving create(new_id={})'.format(
+            json_response['collection_id']))
 
         return json_response
 
     def update(self, collections_id, name=None, description=None, tags=None):
         if name is None and description is None and tags is None:
-            raise ValueError('Update requires at least one named argument to be set.')
+            raise ValueError('Update requires at least one named argument.')
 
         # Log start
-        self.logger.info('Entering update(id={}, name={}, description={}, tags={})'.format(collections_id,
-                                                                                           name,
-                                                                                           description,
-                                                                                           tags))
+        self.logger.info(
+            'Entering update(id={}, name={}, description={}, tags={})'.format(
+                collections_id, name, description, tags))
 
         # need to strip out the Bearer to work with a PATCH for collections
-        patch_token = self.requestManager._AUTH_TOKEN['value'].replace('Bearer ', '')
+        patch_token = self.requestManager._AUTH_TOKEN['value'].replace(
+            'Bearer ', '')
 
         # handle more than one tag
         if isinstance(tags, (list, tuple)):
@@ -88,16 +96,17 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
 
-        patch_url = '{}/{}/{}'.format(self.BASE_API_URL, self.CORE_API, collections_id)
+        patch_url = '{}/{}/{}'.format(self.BASE_API_URL,
+                                      self.CORE_API,
+                                      collections_id)
 
         resp = self.requestManager.patch(patch_url, headers=header, data=parms)
         json_response = resp.json()
 
         # Log success
-        self.logger.info('Leaving update(id={}, name={}, description={}, tags={})'.format(collections_id,
-                                                                                          name,
-                                                                                          description,
-                                                                                          tags))
+        self.logger.info(
+            'Leaving update(id={}, name={}, description={}, tags={})'.format(
+                collections_id, name, description, tags))
 
         return json_response
 
@@ -106,7 +115,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         mark_img = ''
 
         # Log start
-        self.logger.info('Entering images(collection_id={}, camera={})'.format(collection_id, camera))
+        self.logger.info('Entering images(collection_id={}, '
+                         'camera={})'.format(collection_id, camera))
 
         if camera is not None:
             md5_str = hashlib.md5(camera.encode('utf-8')).hexdigest()
@@ -116,13 +126,16 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         good_images = []
         while True:
-            results = self.show(collection_id, limit=max_limit, marker=mark_img)
+            results = self.show(collection_id,
+                                limit=max_limit,
+                                marker=mark_img)
 
             # Gather images.
             images_found = results['images']
 
             if camera is not None:
-                imgs_found_temp = [x for x in images_found if x.split('_')[0] == camera]
+                imgs_found_temp = [x for x in images_found if x.split('_')[0]
+                                   == camera]
             else:
                 imgs_found_temp = images_found
 
@@ -139,7 +152,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                        'images': good_images}
 
         # Log success
-        self.logger.info('Leaving images({} images found)'.format(len(good_images)))
+        self.logger.info('Leaving images({} images found)'.format(
+            len(good_images)))
 
         return json_output
 
@@ -147,8 +161,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return super(Collections, self).showImage(collection_id, image_names)
 
     def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        return super(Collections, self).downloadImages(urls, out_dir=out_dir,
-                                                       return_image_data=return_image_data)
+        return super(Collections, self).downloadImages(
+            urls, out_dir=out_dir, return_image_data=return_image_data)
 
     def addImage(self, collection_id, urls):
         # Force iterable
@@ -157,7 +171,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         n_urls = len(urls)
 
         # Log start
-        self.logger.info('Entering addImage(collection_id={}, N={})'.format(collection_id, n_urls))
+        self.logger.info('Entering addImage(collection_id={}, N={})'.format(
+            collection_id, n_urls))
 
         # Get number of threads
         num_threads = min(self.MAX_THREADS, n_urls)
@@ -173,9 +188,11 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         # Remove errors, if they exist
         data = [x for x in data if x != -1]
 
-        # Check results for errors
+        # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving addImage({} out of {} successful)'.format(n_data, n_urls)
+        message = 'Leaving addImage({} out of {} successful)'.format(
+            n_data, n_urls)
+
         if n_data == 0:
             self.logger.error(message)
             return -1
@@ -190,15 +207,20 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         coll_id, img_url = args
 
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self.requestManager._AUTH_TOKEN['value'].replace('Bearer ', '')
+        post_token = self.requestManager._AUTH_TOKEN['value'].replace(
+            'Bearer ', '')
 
         # Compose post request
         parms = {'s3_src': img_url, 'access_token': post_token}
-        header = {'name': 'Content-Type', 'value': 'application/x-www-form-urlencoded'}
-        post_url = '{}/collections/{}/images'.format(self.BASE_API_URL, coll_id)
+        header = {'name': 'Content-Type',
+                  'value': 'application/x-www-form-urlencoded'}
+        post_url = '{}/collections/{}/images'.format(self.BASE_API_URL,
+                                                     coll_id)
 
         try:
-            resp = self.requestManager.post(post_url, headers=header, data=parms)
+            resp = self.requestManager.post(post_url,
+                                            headers=header,
+                                            data=parms)
         except Exception:
             return -1
 
@@ -211,7 +233,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         n_names = len(names)
 
         # Log start
-        self.logger.info('Entering removeImage(collection_id={}, N={})'.format(collection_id, n_names))
+        self.logger.info('Entering removeImage(collection_id={}, N={})'.format(
+            collection_id, n_names))
 
         # Get number of threads
         num_threads = min(self.MAX_THREADS, n_names)
@@ -227,9 +250,11 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         # Remove errors, if they exist
         data = [x for x in data if x != -1]
 
-        # Check results for errors
+        # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving removeImage({} out of {} successful)'.format(n_data, n_names)
+        message = 'Leaving removeImage({} out of {} successful)'.format(
+            n_data, n_names)
+
         if n_data == 0:
             self.logger.error(message)
             return -1
@@ -243,10 +268,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     def __removeImagesWorker(self, args):
         coll_id, img_name = args
 
-        query_str = '{}/{}/{}/images/{}'.format(self.BASE_API_URL,
-                                                self.CORE_API,
-                                                coll_id,
-                                                img_name)
+        query_str = '{}/{}/{}/images/{}'.format(
+            self.BASE_API_URL, self.CORE_API, coll_id, img_name)
 
         try:
             resp = self.requestManager.delete(query_str)
@@ -257,7 +280,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     def copy(self, collection_id, new_name):
         # Log start
-        self.logger.info('Entering copy(collection_id={}, new_name={}'.format(collection_id, new_name))
+        self.logger.info('Entering copy(collection_id={}, new_name={}'.format(
+            collection_id, new_name))
 
         query_str = '{}/{}/{}'.format(self.BASE_API_URL,
                                       self.CORE_API,
@@ -266,7 +290,10 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         resp = self.requestManager.get(query_str)
         json_response = resp.json()
 
-        output = self.create(new_name, json_response['description'], json_response['tags'])
+        output = self.create(new_name,
+                             json_response['description'],
+                             json_response['tags'])
+
         new_id = output['collection_id']
 
         # Gather images that need to be copied.
