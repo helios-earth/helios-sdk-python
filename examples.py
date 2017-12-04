@@ -53,8 +53,8 @@ def testObservations(output_dir=''):
     """Observations Core API Testing."""
     observations = Observations()
 
-    observations_test_0 = observations.index(aggs='city',
-                                             bbox='-77.564,42.741,-76.584,43.193')
+    observations_test_0 = observations.index(
+        aggs='city', bbox='-77.564,42.741,-76.584,43.193')
     jsonTools.writeJson(observations_test_0,
                         os.path.join(output_dir, r'observations_index.json'))
 
@@ -99,7 +99,8 @@ def testCollections(output_dir=''):
                         os.path.join(output_dir, r'collections_images.json'))
 
     collections_test_4 = collections.showImage(
-        '6a59fd46-bdf0-47e4-a719-992a9e9e988b', collections_test_3['images'][0])
+        '6a59fd46-bdf0-47e4-a719-992a9e9e988b',
+        collections_test_3['images'][0])
     jsonTools.writeJson(collections_test_4,
                         os.path.join(output_dir,
                                      r'collections_showImage.json'))
