@@ -51,7 +51,7 @@ class IndexMixin(object):
         skip = kwargs.get('skip', 0)
 
         # Log start
-        self.logger.info('Entering index(kwargs={})'.format(kwargs))
+        self.logger.info('Entering index(kwargs=%s)', kwargs)
 
         # Establish all queries.
         params_str = self.parseInputsForQuery(kwargs)
@@ -80,7 +80,7 @@ class IndexMixin(object):
         if total > max_skip:
             # Log truncation warning
             self.logger.warn(
-                'Maximum skip level. Truncated results for: {}'.format(kwargs))
+                'Maximum skip level. Truncated results for: %s', kwargs)
 
         # Get number of results in initial query.
         try:
@@ -97,8 +97,9 @@ class IndexMixin(object):
         queries = queries[0:n_queries_needed]
 
         # Log number of queries required.
-        self.logger.info('{} index queries required for: {}'.format(
-            n_queries_needed, kwargs))
+        self.logger.info('%s index queries required for: %s',
+                         n_queries_needed,
+                         kwargs)
 
         # Create thread pool and get results
         num_threads = min(self.MAX_THREADS, n_queries_needed)
@@ -112,7 +113,7 @@ class IndexMixin(object):
         results.insert(0, initial_resp_json)
 
         # Log success
-        self.logger.info('Leaving index(N={})'.format(total))
+        self.logger.info('Leaving index(N=%s)', total)
 
         return results
 
@@ -128,8 +129,7 @@ class IndexMixin(object):
 class ShowMixin(object):
     def show(self, id_var, **kwargs):
         # Log query
-        self.logger.info('Entering show(id_var={}, kwargs={})'.format(
-            id_var, kwargs))
+        self.logger.info('Entering show(id_var=%s, kwargs=%s)', id_var, kwargs)
 
         params_str = self.parseInputsForQuery(kwargs)
         query_str = '{}/{}/{}?{}'.format(
@@ -152,7 +152,7 @@ class ShowImageMixin(object):
         n_samples = len(samples)
 
         # Log entrance
-        self.logger.info('Entering showImage({} values)'.format(n_samples))
+        self.logger.info('Entering showImage(%s values)', n_samples)
 
         # Get number of threads
         num_threads = min(self.MAX_THREADS, n_samples)
@@ -203,7 +203,7 @@ class ShowImageMixin(object):
             if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
                 # Log dud
                 self.logger.info(
-                    'showImage query returned dud image: {}'.format(query_str))
+                    'showImage query returned dud image: %s', query_str)
                 return None
 
         return redirect_url
@@ -217,8 +217,9 @@ class DownloadImagesMixin(object):
         n_urls = len(urls)
 
         # Log start
-        self.logger.info('Entering downloadImages(N={}, out_dir={}'.format(
-            n_urls, out_dir))
+        self.logger.info('Entering downloadImages(N=%s, out_dir=%s',
+                         n_urls,
+                         out_dir)
 
         if out_dir is not None:
             if not os.path.exists(out_dir):

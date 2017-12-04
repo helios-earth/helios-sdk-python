@@ -35,7 +35,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         n_obs = len(observation_ids)
 
         # Log entrance
-        self.logger.info('Entering preview({} observation_ids)'.format(n_obs))
+        self.logger.info('Entering preview(%s observation_ids)', n_obs)
 
         # Get number of threads
         num_threads = min(self.MAX_THREADS, n_obs)
@@ -84,8 +84,8 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
             hdrs = json.loads(resp2.headers['x-amz-meta-helios'])
             if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
                 # Log dud
-                self.logger.info('preview query returned dud image: {}'.format(
-                    query_str))
+                self.logger.info('preview query returned dud image: %s',
+                                 query_str)
                 return None
 
         return redirect_url

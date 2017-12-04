@@ -30,8 +30,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
     def images(self, camera_id, start_time, limit=500):
         # Log entrance
-        self.logger.info('Entering images(id={}, start_time={})'.format(
-            camera_id, start_time))
+        self.logger.info('Entering images(id=%s, start_time=%s)',
+                         camera_id, start_time)
 
         query_str = '{}/{}/{}/images?time={}&limit={}'.format(
             self.BASE_API_URL, self.CORE_API, camera_id, start_time, limit)
@@ -40,15 +40,15 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         json_resp = resp.json()
 
         # log exit
-        self.logger.info('Leaving images(N={})'.format(json_resp['total']))
+        self.logger.info('Leaving images(N=%s)', json_resp['total'])
 
         return json_resp
 
     def imagesRange(self, camera_id, start_time, end_time, limit=500):
         # Log entrance
         self.logger.info(
-            'Entering imagesRange(id={}, start_time={}, end_time={})'.format(
-                camera_id, start_time, end_time))
+            'Entering imagesRange(id=%s, start_time=%s, end_time=%s)',
+            camera_id, start_time, end_time)
 
         end_time = parse(end_time).utctimetuple()
         output_json = []
@@ -84,7 +84,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                 break
 
         # Log exit
-        self.logger.info('Leaving imagesRange(N={})'.format(len(output_json)))
+        self.logger.info('Leaving imagesRange(N=%s)', len(output_json))
 
         return {'total': len(output_json), 'times': output_json}
 

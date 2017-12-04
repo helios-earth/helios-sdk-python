@@ -65,11 +65,10 @@ class RequestManager(object):
             resp.raise_for_status()
         # Log exceptions and return
         except requests.exceptions.HTTPError:
-            self.logger.error('HTTPError {}: {}'.format(
-                resp.status_code, query))
+            self.logger.error('HTTPError %s: %s', resp.status_code, query)
             raise
         except Exception as e:
-            self.logger.error('Error: {}'.format(str(e)))
+            self.logger.error('Error: %s', str(e))
             raise
 
         return resp

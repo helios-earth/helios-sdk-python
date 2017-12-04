@@ -35,8 +35,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
     def create(self, name, description, tags=None):
         # Log start
         self.logger.info(
-            'Entering create(name={}, description={}, tags={})'.format(
-                name, description, tags))
+            'Entering create(name=%s, description=%s, tags=%s)', name,
+            description, tags)
 
         # need to strip out the Bearer to work with a POST for collections
         post_token = self.requestManager._AUTH_TOKEN['value'].replace(
@@ -61,8 +61,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         json_response = resp.json()
 
         # Log success
-        self.logger.info('Leaving create(new_id={})'.format(
-            json_response['collection_id']))
+        self.logger.info('Leaving create(new_id=%s)',
+                         json_response['collection_id'])
 
         return json_response
 
@@ -72,8 +72,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         # Log start
         self.logger.info(
-            'Entering update(id={}, name={}, description={}, tags={})'.format(
-                collections_id, name, description, tags))
+            'Entering update(id=%s, name=%s, description=%s, tags=%s)',
+            collections_id, name, description, tags)
 
         # need to strip out the Bearer to work with a PATCH for collections
         patch_token = self.requestManager._AUTH_TOKEN['value'].replace(
@@ -105,8 +105,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         # Log success
         self.logger.info(
-            'Leaving update(id={}, name={}, description={}, tags={})'.format(
-                collections_id, name, description, tags))
+            'Leaving update(id=%s, name=%s, description=%s, tags=%s)',
+            collections_id, name, description, tags)
 
         return json_response
 
@@ -115,8 +115,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         mark_img = ''
 
         # Log start
-        self.logger.info('Entering images(collection_id={}, '
-                         'camera={})'.format(collection_id, camera))
+        self.logger.info('Entering images(collection_id=%s, camera=%s)',
+                         collection_id, camera)
 
         if camera is not None:
             md5_str = hashlib.md5(camera.encode('utf-8')).hexdigest()
@@ -152,8 +152,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                        'images': good_images}
 
         # Log success
-        self.logger.info('Leaving images({} images found)'.format(
-            len(good_images)))
+        self.logger.info('Leaving images(%s images found)', len(good_images))
 
         return json_output
 
@@ -171,8 +170,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         n_urls = len(urls)
 
         # Log start
-        self.logger.info('Entering addImage(collection_id={}, N={})'.format(
-            collection_id, n_urls))
+        self.logger.info('Entering addImage(collection_id=%s, N=%s)',
+                         collection_id, n_urls)
 
         # Get number of threads
         num_threads = min(self.MAX_THREADS, n_urls)
@@ -233,8 +232,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         n_names = len(names)
 
         # Log start
-        self.logger.info('Entering removeImage(collection_id={}, N={})'.format(
-            collection_id, n_names))
+        self.logger.info('Entering removeImage(collection_id=%s, N=%s)',
+                         collection_id, n_names)
 
         # Get number of threads
         num_threads = min(self.MAX_THREADS, n_names)
@@ -280,8 +279,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
     def copy(self, collection_id, new_name):
         # Log start
-        self.logger.info('Entering copy(collection_id={}, new_name={}'.format(
-            collection_id, new_name))
+        self.logger.info('Entering copy(collection_id=%s, new_name=%s',
+                         collection_id, new_name)
 
         query_str = '{}/{}/{}'.format(self.BASE_API_URL,
                                       self.CORE_API,
@@ -305,6 +304,6 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         results2 = self.addImage(new_id, urls)
 
         # Log success
-        self.logger.info('Leaving copy(new_id={})'.format(new_id))
+        self.logger.info('Leaving copy(new_id=%s)', new_id)
 
         return results2
