@@ -47,7 +47,8 @@ def test_cameras(utcNow):
     url = show_image_query['url'][0]
 
     # Perform downloadImages query
-    download_images_results = cameras.downloadImages(url, return_image_data=True)
+    download_images_results = cameras.downloadImages(url,
+                                                     return_image_data=True)
 
     # Check download for image data.
     assert (download_images_results[0].size > 0)

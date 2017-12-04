@@ -41,7 +41,8 @@ def test_observations(utcRange):
     url = preview_results['url'][0]
 
     # Perform downloadImages query
-    download_images_results = observations_instance.downloadImages(url, return_image_data=True)
+    download_images_results = observations_instance.downloadImages(
+        url, return_image_data=True)
 
     # Check download for image data.
     assert (download_images_results[0].size > 0)
