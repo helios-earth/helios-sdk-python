@@ -18,11 +18,11 @@ class RequestManager(object):
         self.logger = logging.getLogger(__name__)
 
         # Create API session with authentication credentials
-        self.apiSession = requests.Session()
-        self.apiSession.headers = {
+        self.api_session = requests.Session()
+        self.api_session.headers = {
             self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']}
-        self.apiSession.verify = self.SSL_VERIFY
-        self.apiSession.mount('https://', requests.adapters.HTTPAdapter(
+        self.api_session.verify = self.SSL_VERIFY
+        self.api_session.mount('https://', requests.adapters.HTTPAdapter(
             pool_maxsize=pool_maxsize, max_retries=self.MAX_RETRIES))
 
         # Create bare session without credentials
@@ -32,7 +32,7 @@ class RequestManager(object):
             pool_maxsize=pool_maxsize, max_retries=self.MAX_RETRIES))
 
     def __del__(self):
-        self.apiSession.close()
+        self.api_session.close()
         self.session.close()
 
     def __request(self, query, use_api_cred=True, request_type='get',
@@ -43,7 +43,7 @@ class RequestManager(object):
 
         # Alias the required session
         if use_api_cred:
-            sess_alias = self.apiSession
+            sess_alias = self.api_session
         else:
             sess_alias = self.session
 
