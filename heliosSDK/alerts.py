@@ -15,7 +15,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
     MAX_THREADS = 32
 
     def __init__(self):
-        self.requestManager = RequestManager(pool_maxsize=self.MAX_THREADS)
+        self.request_manager = RequestManager(pool_maxsize=self.MAX_THREADS)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):

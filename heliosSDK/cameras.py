@@ -19,7 +19,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
     MAX_THREADS = 32
 
     def __init__(self):
-        self.requestManager = RequestManager(pool_maxsize=self.MAX_THREADS)
+        self.request_manager = RequestManager(pool_maxsize=self.MAX_THREADS)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -36,7 +36,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         query_str = '{}/{}/{}/images?time={}&limit={}'.format(
             self.BASE_API_URL, self.CORE_API, camera_id, start_time, limit)
 
-        resp = self.requestManager.get(query_str)
+        resp = self.request_manager.get(query_str)
         json_resp = resp.json()
 
         # log exit

@@ -19,7 +19,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     MAX_THREADS = 32
 
     def __init__(self):
-        self.requestManager = RequestManager(pool_maxsize=self.MAX_THREADS)
+        self.request_manager = RequestManager(pool_maxsize=self.MAX_THREADS)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -72,10 +72,10 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
             self.BASE_API_URL, self.CORE_API, observation_id)
 
         try:
-            resp = self.requestManager.get(query_str)
+            resp = self.request_manager.get(query_str)
             redirect_url = resp.url[0:resp.url.index('?')]
             # Redirect URLs do not use api credentials
-            resp2 = self.requestManager.head(redirect_url, use_api_cred=False)
+            resp2 = self.request_manager.head(redirect_url, use_api_cred=False)
         except Exception:
             return -1
 

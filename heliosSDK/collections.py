@@ -21,7 +21,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
     MAX_THREADS = 32
 
     def __init__(self):
-        self.requestManager = RequestManager(pool_maxsize=self.MAX_THREADS)
+        self.request_manager = RequestManager(pool_maxsize=self.MAX_THREADS)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -39,7 +39,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
             description, tags)
 
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self.requestManager._AUTH_TOKEN['value'].replace(
+        post_token = self.request_manager._AUTH_TOKEN['value'].replace(
             'Bearer ', '')
 
         # handle more than one tag
@@ -57,7 +57,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         post_url = '{}/{}'.format(self.BASE_API_URL, self.CORE_API)
 
-        resp = self.requestManager.post(post_url, headers=header, data=parms)
+        resp = self.request_manager.post(post_url, headers=header, data=parms)
         json_response = resp.json()
 
         # Log success
@@ -76,7 +76,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
             collections_id, name, description, tags)
 
         # need to strip out the Bearer to work with a PATCH for collections
-        patch_token = self.requestManager._AUTH_TOKEN['value'].replace(
+        patch_token = self.request_manager._AUTH_TOKEN['value'].replace(
             'Bearer ', '')
 
         # handle more than one tag
@@ -100,7 +100,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                                       self.CORE_API,
                                       collections_id)
 
-        resp = self.requestManager.patch(patch_url, headers=header, data=parms)
+        resp = self.request_manager.patch(patch_url, headers=header, data=parms)
         json_response = resp.json()
 
         # Log success
@@ -206,7 +206,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         coll_id, img_url = args
 
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self.requestManager._AUTH_TOKEN['value'].replace(
+        post_token = self.request_manager._AUTH_TOKEN['value'].replace(
             'Bearer ', '')
 
         # Compose post request
@@ -217,9 +217,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                                                      coll_id)
 
         try:
-            resp = self.requestManager.post(post_url,
-                                            headers=header,
-                                            data=parms)
+            resp = self.request_manager.post(post_url,
+                                             headers=header,
+                                             data=parms)
         except Exception:
             return -1
 
@@ -271,7 +271,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
             self.BASE_API_URL, self.CORE_API, coll_id, img_name)
 
         try:
-            resp = self.requestManager.delete(query_str)
+            resp = self.request_manager.delete(query_str)
         except Exception:
             return -1
 
@@ -286,7 +286,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                                       self.CORE_API,
                                       collection_id)
 
-        resp = self.requestManager.get(query_str)
+        resp = self.request_manager.get(query_str)
         json_response = resp.json()
 
         output = self.create(new_name,

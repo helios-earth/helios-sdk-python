@@ -68,7 +68,7 @@ class IndexMixin(object):
             queries.append(query_str)
 
         # Do first query to find total number of results to expect.
-        initial_resp = self.requestManager.get(queries.pop(0))
+        initial_resp = self.request_manager.get(queries.pop(0))
         initial_resp_json = initial_resp.json()
 
         try:
@@ -121,7 +121,7 @@ class IndexMixin(object):
         query_str = args
 
         # Perform query
-        resp = self.requestManager.get(query_str)
+        resp = self.request_manager.get(query_str)
 
         return resp.json()
 
@@ -135,7 +135,7 @@ class ShowMixin(object):
         query_str = '{}/{}/{}?{}'.format(
             self.BASE_API_URL, self.CORE_API, id_var, params_str)
 
-        resp = self.requestManager.get(query_str)
+        resp = self.request_manager.get(query_str)
         geo_json_feature = resp.json()
 
         # Log query success
@@ -190,10 +190,10 @@ class ShowImageMixin(object):
             self.BASE_API_URL, self.CORE_API, id_var, x)
 
         try:
-            resp = self.requestManager.get(query_str)
+            resp = self.request_manager.get(query_str)
             redirect_url = resp.url[0:resp.url.index('?')]
             # Redirect URLs do not use api credentials
-            resp2 = self.requestManager.get(redirect_url, use_api_cred=False)
+            resp2 = self.request_manager.get(redirect_url, use_api_cred=False)
         except Exception:
             return -1
 
@@ -262,7 +262,7 @@ class DownloadImagesMixin(object):
         url, out_dir, return_image_data = args
 
         try:
-            resp = self.requestManager.get(url, use_api_cred=False)
+            resp = self.request_manager.get(url, use_api_cred=False)
         except Exception:
             return -1
 
