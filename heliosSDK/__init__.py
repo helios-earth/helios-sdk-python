@@ -4,7 +4,7 @@ import os
 
 from heliosSDK.session.tokenManager import TokenManager
 
-AUTH_TOKEN, BASE_API_URL = TokenManager().startSession()
+AUTH_TOKEN, BASE_API_URL = TokenManager().start_session()
 
 from . import core
 from . import utilities

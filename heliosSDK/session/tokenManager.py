@@ -2,7 +2,7 @@
 import json
 import os
 
-import requests as r
+import requests
 
 
 class TokenManager(object):
@@ -21,33 +21,34 @@ class TokenManager(object):
         self._key_id = None
         self._key_secret = None
 
-        self.getAuthCredentials()
+        self.get_auth_credentials()
 
-    def startSession(self):
+    def start_session(self):
         # Check for saved token first. If it doesn't exist then get a token.
         if os.path.exists(self._token_file):
-            self.readToken()
+            self.read_token()
             try:
-                valid_token = self.verifyToken()
+                valid_token = self.verify_token()
                 if not valid_token:
-                    self.getToken()
+                    self.get_token()
             except Exception:
                 raise
         else:
-            self.getToken()
+            self.get_token()
 
         return self.token, self.api_url
 
-    def getToken(self):
+    def get_token(self):
         try:
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
-            resp = r.post(self.token_url, data=data, auth=auth, verify=True)
-        except Exception:
+            resp = requests.post(self.token_url, data=data, auth=auth, verify=True)
+            resp.raise_for_status()
+        except requests.exceptions.HTTPError:
             token_url_http = 'http' + self.token_url.split('https')[1]
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
-            resp = r.post(token_url_http, data=data, auth=auth, verify=True)
+            resp = requests.post(token_url_http, data=data, auth=auth, verify=True)
 
         # If the token cannot be acquired, raise exception.
         resp.raise_for_status()
@@ -56,23 +57,23 @@ class TokenManager(object):
         self.token = {'name': 'Authorization',
                       'value': 'Bearer ' + token_request['access_token']}
 
-        self.writeToken()
+        self.write_token()
 
-    def readToken(self):
-        with open(self._token_file, 'r') as f:
-            self.token = json.load(f)
+    def read_token(self):
+        with open(self._token_file, 'r') as token_file:
+            self.token = json.load(token_file)
 
-    def writeToken(self):
-        with open(self._token_file, 'w+') as f:
-            json.dump(self.token, f)
+    def write_token(self):
+        with open(self._token_file, 'w+') as token_file:
+            json.dump(self.token, token_file)
 
-    def deleteToken(self):
+    def delete_token(self):
         os.remove(self._token_file)
 
-    def verifyToken(self):
-        resp = r.get(self.api_url + '/session',
-                     headers={self.token['name']: self.token['value']},
-                     verify=True)
+    def verify_token(self):
+        resp = requests.get(self.api_url + '/session',
+                            headers={self.token['name']: self.token['value']},
+                            verify=True)
         resp.raise_for_status()
 
         json_resp = resp.json()
@@ -82,10 +83,10 @@ class TokenManager(object):
         else:
             expiration_time = json_resp['expires_in'] / 60.0
             if expiration_time < self.token_expiration_threshold:
-                self.getToken()
+                self.get_token()
             return True
 
-    def getAuthCredentials(self):
+    def get_auth_credentials(self):
         if 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
             self._key_id = os.environ['HELIOS_KEY_ID']
             self._key_secret = os.environ['HELIOS_KEY_SECRET']
@@ -99,18 +100,19 @@ class TokenManager(object):
                 self.token_url = self.__default_api_url + '/oauth/token'
 
         elif os.path.exists(self._auth_file):
-            with open(self._auth_file, 'r') as f:
-                data = json.load(f)
-                self._key_id = data['HELIOS_KEY_ID']
-                self._key_secret = data['HELIOS_KEY_SECRET']
+            with open(self._auth_file, 'r') as auth_file:
+                data = json.load(auth_file)
 
-                # Check for API URL override in .helios_auth file
-                if 'HELIOS_API_URL' in data:
-                    self.api_url = data['HELIOS_API_URL']
-                    self.token_url = data['HELIOS_API_URL'] + '/oauth/token'
-                else:
-                    self.api_url = self.__default_api_url
-                    self.token_url = self.__default_api_url + '/oauth/token'
+            self._key_id = data['HELIOS_KEY_ID']
+            self._key_secret = data['HELIOS_KEY_SECRET']
+
+            # Check for API URL override in .helios_auth file
+            if 'HELIOS_API_URL' in data:
+                self.api_url = data['HELIOS_API_URL']
+                self.token_url = data['HELIOS_API_URL'] + '/oauth/token'
+            else:
+                self.api_url = self.__default_api_url
+                self.token_url = self.__default_api_url + '/oauth/token'
         else:
             raise Exception('No credentials could be found. Be sure to set '
                             'environment variables or .helios_auth file '
