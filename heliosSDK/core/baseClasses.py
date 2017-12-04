@@ -68,13 +68,12 @@ class IndexMixin(object):
             queries.append(query_str)
 
         # Do first query to find total number of results to expect.
-        initial_resp = self.request_manager.get(queries.pop(0))
-        initial_resp_json = initial_resp.json()
+        initial_resp = self.request_manager.get(queries.pop(0)).json()
 
         try:
-            total = initial_resp_json['properties']['total']
+            total = initial_resp['properties']['total']
         except KeyError:
-            total = initial_resp_json['total']
+            total = initial_resp['total']
 
         # Warn the user when truncation occurs. (max_skip is hit)
         if total > max_skip:
@@ -84,13 +83,13 @@ class IndexMixin(object):
 
         # Get number of results in initial query.
         try:
-            n_features = len(initial_resp_json['features'])
+            n_features = len(initial_resp['features'])
         except KeyError:
-            n_features = len(initial_resp_json['results'])
+            n_features = len(initial_resp['results'])
 
         # If only one query was necessary, return immediately.
         if n_features < limit:
-            return [initial_resp_json]
+            return [initial_resp]
 
         # Determine number of iterations that will be needed.
         n_queries_needed = int(ceil((total - skip) / float(limit))) - 1
@@ -110,7 +109,7 @@ class IndexMixin(object):
             results = [self.__indexWorker(queries[0])]
 
         # Put initial query back in list.
-        results.insert(0, initial_resp_json)
+        results.insert(0, initial_resp)
 
         # Log success
         self.logger.info('Leaving index(N=%s)', total)
@@ -121,9 +120,9 @@ class IndexMixin(object):
         query_str = args
 
         # Perform query
-        resp = self.request_manager.get(query_str)
+        resp = self.request_manager.get(query_str).json()
 
-        return resp.json()
+        return resp
 
 
 class ShowMixin(object):
