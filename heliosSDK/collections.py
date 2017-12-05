@@ -7,6 +7,7 @@ documentation.  Some may have additional functionality for convenience.
 """
 import hashlib
 import logging
+import warnings
 from contextlib import closing
 from itertools import repeat
 from multiprocessing.dummy import Pool as ThreadPool
@@ -100,7 +101,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                                       self.CORE_API,
                                       collections_id)
 
-        resp = self.request_manager.patch(patch_url, headers=header, data=parms)
+        resp = self.request_manager.patch(patch_url,
+                                          headers=header,
+                                          data=parms)
         json_response = resp.json()
 
         # Log success
@@ -156,14 +159,14 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         return json_output
 
-    def showImage(self, collection_id, image_names):
-        return super(Collections, self).showImage(collection_id, image_names)
+    def show_image(self, collection_id, image_names):
+        return super(Collections, self).show_image(collection_id, image_names)
 
-    def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        return super(Collections, self).downloadImages(
+    def download_images(self, urls, out_dir=None, return_image_data=False):
+        return super(Collections, self).download_images(
             urls, out_dir=out_dir, return_image_data=return_image_data)
 
-    def addImage(self, collection_id, urls):
+    def add_image(self, collection_id, urls):
         # Force iterable
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
@@ -179,10 +182,10 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         # Process urls.
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
-                data = thread_pool.map(self.__addImagesWorker,
+                data = thread_pool.map(self.__add_image_worker,
                                        zip(repeat(collection_id), urls))
         else:
-            data = [self.__addImagesWorker((collection_id, urls[0]))]
+            data = [self.__add_image_worker((collection_id, urls[0]))]
 
         # Remove errors, if they exist
         data = [x for x in data if x != -1]
@@ -202,7 +205,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         return data
 
-    def __addImagesWorker(self, args):
+    def __add_image_worker(self, args):
         coll_id, img_url = args
 
         # need to strip out the Bearer to work with a POST for collections
@@ -225,7 +228,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         return resp.json()
 
-    def removeImage(self, collection_id, names):
+    def remove_image(self, collection_id, names):
         # Force iterable
         if not isinstance(names, (list, tuple)):
             names = [names]
@@ -241,10 +244,10 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         # Process urls.
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
-                data = thread_pool.map(self.__removeImagesWorker,
+                data = thread_pool.map(self.__remove_image_worker,
                                        zip(repeat(collection_id), names))
         else:
-            data = [self.__removeImagesWorker((collection_id, names[0]))]
+            data = [self.__remove_image_worker((collection_id, names[0]))]
 
         # Remove errors, if they exist
         data = [x for x in data if x != -1]
@@ -264,7 +267,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         return data
 
-    def __removeImagesWorker(self, args):
+    def __remove_image_worker(self, args):
         coll_id, img_name = args
 
         query_str = '{}/{}/{}/images/{}'.format(
@@ -297,13 +300,27 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         # Gather images that need to be copied.
         image_names = self.images(collection_id)
-        results = self.showImage(collection_id, image_names['images'])
+        results = self.show_image(collection_id, image_names['images'])
         urls = results['url']
 
         # Add images to new collection.
-        results2 = self.addImage(new_id, urls)
+        results2 = self.add_image(new_id, urls)
 
         # Log success
         self.logger.info('Leaving copy(new_id=%s)', new_id)
 
         return results2
+
+    # TODO: Remove deprecation warning.
+    def addImage(self, collection_id, urls):
+        warnings.warn("The 'addImage' method is deprecated. Use 'add_image' "
+                      "instead", DeprecationWarning, 2)
+
+        return self.add_image(collection_id, urls)
+
+    # TODO: Remove deprecation warning.
+    def removeImage(self, collection_id, names):
+        warnings.warn("The 'removeImage' method is deprecated. Use "
+                      "'remove_image' instead.", DeprecationWarning, 2)
+
+        return self.remove_image(collection_id, names)

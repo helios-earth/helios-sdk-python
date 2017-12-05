@@ -43,9 +43,9 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         # Process ids.
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
-                data = thread_pool.map(self.__previewWorker, observation_ids)
+                data = thread_pool.map(self.__preview_worker, observation_ids)
         else:
-            data = [self.__previewWorker(observation_ids[0])]
+            data = [self.__preview_worker(observation_ids[0])]
 
         # Remove errors, if they exist
         data = [x for x in data if x != -1]
@@ -65,7 +65,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
 
         return {'url': data}
 
-    def __previewWorker(self, args):
+    def __preview_worker(self, args):
         observation_id = args
 
         query_str = '{}/{}/{}/preview'.format(
@@ -90,6 +90,6 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
 
         return redirect_url
 
-    def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        return super(Observations, self).downloadImages(
+    def download_images(self, urls, out_dir=None, return_image_data=False):
+        return super(Observations, self).download_images(
             urls, out_dir=out_dir, return_image_data=return_image_data)

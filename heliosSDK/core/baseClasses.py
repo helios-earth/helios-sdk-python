@@ -1,6 +1,7 @@
 """Mixins and core functionality."""
 import json
 import os
+import warnings
 from contextlib import closing
 from io import BytesIO
 from itertools import repeat
@@ -104,9 +105,9 @@ class IndexMixin(object):
         num_threads = min(self.MAX_THREADS, n_queries_needed)
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
-                results = thread_pool.map(self.__indexWorker, queries)
+                results = thread_pool.map(self.__index_worker, queries)
         else:
-            results = [self.__indexWorker(queries[0])]
+            results = [self.__index_worker(queries[0])]
 
         # Put initial query back in list.
         results.insert(0, initial_resp)
@@ -116,7 +117,7 @@ class IndexMixin(object):
 
         return results
 
-    def __indexWorker(self, args):
+    def __index_worker(self, args):
         query_str = args
 
         # Perform query
@@ -144,7 +145,7 @@ class ShowMixin(object):
 
 
 class ShowImageMixin(object):
-    def showImage(self, id_var, samples):
+    def show_image(self, id_var, samples):
         # Force iterable
         if not isinstance(samples, (list, tuple)):
             samples = [samples]
@@ -159,10 +160,10 @@ class ShowImageMixin(object):
         # Process urls.
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
-                data = thread_pool.map(self.__showImageWorker,
+                data = thread_pool.map(self.__show_image_worker,
                                        zip(repeat(id_var), samples))
         else:
-            data = [self.__showImageWorker((id_var, samples[0]))]
+            data = [self.__show_image_worker((id_var, samples[0]))]
 
         # Remove errors, if they exist
         data = [x for x in data if x != -1]
@@ -182,11 +183,11 @@ class ShowImageMixin(object):
 
         return {'url': data}
 
-    def __showImageWorker(self, args):
-        id_var, x = args
+    def __show_image_worker(self, args):
+        id_var, data = args
 
         query_str = '{}/{}/{}/images/{}'.format(
-            self.BASE_API_URL, self.CORE_API, id_var, x)
+            self.BASE_API_URL, self.CORE_API, id_var, data)
 
         try:
             resp = self.request_manager.get(query_str)
@@ -207,9 +208,16 @@ class ShowImageMixin(object):
 
         return redirect_url
 
+    # TODO: Remove deprecation warning.
+    def showImage(self, id_var, samples):
+        warnings.warn("The 'showImage' method is deprecated. Use "
+                      "'show_image' instead.", DeprecationWarning, 2)
+
+        return self.show_image(id_var, samples)
+
 
 class DownloadImagesMixin(object):
-    def downloadImages(self, urls, out_dir=None, return_image_data=False):
+    def download_images(self, urls, out_dir=None, return_image_data=False):
         # Force iterable
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
@@ -228,13 +236,13 @@ class DownloadImagesMixin(object):
         num_threads = min(self.MAX_THREADS, n_urls)
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
-                data = thread_pool.map(self.__downloadWorker,
+                data = thread_pool.map(self.__download_images_worker,
                                        zip(urls, repeat(out_dir),
                                            repeat(return_image_data)))
         else:
-            data = [self.__downloadWorker((urls[0],
-                                           out_dir,
-                                           return_image_data))]
+            data = [self.__download_images_worker((urls[0],
+                                                   out_dir,
+                                                   return_image_data))]
 
         # Remove errors, if the exist
         if not return_image_data:
@@ -257,7 +265,7 @@ class DownloadImagesMixin(object):
 
         return data
 
-    def __downloadWorker(self, args):
+    def __download_images_worker(self, args):
         url, out_dir, return_image_data = args
 
         try:
@@ -279,3 +287,11 @@ class DownloadImagesMixin(object):
             return np.array(img)
 
         return True
+
+    # TODO: Remove deprecation warning.
+    def downloadImages(self, urls, out_dir=None, return_image_data=False):
+        warnings.warn("The 'downloadImages' method is deprecated. Use "
+                      "'download_images' instead.", DeprecationWarning, 2)
+
+        return self.download_images(urls, out_dir=out_dir,
+                                    return_image_data=return_image_data)

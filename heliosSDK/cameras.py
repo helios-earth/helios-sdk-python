@@ -6,6 +6,7 @@ documentation.  Some may have additional functionality for convenience.
 
 """
 import logging
+import warnings
 
 from dateutil.parser import parse
 
@@ -44,7 +45,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         return json_resp
 
-    def imagesRange(self, camera_id, start_time, end_time, limit=500):
+    def images_range(self, camera_id, start_time, end_time, limit=500):
         # Log entrance
         self.logger.info(
             'Entering imagesRange(id=%s, start_time=%s, end_time=%s)',
@@ -88,9 +89,16 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         return {'total': len(output_json), 'times': output_json}
 
-    def showImage(self, camera_id, times):
-        return super(Cameras, self).showImage(camera_id, times)
+    def show_image(self, camera_id, times):
+        return super(Cameras, self).show_image(camera_id, times)
 
-    def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        return super(Cameras, self).downloadImages(
+    def download_images(self, urls, out_dir=None, return_image_data=False):
+        return super(Cameras, self).download_images(
             urls, out_dir=out_dir, return_image_data=return_image_data)
+
+    # TODO: Remove deprecation warning.
+    def imagesRange(self, camera_id, start_time, end_time, limit=500):
+        warnings.warn("The 'imagesRange' method is deprecated. "
+                      "Use 'images_range' instead.", DeprecationWarning, 2)
+
+        return self.images_range(camera_id, start_time, end_time, limit=limit)
