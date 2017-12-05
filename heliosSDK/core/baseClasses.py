@@ -48,7 +48,8 @@ class SDKCore(object):
     def check_headers_for_dud(header_data):
         if 'x-amz-meta-helios' in header_data:
             meta_block = json.loads(header_data['x-amz-meta-helios'])
-            if meta_block['isOutcast'] or meta_block['isDud'] or meta_block['isFrozen']:
+            if meta_block['isOutcast'] or meta_block['isDud'] or \
+                    meta_block['isFrozen']:
                 return True
         return False
 
