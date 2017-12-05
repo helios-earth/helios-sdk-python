@@ -42,13 +42,15 @@ class TokenManager(object):
         try:
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
-            resp = requests.post(self.token_url, data=data, auth=auth, verify=True)
+            resp = requests.post(self.token_url, data=data, auth=auth,
+                                 verify=True)
             resp.raise_for_status()
         except requests.exceptions.HTTPError:
             token_url_http = 'http' + self.token_url.split('https')[1]
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
-            resp = requests.post(token_url_http, data=data, auth=auth, verify=True)
+            resp = requests.post(token_url_http, data=data, auth=auth,
+                                 verify=True)
 
         # If the token cannot be acquired, raise exception.
         resp.raise_for_status()
