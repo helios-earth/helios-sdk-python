@@ -223,11 +223,11 @@ class ShowImageMixin(object):
         return redirect_url
 
     # TODO: Remove deprecation warning.
-    def showImage(self, id_var, samples):
+    def showImage(self, id_var, samples, check_for_duds=True):
         warnings.warn("The 'showImage' method is deprecated. Use "
                       "'show_image' instead.", DeprecationWarning, 2)
 
-        return self.show_image(id_var, samples)
+        return self.show_image(id_var, samples, check_for_duds=check_for_duds)
 
 
 class DownloadImagesMixin(object):
