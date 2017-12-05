@@ -44,6 +44,14 @@ class SDKCore(object):
 
         return query_str
 
+    @staticmethod
+    def check_headers_for_dud(header_data):
+        if 'x-amz-meta-helios' in header_data:
+            meta_block = json.loads(header_data['x-amz-meta-helios'])
+            if meta_block['isOutcast'] or meta_block['isDud'] or meta_block['isFrozen']:
+                return True
+        return False
+
 
 class IndexMixin(object):
     def index(self, **kwargs):
@@ -198,13 +206,10 @@ class ShowImageMixin(object):
             return -1
 
         # Check header for dud statuses.
-        if 'x-amz-meta-helios' in resp2.headers:
-            hdrs = json.loads(resp2.headers['x-amz-meta-helios'])
-            if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
-                # Log dud
-                self.logger.info(
-                    'showImage query returned dud image: %s', query_str)
-                return None
+        if self.check_headers_for_dud(resp2.headers):
+            self.logger.info('showImage query returned dud image: %s',
+                             query_str)
+            return None
 
         return redirect_url
 

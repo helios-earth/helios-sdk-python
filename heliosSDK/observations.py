@@ -5,7 +5,6 @@ Methods are meant to represent the core functionality in the developer
 documentation.  Some may have additional functionality for convenience.
 
 """
-import json
 import logging
 from contextlib import closing
 from multiprocessing.dummy import Pool as ThreadPool
@@ -80,13 +79,10 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
             return -1
 
         # Check header for dud statuses.
-        if 'x-amz-meta-helios' in resp2.headers:
-            hdrs = json.loads(resp2.headers['x-amz-meta-helios'])
-            if hdrs['isOutcast'] or hdrs['isDud'] or hdrs['isFrozen']:
-                # Log dud
-                self.logger.info('preview query returned dud image: %s',
-                                 query_str)
-                return None
+        if self.check_headers_for_dud(resp2.headers):
+            self.logger.info('preview query returned dud image: %s',
+                             query_str)
+            return None
 
         return redirect_url
 
