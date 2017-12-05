@@ -5,8 +5,8 @@ import pytest
 import heliosSDK
 
 
-@pytest.fixture(scope='module')
-def utcRange():
+@pytest.fixture
+def utc_range():
     f = '%Y-%m-%dT%H:%M:%S'
     now = datetime.utcnow()
     yesterday = now - timedelta(days=2)
@@ -19,14 +19,14 @@ def utcRange():
     return begin_time, end_time
 
 
-def test_observations(utcRange):
+def test_observations(utc_range):
     # Create Observations instance
     observations_instance = heliosSDK.Observations()
 
     # Perform index query
     index_results = observations_instance.index(state='new york',
-                                                time_min=utcRange[0],
-                                                time_max=utcRange[1])
+                                                time_min=utc_range[0],
+                                                time_max=utc_range[1])
 
     # Extract id from index query
     id_ = index_results[0]['features'][0]['id']
@@ -41,7 +41,7 @@ def test_observations(utcRange):
     url = preview_results['url'][0]
 
     # Perform downloadImages query
-    download_images_results = observations_instance.downloadImages(
+    download_images_results = observations_instance.download_images(
         url, return_image_data=True)
 
     # Check download for image data.
