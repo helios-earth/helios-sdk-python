@@ -159,8 +159,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         return json_output
 
-    def show_image(self, collection_id, image_names):
-        return super(Collections, self).show_image(collection_id, image_names)
+    def show_image(self, collection_id, image_names, check_for_duds=False):
+        return super(Collections, self).show_image(
+            collection_id, image_names, check_for_duds=check_for_duds)
 
     def download_images(self, urls, out_dir=None, return_image_data=False):
         return super(Collections, self).download_images(

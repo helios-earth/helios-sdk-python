@@ -154,7 +154,7 @@ class ShowMixin(object):
 
 
 class ShowImageMixin(object):
-    def show_image(self, id_var, samples):
+    def show_image(self, id_var, samples, check_for_duds=True):
         # Force iterable
         if not isinstance(samples, (list, tuple)):
             samples = [samples]
@@ -170,9 +170,11 @@ class ShowImageMixin(object):
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
                 data = thread_pool.map(self.__show_image_worker,
-                                       zip(repeat(id_var), samples))
+                                       zip(repeat(id_var), samples,
+                                           repeat(check_for_duds)))
         else:
-            data = [self.__show_image_worker((id_var, samples[0]))]
+            data = [self.__show_image_worker((id_var, samples[0],
+                                              check_for_duds))]
 
         # Remove errors, if they exist
         data = [x for x in data if x != -1]
@@ -193,7 +195,7 @@ class ShowImageMixin(object):
         return {'url': data}
 
     def __show_image_worker(self, args):
-        id_var, data = args
+        id_var, data, check_for_duds = args
 
         query_str = '{}/{}/{}/images/{}'.format(
             self.BASE_API_URL, self.CORE_API, id_var, data)
@@ -201,16 +203,22 @@ class ShowImageMixin(object):
         try:
             resp = self.request_manager.get(query_str)
             redirect_url = resp.url[0:resp.url.index('?')]
-            # Redirect URLs do not use api credentials
-            resp2 = self.request_manager.get(redirect_url, use_api_cred=False)
         except Exception:
             return -1
 
         # Check header for dud statuses.
-        if self.check_headers_for_dud(resp2.headers):
-            self.logger.info('showImage query returned dud image: %s',
-                             query_str)
-            return None
+        if check_for_duds:
+            try:
+                # Redirect URLs do not use api credentials
+                resp2 = self.request_manager.head(redirect_url,
+                                                  use_api_cred=False)
+            except Exception:
+                return -1
+
+            if self.check_headers_for_dud(resp2.headers):
+                self.logger.info('showImage query returned dud image: %s',
+                                 query_str)
+                return None
 
         return redirect_url
 
