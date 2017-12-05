@@ -79,7 +79,7 @@ class IndexMixin(object):
         # Warn the user when truncation occurs. (max_skip is hit)
         if total > max_skip:
             # Log truncation warning
-            self.logger.warn(
+            self.logger.warning(
                 'Maximum skip level. Truncated results for: %s', kwargs)
 
         # Get number of results in initial query.
