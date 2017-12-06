@@ -51,9 +51,9 @@ __Alerts.show(__ alert_id __)__
     * [index()](#camerasindex)
     * [show()](#camerasshow)
     * [images()](#camerasimages)
-    * [__images_range()__](#camerasimagesrange)
-    * [show_image()](#camerasshowimage)
-    * [__download_images()__](#camerasdownloadimages)
+    * [__images_range()__](#camerasimages_range)
+    * [show_image()](#camerasshow_image)
+    * [__download_images()__](#camerasdownload_images)
   
 ### Cameras.index
 
@@ -150,7 +150,7 @@ __Cameras.download_images(__ urls, out_dir=None, return_image_data=False __)__
     * [index()](#observationsindex)
     * [show()](#observationsshow)
 	* [preview()](#observationspreview)
-	* [__download_images()__](#observationsdownloadimages)
+	* [__download_images()__](#observationsdownload_images)
   
 ### Observations.index
 
@@ -211,10 +211,10 @@ __Observations.download_images(__ urls, out_dir=None, return_image_data=False __
     * [show()](#collectionsshow)
     * [create()](#collectionscreate)
     * __[images()](#collectionsimages)__
-    * [show_image()](#collectionsshowimage)
-    * __[download_images()](#collectionsdownloadimages)__
-    * [add_image()](#collectionsaddimage)
-    * [remove_image()](#collectionsremoveimage)
+    * [show_image()](#collectionsshow_image)
+    * __[download_images()](#collectionsdownload_images)__
+    * [add_image()](#collectionsadd_image)
+    * [remove_image()](#collectionsremove_image)
     * __[copy()](#collectionscopy)__
   
 ### Collections.index
