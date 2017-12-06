@@ -121,7 +121,7 @@ __Cameras.show_image(__ camera_id, times __)__
 		* Camera ID.
 	* times: *str* or *list*
 		* Times
-* Reteurns
+* Returns
     * JSON: *dictionary*
         * key: "url"
         * 302 redirect to a signed URL where the camera image can be retrieved. The signed URL is valid for 15 minutes.
