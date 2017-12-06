@@ -51,9 +51,9 @@ __Alerts.show(__ alert_id __)__
     * [index()](#camerasindex)
     * [show()](#camerasshow)
     * [images()](#camerasimages)
-    * [__imagesRange()__](#camerasimagesrange)
-    * [showImage()](#camerasshowimage)
-    * [__downloadImages()__](#camerasdownloadimages)
+    * [__images_range()__](#camerasimagesrange)
+    * [show_image()](#camerasshowimage)
+    * [__download_images()__](#camerasdownloadimages)
   
 ### Cameras.index
 
@@ -95,11 +95,11 @@ __Cameras.images(__ camera_id, start_time, limit=500 __)__
     * JSON: *dictionary*
         * keys: "total" and "times"
   
-### Cameras.imagesRange
+### Cameras.images_range
 
 Return the image times available for a given camera and given range of times in the media cache. The media cache contains all recent images archived by Helios, either for internal analytics or for end user recording purposes.
 
-__Cameras.imagesRange(__ camera_id, start_time, end_time, limit=500 __)__
+__Cameras.images_range(__ camera_id, start_time, end_time, limit=500 __)__
 * Parameters
     * camera_id: *str*
         * Camera ID.
@@ -111,11 +111,11 @@ __Cameras.imagesRange(__ camera_id, start_time, end_time, limit=500 __)__
     * JSON: *dictionary*
         * keys: "total" and "times"
   
-### Cameras.showImage
+### Cameras.show_image
 
 Return image URLs from the media cache. The media cache contains all recent images archived by Helios, either for internal analytics or for end user recording purposes.
 
-__Cameras.showImage(__ camera_id, times __)__
+__Cameras.show_image(__ camera_id, times __)__
 * Parameters
 	* camera_id: *str*
 		* Camera ID.
@@ -126,11 +126,11 @@ __Cameras.showImage(__ camera_id, times __)__
         * key: "url"
         * 302 redirect to a signed URL where the camera image can be retrieved. The signed URL is valid for 15 minutes.
 	
-### Cameras.downloadImages
+### Cameras.download_images
 
 Download images from URLs.
 
-__Cameras.downloadImages(__ urls, out_dir=None, return_image_data=False __)__
+__Cameras.download_images(__ urls, out_dir=None, return_image_data=False __)__
 * Parameters
     * urls: *list*
 		* List of image urls to be downloaded.
@@ -150,7 +150,7 @@ __Cameras.downloadImages(__ urls, out_dir=None, return_image_data=False __)__
     * [index()](#observationsindex)
     * [show()](#observationsshow)
 	* [preview()](#observationspreview)
-	* [__downloadImages()__](#observationsdownloadimages)
+	* [__download_images()__](#observationsdownloadimages)
   
 ### Observations.index
 
@@ -187,11 +187,11 @@ __Observations.preview(__ observation_ids __)__
 * Returns
 	* Image URL(s)
 
-### Observations.downloadImages
+### Observations.download_images
 
 Download images from URLs.
 
-__Observations.downloadImages(__ urls, out_dir=None, return_image_data=False __)__
+__Observations.download_images(__ urls, out_dir=None, return_image_data=False __)__
 * Parameters
     * urls: *list*
 		* List of image urls to be downloaded.
@@ -211,10 +211,10 @@ __Observations.downloadImages(__ urls, out_dir=None, return_image_data=False __)
     * [show()](#collectionsshow)
     * [create()](#collectionscreate)
     * __[images()](#collectionsimages)__
-    * [showImage()](#collectionsshowimage)
-    * __[downloadImages()](#collectionsdownloadimages)__
-    * [addImage()](#collectionsaddimage)
-    * [removeImage()](#collectionsremoveimage)
+    * [show_image()](#collectionsshowimage)
+    * __[download_images()](#collectionsdownloadimages)__
+    * [add_image()](#collectionsaddimage)
+    * [remove_image()](#collectionsremoveimage)
     * __[copy()](#collectionscopy)__
   
 ### Collections.index
@@ -276,11 +276,11 @@ __Collections.images(__ collection_id, camera=None, old_flag=False __)__
     * JSON: *dictionary*
         * keys: "images" and "total".
 	
-### Collections.showImage
+### Collections.show_image
 
 Return image URLs from a collection.
 
-__Collections.showImage(__ collection_id, image_names __)__
+__Collections.show_image(__ collection_id, image_names __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
@@ -291,11 +291,11 @@ __Collections.showImage(__ collection_id, image_names __)__
         * 302 redirect to a signed URL where the image can be retrieved. The signed URL is valid for 15 minutes.
         * keys: "url"
 		
-### Collections.downloadImages
+### Collections.download_images
 
 Download images from URLs.
 
-__Collections.downloadImages(__ urls, out_dir=None, return_image_data=False __)__
+__Collections.download_images(__ urls, out_dir=None, return_image_data=False __)__
 * Parameters
     * urls: *list*
 		* List of image urls to be downloaded.
@@ -306,25 +306,25 @@ __Collections.downloadImages(__ urls, out_dir=None, return_image_data=False __)_
 * Returns
 	* None or list of numpy arrays.
 
-### Collections.addImage
+### Collections.add_image
 
 Add a images to a collection.
 
-__Collections.addimage(__ collection_id, urls __)__
+__Collections.add_image(__ collection_id, urls __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
     * urls: *str* or *list*
 	    *  Image url(s) to be added to collection.
-* Reteurns
+* Returns
     * JSON: *dictionary* 
         * key: "ok"
 
-### Collections.removeImage
+### Collections.remove_image
 
 Remove a single image from a collection.
 
-__Collections.removeImage(__ collection_id, names __)__
+__Collections.remove_image(__ collection_id, names __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
