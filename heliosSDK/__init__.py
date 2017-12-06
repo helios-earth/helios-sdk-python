@@ -2,7 +2,7 @@ import json
 import logging.config
 import os
 
-from heliosSDK.session.tokenManager import TokenManager
+from heliosSDK.session.token_manager import TokenManager
 
 AUTH_TOKEN, BASE_API_URL = TokenManager().start_session()
 

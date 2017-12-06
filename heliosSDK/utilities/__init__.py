@@ -1,2 +1,2 @@
-from . import jsonTools
-from . import parsingTools
+from . import json_utils
+from . import parsing_utils

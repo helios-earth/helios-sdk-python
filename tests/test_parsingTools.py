@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from heliosSDK.utilities import parsingTools
+from heliosSDK.utilities import parsing_utils
 
 # Python 2 to 3 fix.
 try:
@@ -22,32 +22,32 @@ def name():
 
 
 def test_parseTime_from_url(url):
-    result = parsingTools.parse_time(url)
+    result = parsing_utils.parse_time(url)
     assert (result == datetime(2017, 11, 28, 15, 34, 7))
 
 
 def test_parseTime_from_name(name):
-    result = parsingTools.parse_time(name)
+    result = parsing_utils.parse_time(name)
     assert (result == datetime(2017, 11, 28, 15, 34, 7))
 
 
 def test_parseCamera_from_url(url):
-    result = parsingTools.parse_camera(url)
+    result = parsing_utils.parse_camera(url)
     assert (result == 'CODOT-11150-13689')
 
 
 def test_parseCamera_from_name(name):
-    result = parsingTools.parse_camera(name)
+    result = parsing_utils.parse_camera(name)
     assert (result == 'CODOT-11150-13689')
 
 
 def test_parseImageName(url, name):
-    result = parsingTools.parse_image_name(url)
+    result = parsing_utils.parse_image_name(url)
     assert (result == name)
 
 
 def test_parseUrl(url):
-    result = parsingTools.parse_url(url)
+    result = parsing_utils.parse_url(url)
     assert (result == urlparse(url))
 
 
