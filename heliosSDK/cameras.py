@@ -6,7 +6,6 @@ documentation.  Some may have additional functionality for convenience.
 
 """
 import logging
-import warnings
 
 from dateutil.parser import parse
 
@@ -95,10 +94,3 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
     def download_images(self, urls, out_dir=None, return_image_data=False):
         return super(Cameras, self).download_images(
             urls, out_dir=out_dir, return_image_data=return_image_data)
-
-    # TODO: Remove deprecation warning.
-    def imagesRange(self, camera_id, start_time, end_time, limit=500):
-        warnings.warn("The 'imagesRange' method is deprecated. "
-                      "Use 'images_range' instead.", DeprecationWarning, 2)
-
-        return self.images_range(camera_id, start_time, end_time, limit=limit)

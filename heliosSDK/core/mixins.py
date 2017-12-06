@@ -1,7 +1,6 @@
 """Mixins and core functionality."""
 import json
 import os
-import warnings
 from contextlib import closing
 from io import BytesIO
 from itertools import repeat
@@ -222,13 +221,6 @@ class ShowImageMixin(object):
 
         return redirect_url
 
-    # TODO: Remove deprecation warning.
-    def showImage(self, id_var, samples, check_for_duds=True):
-        warnings.warn("The 'showImage' method is deprecated. Use "
-                      "'show_image' instead.", DeprecationWarning, 2)
-
-        return self.show_image(id_var, samples, check_for_duds=check_for_duds)
-
 
 class DownloadImagesMixin(object):
     def download_images(self, urls, out_dir=None, return_image_data=False):
@@ -301,11 +293,3 @@ class DownloadImagesMixin(object):
             return np.array(img)
 
         return True
-
-    # TODO: Remove deprecation warning.
-    def downloadImages(self, urls, out_dir=None, return_image_data=False):
-        warnings.warn("The 'downloadImages' method is deprecated. Use "
-                      "'download_images' instead.", DeprecationWarning, 2)
-
-        return self.download_images(urls, out_dir=out_dir,
-                                    return_image_data=return_image_data)

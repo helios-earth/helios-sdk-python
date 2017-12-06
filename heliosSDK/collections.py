@@ -7,7 +7,6 @@ documentation.  Some may have additional functionality for convenience.
 """
 import hashlib
 import logging
-import warnings
 from contextlib import closing
 from itertools import repeat
 from multiprocessing.dummy import Pool as ThreadPool
@@ -311,17 +310,3 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         self.logger.info('Leaving copy(new_id=%s)', new_id)
 
         return results2
-
-    # TODO: Remove deprecation warning.
-    def addImage(self, collection_id, urls):
-        warnings.warn("The 'addImage' method is deprecated. Use 'add_image' "
-                      "instead", DeprecationWarning, 2)
-
-        return self.add_image(collection_id, urls)
-
-    # TODO: Remove deprecation warning.
-    def removeImage(self, collection_id, names):
-        warnings.warn("The 'removeImage' method is deprecated. Use "
-                      "'remove_image' instead.", DeprecationWarning, 2)
-
-        return self.remove_image(collection_id, names)
