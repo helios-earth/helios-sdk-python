@@ -30,11 +30,13 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
     def images(self, camera_id, start_time, limit=500):
         # Log entrance
-        self.logger.info('Entering images(id=%s, start_time=%s)',
-                         camera_id, start_time)
+        self.logger.info('Entering images(id=%s, start_time=%s)', camera_id, start_time)
 
-        query_str = '{}/{}/{}/images?time={}&limit={}'.format(
-            self.BASE_API_URL, self.CORE_API, camera_id, start_time, limit)
+        query_str = '{}/{}/{}/images?time={}&limit={}'.format(self.BASE_API_URL,
+                                                              self.CORE_API,
+                                                              camera_id,
+                                                              start_time,
+                                                              limit)
 
         resp = self.request_manager.get(query_str)
         json_resp = resp.json()
@@ -46,9 +48,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
     def images_range(self, camera_id, start_time, end_time, limit=500):
         # Log entrance
-        self.logger.info(
-            'Entering imagesRange(id=%s, start_time=%s, end_time=%s)',
-            camera_id, start_time, end_time)
+        self.logger.info('Entering imagesRange(id=%s, start_time=%s, end_time=%s)',
+                         camera_id, start_time, end_time)
 
         end_time = parse(end_time).utctimetuple()
         output_json = []
@@ -92,5 +93,6 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         return super(Cameras, self).show_image(camera_id, times)
 
     def download_images(self, urls, out_dir=None, return_image_data=False):
-        return super(Cameras, self).download_images(
-            urls, out_dir=out_dir, return_image_data=return_image_data)
+        return super(Cameras, self).download_images(urls,
+                                                    out_dir=out_dir,
+                                                    return_image_data=return_image_data)

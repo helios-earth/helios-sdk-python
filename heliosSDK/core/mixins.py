@@ -47,8 +47,7 @@ class SDKCore(object):
     def check_headers_for_dud(header_data):
         if 'x-amz-meta-helios' in header_data:
             meta_block = json.loads(header_data['x-amz-meta-helios'])
-            if meta_block['isOutcast'] or meta_block['isDud'] or \
-                    meta_block['isFrozen']:
+            if meta_block['isOutcast'] or meta_block['isDud'] or meta_block['isFrozen']:
                 return True
         return False
 
@@ -71,8 +70,11 @@ class IndexMixin(object):
             else:
                 temp_limit = limit
 
-            query_str = '{}/{}?{}&limit={}&skip={}'.format(
-                self.BASE_API_URL, self.CORE_API, params_str, temp_limit, i)
+            query_str = '{}/{}?{}&limit={}&skip={}'.format(self.BASE_API_URL,
+                                                           self.CORE_API,
+                                                           params_str,
+                                                           temp_limit,
+                                                           i)
 
             queries.append(query_str)
 
@@ -87,8 +89,8 @@ class IndexMixin(object):
         # Warn the user when truncation occurs. (max_skip is hit)
         if total > max_skip:
             # Log truncation warning
-            self.logger.warning(
-                'Maximum skip level. Truncated results for: %s', kwargs)
+            self.logger.warning('Maximum skip level. Truncated results for: %s',
+                                kwargs)
 
         # Get number of results in initial query.
         try:
@@ -105,8 +107,7 @@ class IndexMixin(object):
         queries = queries[0:n_queries_needed]
 
         # Log number of queries required.
-        self.logger.info('%s index queries required for: %s',
-                         n_queries_needed,
+        self.logger.info('%s index queries required for: %s', n_queries_needed,
                          kwargs)
 
         # Create thread pool and get results
@@ -140,8 +141,8 @@ class ShowMixin(object):
         self.logger.info('Entering show(id_var=%s, kwargs=%s)', id_var, kwargs)
 
         params_str = self.parse_query_inputs(kwargs)
-        query_str = '{}/{}/{}?{}'.format(
-            self.BASE_API_URL, self.CORE_API, id_var, params_str)
+        query_str = '{}/{}/{}?{}'.format(self.BASE_API_URL, self.CORE_API,
+                                         id_var, params_str)
 
         resp = self.request_manager.get(query_str)
         geo_json_feature = resp.json()
@@ -180,8 +181,8 @@ class ShowImageMixin(object):
 
         # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving showImage({} out of {} successful)'.format(
-            n_data, n_samples)
+        message = 'Leaving showImage({} out of {} successful)'.format(n_data,
+                                                                      n_samples)
 
         if n_data == 0:
             self.logger.error(message)
@@ -196,8 +197,10 @@ class ShowImageMixin(object):
     def __show_image_worker(self, args):
         id_var, data, check_for_duds = args
 
-        query_str = '{}/{}/{}/images/{}'.format(
-            self.BASE_API_URL, self.CORE_API, id_var, data)
+        query_str = '{}/{}/{}/images/{}'.format(self.BASE_API_URL,
+                                                self.CORE_API,
+                                                id_var,
+                                                data)
 
         try:
             resp = self.request_manager.get(query_str)
@@ -230,8 +233,7 @@ class DownloadImagesMixin(object):
         n_urls = len(urls)
 
         # Log start
-        self.logger.info('Entering downloadImages(N=%s, out_dir=%s',
-                         n_urls,
+        self.logger.info('Entering downloadImages(N=%s, out_dir=%s', n_urls,
                          out_dir)
 
         if out_dir is not None:
@@ -258,8 +260,8 @@ class DownloadImagesMixin(object):
 
         # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving downloadImages({} out of {} successful)'.format(
-            n_data, n_urls)
+        message = 'Leaving downloadImages({} out of {} successful)'.format(n_data,
+                                                                           n_urls)
 
         if n_data == 0:
             self.logger.error(message)

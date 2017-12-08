@@ -44,19 +44,16 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
                 data = thread_pool.map(self.__preview_worker,
-                                       zip(observation_ids,
-                                           repeat(check_for_duds)))
+                                       zip(observation_ids, repeat(check_for_duds)))
         else:
-            data = [self.__preview_worker((observation_ids[0],
-                                           check_for_duds))]
+            data = [self.__preview_worker((observation_ids[0], check_for_duds))]
 
         # Remove errors, if they exist
         data = [x for x in data if x != -1]
 
         # Check results
         n_data = len(data)
-        message = 'Leaving preview({} out of {} successful)'.format(
-            n_data, n_obs)
+        message = 'Leaving preview({} out of {} successful)'.format(n_data, n_obs)
 
         if n_data == 0:
             self.logger.error(message)
@@ -71,8 +68,9 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     def __preview_worker(self, args):
         observation_id, check_for_duds = args
 
-        query_str = '{}/{}/{}/preview'.format(
-            self.BASE_API_URL, self.CORE_API, observation_id)
+        query_str = '{}/{}/{}/preview'.format(self.BASE_API_URL,
+                                              self.CORE_API,
+                                              observation_id)
 
         try:
             resp = self.request_manager.get(query_str)

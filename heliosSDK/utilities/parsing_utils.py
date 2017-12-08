@@ -20,8 +20,7 @@ def parse_time(data):
         datetime: The parsed time as a datetime object.
 
     """
-    time_string = str(
-        os.path.splitext(os.path.split(data)[-1])[0].split('_')[-1])
+    time_string = str(os.path.splitext(os.path.split(data)[-1])[0].split('_')[-1])
     time_stamp = datetime.strptime(time_string, '%Y%m%d%H%M%S%f')
     return time_stamp
 
@@ -38,8 +37,7 @@ def parse_camera(data):
     """
     split1_rev = os.path.splitext(os.path.split(data)[-1])[0][::-1]
     split2 = split1_rev[split1_rev.index('_') + 1:][::-1]
-    md5_str = hashlib.md5(
-        split2[split2.index('-') + 1:].encode('utf-8')).hexdigest()
+    md5_str = hashlib.md5(split2[split2.index('-') + 1:].encode('utf-8')).hexdigest()
 
     if split2[0:4] == md5_str[0:4]:
         return split2[5:]

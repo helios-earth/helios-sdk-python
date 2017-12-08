@@ -60,8 +60,7 @@ class RequestManager(object):
             elif request_type == 'patch':
                 resp = sess_alias.patch(query, **kwargs)
             else:
-                raise ValueError('Unsupported query of type: {}'.format(
-                    request_type))
+                raise ValueError('Unsupported query of type: {}'.format(request_type))
             resp.raise_for_status()
         # Log exceptions and return
         except requests.exceptions.HTTPError:

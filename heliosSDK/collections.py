@@ -15,8 +15,7 @@ from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, \
     DownloadImagesMixin, RequestManager
 
 
-class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
-                  SDKCore):
+class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
     CORE_API = 'collections'
     MAX_THREADS = 32
 
@@ -34,13 +33,11 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
     def create(self, name, description, tags=None):
         # Log start
-        self.logger.info(
-            'Entering create(name=%s, description=%s, tags=%s)', name,
-            description, tags)
+        self.logger.info('Entering create(name=%s, description=%s, tags=%s)',
+                         name, description, tags)
 
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self.request_manager._AUTH_TOKEN['value'].replace(
-            'Bearer ', '')
+        post_token = self.request_manager._AUTH_TOKEN['value'].replace('Bearer ', '')
 
         # handle more than one tag
         if isinstance(tags, (list, tuple)):
@@ -61,8 +58,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         json_response = resp.json()
 
         # Log success
-        self.logger.info('Leaving create(new_id=%s)',
-                         json_response['collection_id'])
+        self.logger.info('Leaving create(new_id=%s)', json_response['collection_id'])
 
         return json_response
 
@@ -71,13 +67,11 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
             raise ValueError('Update requires at least one named argument.')
 
         # Log start
-        self.logger.info(
-            'Entering update(id=%s, name=%s, description=%s, tags=%s)',
-            collections_id, name, description, tags)
+        self.logger.info('Entering update(id=%s, name=%s, description=%s, tags=%s)',
+                         collections_id, name, description, tags)
 
         # need to strip out the Bearer to work with a PATCH for collections
-        patch_token = self.request_manager._AUTH_TOKEN['value'].replace(
-            'Bearer ', '')
+        patch_token = self.request_manager._AUTH_TOKEN['value'].replace('Bearer ', '')
 
         # handle more than one tag
         if isinstance(tags, (list, tuple)):
@@ -106,9 +100,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         json_response = resp.json()
 
         # Log success
-        self.logger.info(
-            'Leaving update(id=%s, name=%s, description=%s, tags=%s)',
-            collections_id, name, description, tags)
+        self.logger.info('Leaving update(id=%s, name=%s, description=%s, tags=%s)',
+                         collections_id, name, description, tags)
 
         return json_response
 
@@ -136,8 +129,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
             images_found = results['images']
 
             if camera is not None:
-                imgs_found_temp = [x for x in images_found if x.split('_')[0]
-                                   == camera]
+                imgs_found_temp = [x for x in images_found if x.split('_')[0] == camera]
             else:
                 imgs_found_temp = images_found
 
@@ -192,8 +184,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving addImage({} out of {} successful)'.format(
-            n_data, n_urls)
+        message = 'Leaving addImage({} out of {} successful)'.format(n_data, n_urls)
 
         if n_data == 0:
             self.logger.error(message)
@@ -209,8 +200,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         coll_id, img_url = args
 
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self.request_manager._AUTH_TOKEN['value'].replace(
-            'Bearer ', '')
+        post_token = self.request_manager._AUTH_TOKEN['value'].replace('Bearer ', '')
 
         # Compose post request
         parms = {'s3_src': img_url, 'access_token': post_token}
@@ -254,8 +244,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving removeImage({} out of {} successful)'.format(
-            n_data, n_names)
+        message = 'Leaving removeImage({} out of {} successful)'.format(n_data, n_names)
 
         if n_data == 0:
             self.logger.error(message)
@@ -270,8 +259,10 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
     def __remove_image_worker(self, args):
         coll_id, img_name = args
 
-        query_str = '{}/{}/{}/images/{}'.format(
-            self.BASE_API_URL, self.CORE_API, coll_id, img_name)
+        query_str = '{}/{}/{}/images/{}'.format(self.BASE_API_URL,
+                                                self.CORE_API,
+                                                coll_id,
+                                                img_name)
 
         try:
             resp = self.request_manager.delete(query_str)
