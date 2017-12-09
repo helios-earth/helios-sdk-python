@@ -11,6 +11,7 @@ import numpy as np
 from PIL import Image
 
 from heliosSDK import BASE_API_URL
+from heliosSDK.utilities import logging_utils
 
 
 class SDKCore(object):
@@ -53,13 +54,11 @@ class SDKCore(object):
 
 
 class IndexMixin(object):
+    @logging_utils.log_entrance_exit
     def index(self, **kwargs):
         max_skip = 4000
         limit = kwargs.get('limit', 100)
         skip = kwargs.get('skip', 0)
-
-        # Log start
-        self.logger.info('Entering index(kwargs=%s)', kwargs)
 
         # Establish all queries.
         params_str = self.parse_query_inputs(kwargs)
@@ -121,9 +120,6 @@ class IndexMixin(object):
         # Put initial query back in list.
         results.insert(0, initial_resp)
 
-        # Log success
-        self.logger.info('Leaving index(N=%s)', total)
-
         return results
 
     def __index_worker(self, args):
@@ -136,10 +132,8 @@ class IndexMixin(object):
 
 
 class ShowMixin(object):
+    @logging_utils.log_entrance_exit
     def show(self, id_var, **kwargs):
-        # Log query
-        self.logger.info('Entering show(id_var=%s, kwargs=%s)', id_var, kwargs)
-
         params_str = self.parse_query_inputs(kwargs)
         query_str = '{}/{}/{}?{}'.format(self.BASE_API_URL, self.CORE_API,
                                          id_var, params_str)
@@ -147,21 +141,16 @@ class ShowMixin(object):
         resp = self.request_manager.get(query_str)
         geo_json_feature = resp.json()
 
-        # Log query success
-        self.logger.info('Leaving show()')
-
         return geo_json_feature
 
 
 class ShowImageMixin(object):
+    @logging_utils.log_entrance_exit
     def show_image(self, id_var, samples, check_for_duds=True):
         # Force iterable
         if not isinstance(samples, (list, tuple)):
             samples = [samples]
         n_samples = len(samples)
-
-        # Log entrance
-        self.logger.info('Entering showImage(%s values)', n_samples)
 
         # Get number of threads
         num_threads = min(self.MAX_THREADS, n_samples)
@@ -181,8 +170,7 @@ class ShowImageMixin(object):
 
         # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving showImage({} out of {} successful)'.format(n_data,
-                                                                      n_samples)
+        message = 'showImage({} out of {} successful)'.format(n_data, n_samples)
 
         if n_data == 0:
             self.logger.error(message)
@@ -226,15 +214,12 @@ class ShowImageMixin(object):
 
 
 class DownloadImagesMixin(object):
+    @logging_utils.log_entrance_exit
     def download_images(self, urls, out_dir=None, return_image_data=False):
         # Force iterable
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
         n_urls = len(urls)
-
-        # Log start
-        self.logger.info('Entering downloadImages(N=%s, out_dir=%s', n_urls,
-                         out_dir)
 
         if out_dir is not None:
             if not os.path.exists(out_dir):
@@ -260,8 +245,7 @@ class DownloadImagesMixin(object):
 
         # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving downloadImages({} out of {} successful)'.format(n_data,
-                                                                           n_urls)
+        message = 'downloadImages({} out of {} successful)'.format(n_data, n_urls)
 
         if n_data == 0:
             self.logger.error(message)

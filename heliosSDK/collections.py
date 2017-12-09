@@ -13,6 +13,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, \
     DownloadImagesMixin, RequestManager
+from heliosSDK.utilities import logging_utils
 
 
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
@@ -31,11 +32,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                              limit=limit,
                                              marker=marker)
 
+    @logging_utils.log_entrance_exit
     def create(self, name, description, tags=None):
-        # Log start
-        self.logger.info('Entering create(name=%s, description=%s, tags=%s)',
-                         name, description, tags)
-
         # need to strip out the Bearer to work with a POST for collections
         post_token = self.request_manager._AUTH_TOKEN['value'].replace('Bearer ', '')
 
@@ -57,18 +55,12 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         resp = self.request_manager.post(post_url, headers=header, data=parms)
         json_response = resp.json()
 
-        # Log success
-        self.logger.info('Leaving create(new_id=%s)', json_response['collection_id'])
-
         return json_response
 
+    @logging_utils.log_entrance_exit
     def update(self, collections_id, name=None, description=None, tags=None):
         if name is None and description is None and tags is None:
             raise ValueError('Update requires at least one named argument.')
-
-        # Log start
-        self.logger.info('Entering update(id=%s, name=%s, description=%s, tags=%s)',
-                         collections_id, name, description, tags)
 
         # need to strip out the Bearer to work with a PATCH for collections
         patch_token = self.request_manager._AUTH_TOKEN['value'].replace('Bearer ', '')
@@ -99,19 +91,12 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                           data=parms)
         json_response = resp.json()
 
-        # Log success
-        self.logger.info('Leaving update(id=%s, name=%s, description=%s, tags=%s)',
-                         collections_id, name, description, tags)
-
         return json_response
 
+    @logging_utils.log_entrance_exit
     def images(self, collection_id, camera=None, old_flag=False):
         max_limit = 200
         mark_img = ''
-
-        # Log start
-        self.logger.info('Entering images(collection_id=%s, camera=%s)',
-                         collection_id, camera)
 
         if camera is not None:
             md5_str = hashlib.md5(camera.encode('utf-8')).hexdigest()
@@ -145,9 +130,6 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         json_output = {'total': len(good_images),
                        'images': good_images}
 
-        # Log success
-        self.logger.info('Leaving images(%s images found)', len(good_images))
-
         return json_output
 
     def show_image(self, collection_id, image_names, check_for_duds=False):
@@ -158,15 +140,12 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return super(Collections, self).download_images(
             urls, out_dir=out_dir, return_image_data=return_image_data)
 
+    @logging_utils.log_entrance_exit
     def add_image(self, collection_id, urls):
         # Force iterable
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
         n_urls = len(urls)
-
-        # Log start
-        self.logger.info('Entering addImage(collection_id=%s, N=%s)',
-                         collection_id, n_urls)
 
         # Get number of threads
         num_threads = min(self.MAX_THREADS, n_urls)
@@ -184,7 +163,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving addImage({} out of {} successful)'.format(n_data, n_urls)
+        message = 'addImage({} out of {} successful)'.format(n_data, n_urls)
 
         if n_data == 0:
             self.logger.error(message)
@@ -218,15 +197,12 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         return resp.json()
 
+    @logging_utils.log_entrance_exit
     def remove_image(self, collection_id, names):
         # Force iterable
         if not isinstance(names, (list, tuple)):
             names = [names]
         n_names = len(names)
-
-        # Log start
-        self.logger.info('Entering removeImage(collection_id=%s, N=%s)',
-                         collection_id, n_names)
 
         # Get number of threads
         num_threads = min(self.MAX_THREADS, n_names)
@@ -244,7 +220,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         # Determine how many were successful
         n_data = len(data)
-        message = 'Leaving removeImage({} out of {} successful)'.format(n_data, n_names)
+        message = 'removeImage({} out of {} successful)'.format(n_data, n_names)
 
         if n_data == 0:
             self.logger.error(message)
@@ -271,11 +247,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         return resp.json()
 
+    @logging_utils.log_entrance_exit
     def copy(self, collection_id, new_name):
-        # Log start
-        self.logger.info('Entering copy(collection_id=%s, new_name=%s',
-                         collection_id, new_name)
-
         query_str = '{}/{}/{}'.format(self.BASE_API_URL,
                                       self.CORE_API,
                                       collection_id)
@@ -296,8 +269,5 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         # Add images to new collection.
         results2 = self.add_image(new_id, urls)
-
-        # Log success
-        self.logger.info('Leaving copy(new_id=%s)', new_id)
 
         return results2

@@ -11,6 +11,7 @@ from dateutil.parser import parse
 
 from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, \
     DownloadImagesMixin, RequestManager
+from heliosSDK.utilities import logging_utils
 
 
 class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
@@ -28,10 +29,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
     def show(self, camera_id):
         return super(Cameras, self).show(camera_id)
 
+    @logging_utils.log_entrance_exit
     def images(self, camera_id, start_time, limit=500):
-        # Log entrance
-        self.logger.info('Entering images(id=%s, start_time=%s)', camera_id, start_time)
-
         query_str = '{}/{}/{}/images?time={}&limit={}'.format(self.BASE_API_URL,
                                                               self.CORE_API,
                                                               camera_id,
@@ -41,16 +40,10 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         resp = self.request_manager.get(query_str)
         json_resp = resp.json()
 
-        # log exit
-        self.logger.info('Leaving images(N=%s)', json_resp['total'])
-
         return json_resp
 
+    @logging_utils.log_entrance_exit
     def images_range(self, camera_id, start_time, end_time, limit=500):
-        # Log entrance
-        self.logger.info('Entering imagesRange(id=%s, start_time=%s, end_time=%s)',
-                         camera_id, start_time, end_time)
-
         end_time = parse(end_time).utctimetuple()
         output_json = []
         while True:
@@ -83,9 +76,6 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                               < end_time]
                 output_json.extend(good_times)
                 break
-
-        # Log exit
-        self.logger.info('Leaving imagesRange(N=%s)', len(output_json))
 
         return {'total': len(output_json), 'times': output_json}
 

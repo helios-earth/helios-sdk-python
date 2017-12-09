@@ -12,6 +12,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, \
     DownloadImagesMixin, RequestManager
+from heliosSDK.utilities import logging_utils
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
@@ -28,6 +29,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     def show(self, observation_id):
         return super(Observations, self).show(observation_id)
 
+    @logging_utils.log_entrance_exit
     def preview(self, observation_ids, check_for_duds=True):
         # Force iterable
         if not isinstance(observation_ids, (list, tuple)):
