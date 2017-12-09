@@ -26,9 +26,9 @@ def log_entrance_exit(func):
         f_result = func(*args, **kwargs)
 
         if len(args) > 1:
-            func_self.logger.info('Entering %s: %s, %s', func.__name__, args[1:], kwargs)
+            func_self.logger.info('Exiting %s: %s, %s', func.__name__, args[1:], kwargs)
         else:
-            func_self.logger.info('Entering %s: %s', func.__name__, kwargs)
+            func_self.logger.info('Exiting %s: %s', func.__name__, kwargs)
         return f_result
 
     return wrapper
