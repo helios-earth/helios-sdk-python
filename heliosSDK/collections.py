@@ -141,52 +141,57 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             urls, out_dir=out_dir, return_image_data=return_image_data)
 
     @logging_utils.log_entrance_exit
-    def add_image(self, collection_id, urls):
-        # Force iterable
-        if not isinstance(urls, (list, tuple)):
-            urls = [urls]
-        n_urls = len(urls)
+    def add_image(self, collection_id, data):
+        assert isinstance(data, (list, tuple, dict))
+
+        # Force iterable.
+        if isinstance(data, dict):
+            data = [data]
+
+        n_images = len(data)
 
         # Get number of threads
-        num_threads = min(self.MAX_THREADS, n_urls)
+        num_threads = min(self.MAX_THREADS, n_images)
 
-        # Process urls.
+        # Process data.
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
-                data = thread_pool.map(self.__add_image_worker,
-                                       zip(repeat(collection_id), urls))
+                results = thread_pool.map(self.__add_image_worker,
+                                          zip(repeat(collection_id), data))
         else:
-            data = [self.__add_image_worker((collection_id, urls[0]))]
+            results = self.__add_image_worker((collection_id, data[0]))
 
         # Remove errors, if they exist
-        data = [x for x in data if x != -1]
+        results = [x for x in results if x != -1]
 
         # Determine how many were successful
-        n_data = len(data)
-        message = 'addImage({} out of {} successful)'.format(n_data, n_urls)
+        n_data = len(results)
+        message = 'addImage({} out of {} successful)'.format(n_data, n_images)
 
         if n_data == 0:
             self.logger.error(message)
             return -1
-        elif n_data < n_urls:
+        elif n_data < n_images:
             self.logger.warning(message)
         else:
             self.logger.info(message)
 
-        return data
+        return results
 
     def __add_image_worker(self, args):
-        coll_id, img_url = args
+        collection_id, payload = args
 
         # need to strip out the Bearer to work with a POST for collections
         post_token = self.request_manager._AUTH_TOKEN['value'].replace('Bearer ', '')
 
         # Compose post request
-        parms = {'s3_src': img_url, 'access_token': post_token}
+        parms = {'access_token': post_token}
+        parms.update(payload)
+
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
         post_url = '{}/collections/{}/images'.format(self.BASE_API_URL,
-                                                     coll_id)
+                                                     collection_id)
 
         try:
             resp = self.request_manager.post(post_url,
