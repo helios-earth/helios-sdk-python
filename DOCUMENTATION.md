@@ -310,12 +310,17 @@ __Collections.download_images(__ urls, out_dir=None, return_image_data=False __)
 
 Add a images to a collection.
 
-__Collections.add_image(__ collection_id, urls __)__
+__Collections.add_image(__ collection_id, data __)__
 * Parameters
     * collection_id: *str*
         * Collection ID.
-    * urls: *str* or *list*
-	    *  Image url(s) to be added to collection.
+    * data: *list of dict*
+	    *  List of dictionaries containing any of the following keys:
+	        * camera_id
+	        * camera_id, time
+	        * observations_id
+	        * collection_id, image
+	    * e.g. `data = [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]`
 * Returns
     * JSON: *dictionary* 
         * key: "ok"
