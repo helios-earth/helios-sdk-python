@@ -29,7 +29,12 @@ def test_observations(utc_range):
                                                 time_max=utc_range[1])
 
     # Extract id from index query
-    id_ = index_results[0]['features'][0]['id']
+    for feature in index_results[0]['features']:
+        id_ = feature['id']
+        try:
+            id_.index('error')
+        except ValueError:
+            break
 
     # Perform show query
     show_results = observations_instance.show(id_)
