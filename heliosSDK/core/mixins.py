@@ -243,10 +243,7 @@ class DownloadImagesMixin(object):
                                                    return_image_data))]
 
         # Remove errors, if the exist
-        if not return_image_data:
-            data = [x for x in data if x != -1]
-        else:
-            data = [x for x in data if isinstance(x, np.ndarray)]
+        data = [x for x in data if isinstance(x, np.ndarray) or x != -1]
 
         # Determine how many were successful
         n_data = len(data)
