@@ -20,8 +20,7 @@ class SDKCore(object):
 
     This class must be inherited by any additional Core API classes.
     """
-
-    BASE_API_URL = BASE_API_URL
+    _base_api_url = BASE_API_URL
 
     @staticmethod
     def parse_query_inputs(input_dict):
@@ -52,6 +51,14 @@ class SDKCore(object):
                 return True
         return False
 
+    @property
+    def base_api_url(self):
+        return self._base_api_url
+
+    @base_api_url.setter
+    def base_api_url(self, value):
+        raise AttributeError('Access to base_api_url is restricted.')
+
 
 class IndexMixin(object):
     @logging_utils.log_entrance_exit
@@ -69,8 +76,8 @@ class IndexMixin(object):
             else:
                 temp_limit = limit
 
-            query_str = '{}/{}?{}&limit={}&skip={}'.format(self.BASE_API_URL,
-                                                           self.CORE_API,
+            query_str = '{}/{}?{}&limit={}&skip={}'.format(self.base_api_url,
+                                                           self.core_api,
                                                            params_str,
                                                            temp_limit,
                                                            i)
@@ -110,7 +117,7 @@ class IndexMixin(object):
                          kwargs)
 
         # Create thread pool and get results
-        num_threads = min(self.MAX_THREADS, n_queries_needed)
+        num_threads = min(self.max_threads, n_queries_needed)
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
                 results = thread_pool.map(self.__index_worker, queries)
@@ -135,7 +142,7 @@ class ShowMixin(object):
     @logging_utils.log_entrance_exit
     def show(self, id_var, **kwargs):
         params_str = self.parse_query_inputs(kwargs)
-        query_str = '{}/{}/{}?{}'.format(self.BASE_API_URL, self.CORE_API,
+        query_str = '{}/{}/{}?{}'.format(self.base_api_url, self.core_api,
                                          id_var, params_str)
 
         resp = self.request_manager.get(query_str)
@@ -153,7 +160,7 @@ class ShowImageMixin(object):
         n_samples = len(samples)
 
         # Get number of threads
-        num_threads = min(self.MAX_THREADS, n_samples)
+        num_threads = min(self.max_threads, n_samples)
 
         # Process urls.
         if num_threads > 1:
@@ -185,8 +192,8 @@ class ShowImageMixin(object):
     def __show_image_worker(self, args):
         id_var, data, check_for_duds = args
 
-        query_str = '{}/{}/{}/images/{}'.format(self.BASE_API_URL,
-                                                self.CORE_API,
+        query_str = '{}/{}/{}/images/{}'.format(self.base_api_url,
+                                                self.core_api,
                                                 id_var,
                                                 data)
 
@@ -226,7 +233,7 @@ class DownloadImagesMixin(object):
                 os.mkdir(out_dir)
 
         # Create thread pool
-        num_threads = min(self.MAX_THREADS, n_urls)
+        num_threads = min(self.max_threads, n_urls)
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
                 data = thread_pool.map(self.__download_images_worker,

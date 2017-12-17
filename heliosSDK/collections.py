@@ -17,11 +17,11 @@ from heliosSDK.utilities import logging_utils
 
 
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
-    CORE_API = 'collections'
-    MAX_THREADS = 32
+    core_api = 'collections'
+    max_threads = 32
 
     def __init__(self):
-        self.request_manager = RequestManager(pool_maxsize=self.MAX_THREADS)
+        self.request_manager = RequestManager(pool_maxsize=self.max_threads)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -35,7 +35,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     @logging_utils.log_entrance_exit
     def create(self, name, description, tags=None):
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self.request_manager._AUTH_TOKEN['value'].replace('Bearer ', '')
+        post_token = self.request_manager.auth_token['value'].replace('Bearer ', '')
 
         # handle more than one tag
         if isinstance(tags, (list, tuple)):
@@ -50,7 +50,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
 
-        post_url = '{}/{}'.format(self.BASE_API_URL, self.CORE_API)
+        post_url = '{}/{}'.format(self.base_api_url, self.core_api)
 
         resp = self.request_manager.post(post_url, headers=header, data=parms)
         json_response = resp.json()
@@ -63,7 +63,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             raise ValueError('Update requires at least one named argument.')
 
         # need to strip out the Bearer to work with a PATCH for collections
-        patch_token = self.request_manager._AUTH_TOKEN['value'].replace('Bearer ', '')
+        patch_token = self.request_manager.auth_token['value'].replace('Bearer ', '')
 
         # handle more than one tag
         if isinstance(tags, (list, tuple)):
@@ -82,8 +82,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
 
-        patch_url = '{}/{}/{}'.format(self.BASE_API_URL,
-                                      self.CORE_API,
+        patch_url = '{}/{}/{}'.format(self.base_api_url,
+                                      self.core_api,
                                       collections_id)
 
         resp = self.request_manager.patch(patch_url,
@@ -151,7 +151,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         n_images = len(data)
 
         # Get number of threads
-        num_threads = min(self.MAX_THREADS, n_images)
+        num_threads = min(self.max_threads, n_images)
 
         # Process data.
         if num_threads > 1:
@@ -182,7 +182,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         collection_id, payload = args
 
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self.request_manager._AUTH_TOKEN['value'].replace('Bearer ', '')
+        post_token = self.request_manager.auth_token['value'].replace('Bearer ', '')
 
         # Compose post request
         parms = {'access_token': post_token}
@@ -190,7 +190,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
-        post_url = '{}/collections/{}/images'.format(self.BASE_API_URL,
+        post_url = '{}/collections/{}/images'.format(self.base_api_url,
                                                      collection_id)
 
         try:
@@ -210,7 +210,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         n_names = len(names)
 
         # Get number of threads
-        num_threads = min(self.MAX_THREADS, n_names)
+        num_threads = min(self.max_threads, n_names)
 
         # Process urls.
         if num_threads > 1:
@@ -240,8 +240,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     def __remove_image_worker(self, args):
         coll_id, img_name = args
 
-        query_str = '{}/{}/{}/images/{}'.format(self.BASE_API_URL,
-                                                self.CORE_API,
+        query_str = '{}/{}/{}/images/{}'.format(self.base_api_url,
+                                                self.core_api,
                                                 coll_id,
                                                 img_name)
 
@@ -254,8 +254,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     @logging_utils.log_entrance_exit
     def copy(self, collection_id, new_name):
-        query_str = '{}/{}/{}'.format(self.BASE_API_URL,
-                                      self.CORE_API,
+        query_str = '{}/{}/{}'.format(self.base_api_url,
+                                      self.core_api,
                                       collection_id)
 
         resp = self.request_manager.get(query_str)

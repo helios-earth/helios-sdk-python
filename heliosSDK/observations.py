@@ -16,11 +16,11 @@ from heliosSDK.utilities import logging_utils
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
-    CORE_API = 'observations'
-    MAX_THREADS = 32
+    core_api = 'observations'
+    max_threads = 32
 
     def __init__(self):
-        self.request_manager = RequestManager(pool_maxsize=self.MAX_THREADS)
+        self.request_manager = RequestManager(pool_maxsize=self.max_threads)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -40,7 +40,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         self.logger.info('Entering preview(%s observation_ids)', n_obs)
 
         # Get number of threads
-        num_threads = min(self.MAX_THREADS, n_obs)
+        num_threads = min(self.max_threads, n_obs)
 
         # Process ids.
         if num_threads > 1:
@@ -70,8 +70,8 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     def __preview_worker(self, args):
         observation_id, check_for_duds = args
 
-        query_str = '{}/{}/{}/preview'.format(self.BASE_API_URL,
-                                              self.CORE_API,
+        query_str = '{}/{}/{}/preview'.format(self.base_api_url,
+                                              self.core_api,
                                               observation_id)
 
         try:

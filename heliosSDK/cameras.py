@@ -16,11 +16,11 @@ from heliosSDK.utilities import logging_utils
 
 class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
               SDKCore):
-    CORE_API = 'cameras'
-    MAX_THREADS = 32
+    core_api = 'cameras'
+    max_threads = 32
 
     def __init__(self):
-        self.request_manager = RequestManager(pool_maxsize=self.MAX_THREADS)
+        self.request_manager = RequestManager(pool_maxsize=self.max_threads)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
@@ -31,8 +31,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
     @logging_utils.log_entrance_exit
     def images(self, camera_id, start_time, limit=500):
-        query_str = '{}/{}/{}/images?time={}&limit={}'.format(self.BASE_API_URL,
-                                                              self.CORE_API,
+        query_str = '{}/{}/{}/images?time={}&limit={}'.format(self.base_api_url,
+                                                              self.core_api,
                                                               camera_id,
                                                               start_time,
                                                               limit)

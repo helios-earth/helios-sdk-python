@@ -2,16 +2,15 @@
 import logging
 
 import requests
-
 from heliosSDK import AUTH_TOKEN
+
+MAX_RETRIES = 3
+TIMEOUT = 5
+SSL_VERIFY = True
 
 
 class RequestManager(object):
-    MAX_RETRIES = 3
-    TIMEOUT = 5
-    SSL_VERIFY = True
-
-    _AUTH_TOKEN = AUTH_TOKEN
+    _auth_token = AUTH_TOKEN
 
     def __init__(self, pool_maxsize=32):
         # Initialize logger
@@ -19,17 +18,24 @@ class RequestManager(object):
 
         # Create API session with authentication credentials
         self.api_session = requests.Session()
-        self.api_session.headers = {
-            self._AUTH_TOKEN['name']: self._AUTH_TOKEN['value']}
-        self.api_session.verify = self.SSL_VERIFY
+        self.api_session.headers = {AUTH_TOKEN['name']: AUTH_TOKEN['value']}
+        self.api_session.verify = SSL_VERIFY
         self.api_session.mount('https://', requests.adapters.HTTPAdapter(
-            pool_maxsize=pool_maxsize, max_retries=self.MAX_RETRIES))
+            pool_maxsize=pool_maxsize, max_retries=MAX_RETRIES))
 
         # Create bare session without credentials
         self.session = requests.Session()
-        self.session.verify = self.SSL_VERIFY
+        self.session.verify = SSL_VERIFY
         self.session.mount('https://', requests.adapters.HTTPAdapter(
-            pool_maxsize=pool_maxsize, max_retries=self.MAX_RETRIES))
+            pool_maxsize=pool_maxsize, max_retries=MAX_RETRIES))
+
+    @property
+    def auth_token(self):
+        return self._auth_token
+
+    @auth_token.setter
+    def auth_token(self, value):
+        raise AttributeError('Access to auth_token is restricted.')
 
     def __del__(self):
         self.api_session.close()
@@ -39,7 +45,7 @@ class RequestManager(object):
                   **kwargs):
 
         query = query.replace(' ', '+')
-        kwargs['timeout'] = kwargs.get('timeout', self.TIMEOUT)
+        kwargs['timeout'] = kwargs.get('timeout', TIMEOUT)
 
         # Alias the required session
         if use_api_cred:
