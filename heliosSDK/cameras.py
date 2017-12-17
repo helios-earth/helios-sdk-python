@@ -8,7 +8,6 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from dateutil.parser import parse
-
 from heliosSDK.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, \
     DownloadImagesMixin, RequestManager
 from heliosSDK.utilities import logging_utils

@@ -9,7 +9,6 @@ from multiprocessing.dummy import Pool as ThreadPool
 
 import numpy as np
 from PIL import Image
-
 from heliosSDK import BASE_API_URL
 from heliosSDK.utilities import logging_utils
 
