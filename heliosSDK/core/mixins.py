@@ -132,9 +132,9 @@ class IndexMixin(object):
         query_str = args
 
         # Perform query
-        resp = self.request_manager.get(query_str).json()
+        resp = self.request_manager.get(query_str)
 
-        return resp
+        return resp.json()
 
 
 class ShowMixin(object):
@@ -145,9 +145,8 @@ class ShowMixin(object):
                                          id_var, params_str)
 
         resp = self.request_manager.get(query_str)
-        geo_json_feature = resp.json()
 
-        return geo_json_feature
+        return resp.json()
 
 
 class ShowImageMixin(object):

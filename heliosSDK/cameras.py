@@ -37,9 +37,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                                                               limit)
 
         resp = self.request_manager.get(query_str)
-        json_resp = resp.json()
 
-        return json_resp
+        return resp.json()
 
     @logging_utils.log_entrance_exit
     def images_range(self, camera_id, start_time, end_time, limit=500):

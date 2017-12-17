@@ -53,9 +53,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         post_url = '{}/{}'.format(self.base_api_url, self.core_api)
 
         resp = self.request_manager.post(post_url, headers=header, data=parms)
-        json_response = resp.json()
 
-        return json_response
+        return resp.json()
 
     @logging_utils.log_entrance_exit
     def update(self, collections_id, name=None, description=None, tags=None):
@@ -89,9 +88,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         resp = self.request_manager.patch(patch_url,
                                           headers=header,
                                           data=parms)
-        json_response = resp.json()
 
-        return json_response
+        return resp.json()
 
     @logging_utils.log_entrance_exit
     def images(self, collection_id, camera=None, old_flag=False):
@@ -259,11 +257,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                       collection_id)
 
         resp = self.request_manager.get(query_str)
-        json_response = resp.json()
+        resp_json = resp.json()
 
-        output = self.create(new_name,
-                             json_response['description'],
-                             json_response['tags'])
+        output = self.create(new_name, resp_json['description'], resp_json['tags'])
 
         new_id = output['collection_id']
 
