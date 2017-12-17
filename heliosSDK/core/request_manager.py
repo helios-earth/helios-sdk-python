@@ -18,7 +18,7 @@ class RequestManager(object):
 
         # Create API session with authentication credentials
         self.api_session = requests.Session()
-        self.api_session.headers = {AUTH_TOKEN['name']: AUTH_TOKEN['value']}
+        self.api_session.headers.update({AUTH_TOKEN['name']: AUTH_TOKEN['value']})
         self.api_session.verify = SSL_VERIFY
         self.api_session.mount('https://', requests.adapters.HTTPAdapter(
             pool_maxsize=pool_maxsize, max_retries=MAX_RETRIES))
