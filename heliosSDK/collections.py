@@ -17,6 +17,16 @@ from heliosSDK.utilities import logging_utils
 
 
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
+    """
+    The Collections API allows users to group and organize individual image
+    frames.
+
+    Collections are intended to be short-lived resources and will be accessible
+    for 90 days from the time the collection was created. After that time
+    period has expired, the collection and all associated imagery will be
+    removed from the system.
+
+    """
     core_api = 'collections'
     max_threads = 32
 
@@ -25,15 +35,51 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
+        """
+        Return a list of collections matching the provided text, or metadata
+        filters.
+
+        The maximum skip value is 4000. If this is reached, truncated results
+        will be returned. You will need to refine your query to avoid this.
+
+        :param kwargs: Any keyword arguments found in the documentation.
+        :return: List of GeoJSON feature collections.
+        """
         return super(Collections, self).index(**kwargs)
 
     def show(self, collection_id, limit=200, marker=None):
+        """
+        Return the attributes and image list for a single collection.
+
+        The results will also contain image names available in the collection.
+        These are limited to a maximum of 200 per query.
+
+        :param collection_id: Collection ID.
+        :param limit: Number of image names to be returned with each response.
+        Defaults to 20. Max value of 200 is allowed.
+        :param marker: 	Pagination marker. If the marker is an exact match to
+        an existing image, the next image after the marker will be the first
+        image returned. Therefore, for normal linked list pagination, specify
+        the last image name from the current response as the marker value in
+        the next request. Partial file names may be specified, in which case
+        the first matching result will be the first image returned.
+        :return: Dictionary contains collection attributes.
+        """
         return super(Collections, self).show(collection_id,
                                              limit=limit,
                                              marker=marker)
 
     @logging_utils.log_entrance_exit
     def create(self, name, description, tags=None):
+        """
+        Create a new collection.
+
+        :param name: Display name for the collection
+        :param description: Description for the collection
+        :param tags: Comma-delimited list of keyword tags to be added to the
+        collection (optional)
+        :return:
+        """
         # need to strip out the Bearer to work with a POST for collections
         post_token = self.request_manager.auth_token['value'].replace('Bearer ', '')
 
@@ -58,6 +104,15 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     @logging_utils.log_entrance_exit
     def update(self, collections_id, name=None, description=None, tags=None):
+        """
+        Update a collection.
+
+        :param collections_id: Collection ID.
+        :param name: Name to be changed to.
+        :param description: Description to be changed to.
+        :param tags: Tags to be changed to.
+        :return:
+        """
         if name is None and description is None and tags is None:
             raise ValueError('Update requires at least one named argument.')
 
@@ -93,6 +148,19 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     @logging_utils.log_entrance_exit
     def images(self, collection_id, camera=None, old_flag=False):
+        """
+        Returns all image names in a given collection.
+
+        When using the optional camera input parameter only images from that
+        camera will be returned.
+
+        :param collection_id: Collection ID.
+        :param camera: Camera ID (optional)
+        :param old_flag: Flag for finding old format image names. When True
+        images that do not contain md5 hashes at the start of their name will
+        be found.
+        :return: Dictionary containing the total and all image names.
+        """
         max_limit = 200
         mark_img = ''
 
@@ -131,6 +199,13 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return json_output
 
     def show_image(self, collection_id, image_names, check_for_duds=False):
+        """
+        Return image URLs from a collection.
+
+        :param collection_id: Collection ID.
+        :param image_names: List of image names.
+        :return:
+        """
         return super(Collections, self).show_image(
             collection_id, image_names, check_for_duds=check_for_duds)
 
@@ -140,6 +215,16 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     @logging_utils.log_entrance_exit
     def add_image(self, collection_id, data):
+        """
+        Add images to a collection.
+
+        :param collection_id: Collection ID.
+        :param data: List of dictionaries containing any of the following keys.
+        (camera_id), (camera_id, time), (observation_id),
+        (collection_id, image)
+        e.g. data = [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
+        :return:
+        """
         assert isinstance(data, (list, tuple, dict))
 
         # Force iterable.
@@ -202,6 +287,13 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     @logging_utils.log_entrance_exit
     def remove_image(self, collection_id, names):
+        """
+        Remove images from a collection.
+
+        :param collection_id: Collection ID.
+        :param names: List of image names to be removed.
+        :return:
+        """
         # Force iterable
         if not isinstance(names, (list, tuple)):
             names = [names]
@@ -252,6 +344,13 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     @logging_utils.log_entrance_exit
     def copy(self, collection_id, new_name):
+        """
+        Copy a collection and its contents to a new collection.
+
+        :param collection_id: Collection ID.
+        :param new_name: New collection name.
+        :return:
+        """
         query_str = '{}/{}/{}'.format(self.base_api_url,
                                       self.core_api,
                                       collection_id)

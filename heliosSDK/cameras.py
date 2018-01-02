@@ -15,6 +15,8 @@ from heliosSDK.utilities import logging_utils
 
 class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
               SDKCore):
+    """The Cameras API provides access to all cameras in the Helios Network."""
+
     core_api = 'cameras'
     max_threads = 32
 
@@ -23,13 +25,41 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
+        """
+        Return a list of cameras matching the provided spatial, text, or
+        metadata filters.
+
+        The maximum skip value is 4000. If this is reached, truncated results
+        will be returned. You will need to refine your query to avoid this.
+
+        :param kwargs: Any keyword arguments found in the documentation.
+        :return: List of GeoJSON feature collections.
+        """
         return super(Cameras, self).index(**kwargs)
 
     def show(self, camera_id):
+        """
+        Return the attributes for a single alert.
+
+        :param camera_id: Camera ID.
+        :return: GeoJSON feature.
+        """
         return super(Cameras, self).show(camera_id)
 
     @logging_utils.log_entrance_exit
     def images(self, camera_id, start_time, limit=500):
+        """
+        Return the image times available for a given camera in the media cache.
+
+        The media cache contains all recent images archived by Helios, either
+        for internal analytics or for end user recording purposes.
+
+        :param camera_id: Camera ID.
+        :param start_time: Starting image timestamp, specified in UTC as an
+        ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
+        :param limit: Number of images to be returned, up to a max of 500.
+        :return: Dictionary containing total images and all available times.
+        """
         query_str = '{}/{}/{}/images?time={}&limit={}'.format(self.base_api_url,
                                                               self.core_api,
                                                               camera_id,
@@ -42,6 +72,20 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
     @logging_utils.log_entrance_exit
     def images_range(self, camera_id, start_time, end_time, limit=500):
+        """
+        Return image times available in a given time range.
+
+        The media cache contains all recent images archived by Helios, either
+        for internal analytics or for end user recording purposes.
+
+        :param camera_id: Camera ID.
+        :param start_time: Starting image timestamp, specified in UTC as an
+        ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
+        :param end_time: Ending image timestamp, specified in UTC as an
+        ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
+        :param limit: Number of images to be returned, up to a max of 500.
+        :return: Dictionary containing total images and all available times.
+        """
         end_time = parse(end_time).utctimetuple()
         output_json = []
         while True:
@@ -78,6 +122,18 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         return {'total': len(output_json), 'times': output_json}
 
     def show_image(self, camera_id, times):
+        """
+        Return a single image from the media cache.
+
+        The media cache contains all recent images archived by Helios, either
+        for internal analytics or for end user recording purposes.
+
+        :param camera_id: Camera ID.
+        :param times: Image time, specified in UTC as an ISO 8601 string
+        (e.g. 2017-08-01 or 2017-08-01T12:34:56.000Z). The image with the
+        closest matching timestamp will be returned.
+        :return: URL for the camera image.
+        """
         return super(Cameras, self).show_image(camera_id, times)
 
     def download_images(self, urls, out_dir=None, return_image_data=False):
