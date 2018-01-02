@@ -32,8 +32,12 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         The maximum skip value is 4000. If this is reached, truncated results
         will be returned. You will need to refine your query to avoid this.
 
-        :param kwargs: Any keyword arguments found in the documentation.
-        :return: List of GeoJSON feature collections.
+        Args:
+            **kwargs: Any keyword arguments found in the documentation.
+
+        Returns:
+             list: GeoJSON feature collections.
+
         """
         return super(Cameras, self).index(**kwargs)
 
@@ -41,8 +45,12 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         """
         Return the attributes for a single alert.
 
-        :param camera_id: Camera ID.
-        :return: GeoJSON feature.
+        Args:
+            camera_id (str): Camera ID.
+
+        Returns:
+            dict: GeoJSON feature.
+
         """
         return super(Cameras, self).show(camera_id)
 
@@ -54,11 +62,17 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         The media cache contains all recent images archived by Helios, either
         for internal analytics or for end user recording purposes.
 
-        :param camera_id: Camera ID.
-        :param start_time: Starting image timestamp, specified in UTC as an
-        ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
-        :param limit: Number of images to be returned, up to a max of 500.
-        :return: Dictionary containing total images and all available times.
+        Args:
+            camera_id (str): Camera ID.
+            start_time (str): Starting image timestamp, specified in UTC as an
+                ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
+            limit (Optional(int)): Number of images to be returned, up to a max
+                of 500. Defaults to 500.
+
+
+        Returns:
+            dict: Dictionary containing total images and all available times.
+
         """
         query_str = '{}/{}/{}/images?time={}&limit={}'.format(self.base_api_url,
                                                               self.core_api,
@@ -78,13 +92,18 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         The media cache contains all recent images archived by Helios, either
         for internal analytics or for end user recording purposes.
 
-        :param camera_id: Camera ID.
-        :param start_time: Starting image timestamp, specified in UTC as an
-        ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
-        :param end_time: Ending image timestamp, specified in UTC as an
-        ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
-        :param limit: Number of images to be returned, up to a max of 500.
-        :return: Dictionary containing total images and all available times.
+        Args:
+            camera_id (str): Camera ID.
+            start_time (str): Starting image timestamp, specified in UTC as an
+                ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
+            end_time (str): Ending image timestamp, specified in UTC as an
+                ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
+            limit (Optional(int)): Number of images to be returned, up to a max of 500.
+                Defaults to 500.
+
+        Returns:
+            dict: Dictionary containing total images and all available times.
+
         """
         end_time = parse(end_time).utctimetuple()
         output_json = []
@@ -128,11 +147,15 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         The media cache contains all recent images archived by Helios, either
         for internal analytics or for end user recording purposes.
 
-        :param camera_id: Camera ID.
-        :param times: Image time, specified in UTC as an ISO 8601 string
-        (e.g. 2017-08-01 or 2017-08-01T12:34:56.000Z). The image with the
-        closest matching timestamp will be returned.
-        :return: URL for the camera image.
+        Args:
+            camera_id (str): Camera ID.
+            times (list(str)/str): Image times, specified in UTC as an ISO 8601
+                string (e.g. 2017-08-01 or 2017-08-01T12:34:56.000Z). The
+                image with the closest matching timestamp will be returned.
+
+        Returns:
+            str: URL for the camera image.
+
         """
         return super(Cameras, self).show_image(camera_id, times)
 

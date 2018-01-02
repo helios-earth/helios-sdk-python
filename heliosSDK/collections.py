@@ -36,14 +36,18 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     def index(self, **kwargs):
         """
-        Return a list of collections matching the provided text, or metadata
-        filters.
+        Return a list of collections matching the provided spatial, text, or
+        metadata filters.
 
         The maximum skip value is 4000. If this is reached, truncated results
         will be returned. You will need to refine your query to avoid this.
 
-        :param kwargs: Any keyword arguments found in the documentation.
-        :return: List of GeoJSON feature collections.
+        Args:
+            **kwargs: Any keyword arguments found in the documentation.
+
+        Returns:
+             list: GeoJSON feature collections.
+
         """
         return super(Collections, self).index(**kwargs)
 
@@ -54,16 +58,21 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         The results will also contain image names available in the collection.
         These are limited to a maximum of 200 per query.
 
-        :param collection_id: Collection ID.
-        :param limit: Number of image names to be returned with each response.
-        Defaults to 20. Max value of 200 is allowed.
-        :param marker: 	Pagination marker. If the marker is an exact match to
-        an existing image, the next image after the marker will be the first
-        image returned. Therefore, for normal linked list pagination, specify
-        the last image name from the current response as the marker value in
-        the next request. Partial file names may be specified, in which case
-        the first matching result will be the first image returned.
-        :return: Dictionary contains collection attributes.
+        Args:
+            collection_id (str): Collection ID.
+            limit (Optional[int]): Number of image names to be returned with
+                each response. Defaults to 200. Max value of 200 is allowed.
+            marker (Optional[str]): Pagination marker. If the marker is an
+                exact match to an existing image, the next image after the
+                marker will be the first image returned. Therefore, for normal
+                linked list pagination, specify the last image name from the
+                current response as the marker value in the next request.
+                Partial file names may be specified, in which case the first
+                matching result will be the first image returned.
+
+        Returns:
+            dict: Dictionary contains collection attributes.
+
         """
         return super(Collections, self).show(collection_id,
                                              limit=limit,
@@ -74,11 +83,15 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         """
         Create a new collection.
 
-        :param name: Display name for the collection
-        :param description: Description for the collection
-        :param tags: Comma-delimited list of keyword tags to be added to the
-        collection (optional)
-        :return:
+        Args:
+            name (str): Display name for the collection.
+            description (str): Description for the collection.
+            tags (Optional(list(str))): Comma-delimited list of keyword tags to
+                be added to the collection.
+
+        Returns:
+            Response
+
         """
         # need to strip out the Bearer to work with a POST for collections
         post_token = self.request_manager.auth_token['value'].replace('Bearer ', '')
@@ -107,11 +120,15 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         """
         Update a collection.
 
-        :param collections_id: Collection ID.
-        :param name: Name to be changed to.
-        :param description: Description to be changed to.
-        :param tags: Tags to be changed to.
-        :return:
+        Args:
+            collections_id (str): Collection ID.
+            name (Optional(str)): Name to be changed to.
+            description (Optional(str)): Description to be changed to.
+            tags (Optional(list(str))): Tags to be changed to.
+
+        Returns:
+            Response
+
         """
         if name is None and description is None and tags is None:
             raise ValueError('Update requires at least one named argument.')
@@ -154,12 +171,16 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         When using the optional camera input parameter only images from that
         camera will be returned.
 
-        :param collection_id: Collection ID.
-        :param camera: Camera ID (optional)
-        :param old_flag: Flag for finding old format image names. When True
-        images that do not contain md5 hashes at the start of their name will
-        be found.
-        :return: Dictionary containing the total and all image names.
+        Args:
+            collection_id (str): Collection ID.
+            camera (Optional(str)): Camera ID (optional)
+            old_flag (Optional(bool)): Flag for finding old format image names.
+                When True images that do not contain md5 hashes at the start of
+                their name will be found.
+
+        Returns:
+            dict: Dictionary containing the total and all image names.
+
         """
         max_limit = 200
         mark_img = ''
@@ -202,9 +223,15 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         """
         Return image URLs from a collection.
 
-        :param collection_id: Collection ID.
-        :param image_names: List of image names.
-        :return:
+        Args:
+            collection_id (str): Collection ID.
+            image_names (list(str)/str): List of image names.
+            check_for_duds (Optional(bool)): Flag for the removal of dud
+                images. Defaults to False.
+
+        Returns:
+            dict: Dictionary containing image URLs.
+
         """
         return super(Collections, self).show_image(
             collection_id, image_names, check_for_duds=check_for_duds)
@@ -218,12 +245,16 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         """
         Add images to a collection.
 
-        :param collection_id: Collection ID.
-        :param data: List of dictionaries containing any of the following keys.
-        (camera_id), (camera_id, time), (observation_id),
-        (collection_id, image)
-        e.g. data = [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
-        :return:
+        Args:
+            collection_id (str): Collection ID.
+            data (list(dict)): List of dictionaries containing any of the
+                following keys. (camera_id), (camera_id, time),
+                (observation_id), (collection_id, image). E.g. data =
+                [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
+
+        Returns:
+            list(dict): Success responses.
+
         """
         assert isinstance(data, (list, tuple, dict))
 
@@ -290,9 +321,13 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         """
         Remove images from a collection.
 
-        :param collection_id: Collection ID.
-        :param names: List of image names to be removed.
-        :return:
+        Args:
+            collection_id (str): Collection ID.
+            names (list(str)/str): List of image names to be removed.
+
+        Returns:
+            list(dict): Success responses.
+
         """
         # Force iterable
         if not isinstance(names, (list, tuple)):
@@ -347,9 +382,13 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         """
         Copy a collection and its contents to a new collection.
 
-        :param collection_id: Collection ID.
-        :param new_name: New collection name.
-        :return:
+        Args:
+            collection_id (str): Collection ID.
+            new_name (str): New collection name.
+
+        Returns:
+            dict: Success response.
+
         """
         query_str = '{}/{}/{}'.format(self.base_api_url,
                                       self.core_api,

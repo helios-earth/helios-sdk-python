@@ -42,8 +42,12 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
         The maximum skip value is 4000. If this is reached, truncated results
         will be returned. You will need to refine your query to avoid this.
 
-        :param kwargs: Any keyword arguments found in the documentation.
-        :return: List of GeoJSON feature collections.
+        Args:
+            **kwargs: Any keyword arguments found in the documentation.
+
+        Returns:
+             list: GeoJSON feature collections.
+
         """
         return super(Alerts, self).index(**kwargs)
 
@@ -51,7 +55,11 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
         """
         Return the attributes for a single alert.
 
-        :param alert_id: Alert ID.
-        :return: GeoJSON feature.
+        Args:
+            alert_id (str): Alert ID.
+
+        Returns:
+            dict: GeoJSON feature.
+
         """
         return super(Alerts, self).show(alert_id)

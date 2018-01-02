@@ -37,8 +37,12 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         The maximum skip value is 4000. If this is reached, truncated results
         will be returned. You will need to refine your query to avoid this.
 
-        :param kwargs: Any keyword arguments found in the documentation.
-        :return: List of GeoJSON feature collections.
+        Args:
+            **kwargs: Any keyword arguments found in the documentation.
+
+        Returns:
+             list: GeoJSON feature collections.
+
         """
         return super(Observations, self).index(**kwargs)
 
@@ -46,8 +50,12 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         """
         Return the attributes for a single observation.
 
-        :param observation_id: Alert ID.
-        :return: GeoJSON feature.
+        Args:
+            observation_id (str): Observation ID.
+
+        Returns:
+            dict: GeoJSON feature.
+
         """
         return super(Observations, self).show(observation_id)
 
@@ -60,9 +68,14 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         (e.g. full image text/logos, etc.) and will return the most recent
         image for the observation time period.
 
-        :param observation_ids: list of observation IDs.
-        :param check_for_duds: Flag to remove dud images from results.
-        :return: List of preview image URLs.
+        Args:
+            observation_ids (list(str)/str): list of observation IDs.
+            check_for_duds (Optional(bool)): Flag to remove dud images from
+                results. Defaults to True.
+
+        Returns:
+            list: Image URLs.
+
         """
         # Force iterable
         if not isinstance(observation_ids, (list, tuple)):
