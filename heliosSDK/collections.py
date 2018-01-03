@@ -387,26 +387,26 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             new_name (str): New collection name.
 
         Returns:
-            dict: Success response.
+            str: New collection ID.
 
         """
+        # Get the collection metadata that needs to be copied.
         query_str = '{}/{}/{}'.format(self.base_api_url,
                                       self.core_api,
                                       collection_id)
+        resp_json = self.request_manager.get(query_str).json()
 
-        resp = self.request_manager.get(query_str)
-        resp_json = resp.json()
-
-        output = self.create(new_name, resp_json['description'], resp_json['tags'])
-
-        new_id = output['collection_id']
-
-        # Gather images that need to be copied.
-        image_names = self.images(collection_id)
-        results = self.show_image(collection_id, image_names['images'])
-        urls = results['url']
+        # Get the images that exist in the collection.
+        image_names = self.images(collection_id)['images']
 
         # Add images to new collection.
-        results2 = self.add_image(new_id, urls)
+        data = [{'collection_id': collection_id, 'image': x} for x in image_names]
 
-        return results2
+        # Create new collection.
+        output = self.create(new_name, resp_json['description'], resp_json['tags'])
+        new_id = output['collection_id']
+
+        # Add images to new collection.
+        _ = self.add_image(new_id, data)
+
+        return new_id
