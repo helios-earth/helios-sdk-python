@@ -2,6 +2,7 @@
 import logging
 
 import requests
+
 from heliosSDK import AUTH_TOKEN
 
 MAX_RETRIES = 3
@@ -10,6 +11,7 @@ SSL_VERIFY = True
 
 
 class RequestManager(object):
+    """Manages all API requests."""
     _auth_token = AUTH_TOKEN
 
     def __init__(self, pool_maxsize=32):
@@ -31,6 +33,7 @@ class RequestManager(object):
 
     @property
     def auth_token(self):
+        """Access to authentication token."""
         return self._auth_token
 
     @auth_token.setter
@@ -79,30 +82,95 @@ class RequestManager(object):
         return resp
 
     def get(self, query, use_api_cred=True, **kwargs):
+        """
+        Perform get request.
+
+        Args:
+            query (str): URL string for query.
+            use_api_cred (Optional(bool)): Flag to use API credentials for
+                query. Defaults to True.
+            **kwargs: Any additional keyword argument for requests.
+
+        Returns:
+            Request response.
+
+        """
         return self.__request(query,
                               use_api_cred=use_api_cred,
                               request_type='get',
                               **kwargs)
 
     def post(self, query, use_api_cred=True, **kwargs):
+        """
+        Perform post request.
+
+        Args:
+            query (str): URL string for query.
+            use_api_cred (Optional(bool)): Flag to use API credentials for
+                query. Defaults to True.
+            **kwargs: Any additional keyword argument for requests.
+
+        Returns:
+            Request response.
+
+        """
         return self.__request(query,
                               use_api_cred=use_api_cred,
                               request_type='post',
                               **kwargs)
 
     def head(self, query, use_api_cred=True, **kwargs):
+        """
+        Perform head request.
+
+        Args:
+            query (str): URL string for query.
+            use_api_cred (Optional(bool)): Flag to use API credentials for
+                query. Defaults to True.
+            **kwargs: Any additional keyword argument for requests.
+
+        Returns:
+            Request response.
+
+        """
         return self.__request(query,
                               use_api_cred=use_api_cred,
                               request_type='head',
                               **kwargs)
 
     def delete(self, query, use_api_cred=True, **kwargs):
+        """
+        Perform delete request.
+
+        Args:
+            query (str): URL string for query.
+            use_api_cred (Optional(bool)): Flag to use API credentials for
+                query. Defaults to True.
+            **kwargs: Any additional keyword argument for requests.
+
+        Returns:
+            Request response.
+
+        """
         return self.__request(query,
                               use_api_cred=use_api_cred,
                               request_type='delete',
                               **kwargs)
 
     def patch(self, query, use_api_cred=True, **kwargs):
+        """
+        Perform patch request.
+
+        Args:
+            query (str): URL string for query.
+            use_api_cred (Optional(bool)): Flag to use API credentials for
+                query. Defaults to True.
+            **kwargs: Any additional keyword argument for requests.
+
+        Returns:
+            Request response.
+
+        """
         return self.__request(query,
                               use_api_cred=use_api_cred,
                               request_type='patch',

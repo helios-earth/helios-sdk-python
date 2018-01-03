@@ -4,15 +4,20 @@ import functools
 
 def log_entrance_exit(func):
     """
-    Decorate a method to log the entrance and exit.
+    Decorator to log the entrance and exit of method calls.
 
     This will make use of the logger instance passed via self.  When using
     functools.wraps, self will be the first index in args.
     See self = args[0] comment below.
 
-    :param func:
-    :return: evaluated function results
+    Args:
+        func: The function to be wrapped.
+
+    Returns:
+        Wrapped function.
+
     """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # self should be first argument.

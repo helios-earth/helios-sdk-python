@@ -6,6 +6,8 @@ import requests
 
 
 class TokenManager(object):
+    """Manages API tokens for authentication."""
+
     token_expiration_threshold = 60  # minutes
 
     _token_file = os.path.join(os.path.expanduser('~'), '.helios_token')
@@ -24,6 +26,13 @@ class TokenManager(object):
         self.get_auth_credentials()
 
     def start_session(self):
+        """
+        Begin Helios session.
+
+        Returns:
+            tuple: The authentication token and API URL.
+
+        """
         # Check for saved token first. If it doesn't exist then get a token.
         if os.path.exists(self._token_file):
             self.read_token()
@@ -39,6 +48,7 @@ class TokenManager(object):
         return self.token, self.api_url
 
     def get_token(self):
+        """Gets a fresh token and writes the token to file for reuse."""
         try:
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
@@ -62,17 +72,27 @@ class TokenManager(object):
         self.write_token()
 
     def read_token(self):
+        """Read token from file."""
         with open(self._token_file, 'r') as token_file:
             self.token = json.load(token_file)
 
     def write_token(self):
+        """Write token to file."""
         with open(self._token_file, 'w+') as token_file:
             json.dump(self.token, token_file)
 
     def delete_token(self):
+        """Delete token file."""
         os.remove(self._token_file)
 
     def verify_token(self):
+        """
+        Verifies if the current token is still valid.
+
+        If the token will expire in 60 minutes, then a new token will be
+        acquired.
+
+        """
         resp = requests.get(self.api_url + '/session',
                             headers={self.token['name']: self.token['value']},
                             verify=True)

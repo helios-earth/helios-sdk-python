@@ -5,6 +5,14 @@ import os
 
 
 def configure():
+    """
+    Configures the logger.
+
+    If a configuration file does not exist in the root user directory, then
+    default configuration options will be written to file.  This file can be
+    customized and will be read on the next configuration.
+
+    """
     # Attempt to read SDK logging config file
     config_file = os.path.join(os.path.expanduser('~'),
                                'heliosSDK_logger_config.json')
