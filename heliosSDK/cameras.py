@@ -98,8 +98,8 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                 ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
             end_time (str): Ending image timestamp, specified in UTC as an
                 ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
-            limit (Optional(int)): Number of images to be returned, up to a max of 500.
-                Defaults to 500.
+            limit (Optional(int)): Number of images to be returned, up to a max
+                of 500.  Defaults to 500.
 
         Returns:
             dict: Dictionary containing total images and all available times.
