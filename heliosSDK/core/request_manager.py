@@ -87,7 +87,7 @@ class RequestManager(object):
 
         Args:
             query (str): URL string for query.
-            use_api_cred (Optional(bool)): Flag to use API credentials for
+            use_api_cred (bool, optional): Flag to use API credentials for
                 query. Defaults to True.
             **kwargs: Any additional keyword argument for requests.
 
@@ -106,7 +106,7 @@ class RequestManager(object):
 
         Args:
             query (str): URL string for query.
-            use_api_cred (Optional(bool)): Flag to use API credentials for
+            use_api_cred (bool, optional): Flag to use API credentials for
                 query. Defaults to True.
             **kwargs: Any additional keyword argument for requests.
 
@@ -125,7 +125,7 @@ class RequestManager(object):
 
         Args:
             query (str): URL string for query.
-            use_api_cred (Optional(bool)): Flag to use API credentials for
+            use_api_cred (bool, optional): Flag to use API credentials for
                 query. Defaults to True.
             **kwargs: Any additional keyword argument for requests.
 
@@ -144,7 +144,7 @@ class RequestManager(object):
 
         Args:
             query (str): URL string for query.
-            use_api_cred (Optional(bool)): Flag to use API credentials for
+            use_api_cred (bool, optional): Flag to use API credentials for
                 query. Defaults to True.
             **kwargs: Any additional keyword argument for requests.
 
@@ -163,7 +163,7 @@ class RequestManager(object):
 
         Args:
             query (str): URL string for query.
-            use_api_cred (Optional(bool)): Flag to use API credentials for
+            use_api_cred (bool, optional): Flag to use API credentials for
                 query. Defaults to True.
             **kwargs: Any additional keyword argument for requests.
 

@@ -56,8 +56,8 @@ def merge_json(data, keys):
 
     Args:
         data (list): Dictionary to merge data from.
-        keys (list,str): List of keys or str for single key.  signifying a
-                         chain of keys into the dictionary
+        keys (str or sequence of strs): A chain of keys into the dictionary
+            to get to the field that will be merged.
     Returns:
         list: Merged values.
 

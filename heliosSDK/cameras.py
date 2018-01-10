@@ -66,7 +66,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
             camera_id (str): Camera ID.
             start_time (str): Starting image timestamp, specified in UTC as an
                 ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
-            limit (Optional(int)): Number of images to be returned, up to a max
+            limit (int, optional): Number of images to be returned, up to a max
                 of 500. Defaults to 500.
 
 
@@ -98,7 +98,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                 ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
             end_time (str): Ending image timestamp, specified in UTC as an
                 ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
-            limit (Optional(int)): Number of images to be returned, up to a max
+            limit (int, optional): Number of images to be returned, up to a max
                 of 500.  Defaults to 500.
 
         Returns:
@@ -149,7 +149,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         Args:
             camera_id (str): Camera ID.
-            times (list(str)/str): Image times, specified in UTC as an ISO 8601
+            times (str or sequence of strs): Image times, specified in UTC as an ISO 8601
                 string (e.g. 2017-08-01 or 2017-08-01T12:34:56.000Z). The
                 image with the closest matching timestamp will be returned.
 

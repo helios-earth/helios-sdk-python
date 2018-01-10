@@ -60,9 +60,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         Args:
             collection_id (str): Collection ID.
-            limit (Optional[int]): Number of image names to be returned with
+            limit (int, optional): Number of image names to be returned with
                 each response. Defaults to 200. Max value of 200 is allowed.
-            marker (Optional[str]): Pagination marker. If the marker is an
+            marker (str, optional): Pagination marker. If the marker is an
                 exact match to an existing image, the next image after the
                 marker will be the first image returned. Therefore, for normal
                 linked list pagination, specify the last image name from the
@@ -86,8 +86,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         Args:
             name (str): Display name for the collection.
             description (str): Description for the collection.
-            tags (Optional(list(str))): Comma-delimited list of keyword tags to
-                be added to the collection.
+            tags (str or sequence of strs, optional): Optional comma-delimited
+                keyword tags to be added to the collection.
 
         Returns:
             Response
@@ -122,9 +122,10 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         Args:
             collections_id (str): Collection ID.
-            name (Optional(str)): Name to be changed to.
-            description (Optional(str)): Description to be changed to.
-            tags (Optional(list(str))): Tags to be changed to.
+            name (str, optional): Name to be changed to.
+            description (str, optional): Description to be changed to.
+            tags (str or sequence of strs, optional): Optional comma-delimited
+                keyword tags to be changed to.
 
         Returns:
             Response
@@ -173,8 +174,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         Args:
             collection_id (str): Collection ID.
-            camera (Optional(str)): Camera ID (optional)
-            old_flag (Optional(bool)): Flag for finding old format image names.
+            camera (str, optional): Camera ID to be found.
+            old_flag (bool, optional): Flag for finding old format image names.
                 When True images that do not contain md5 hashes at the start of
                 their name will be found.
 
@@ -225,8 +226,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         Args:
             collection_id (str): Collection ID.
-            image_names (list(str)/str): List of image names.
-            check_for_duds (Optional(bool)): Flag for the removal of dud
+            image_names (str or sequence of strs): Image names.
+            check_for_duds (bool, optional): Flag for the removal of dud
                 images. Defaults to False.
 
         Returns:
@@ -247,9 +248,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         Args:
             collection_id (str): Collection ID.
-            data (list(dict)): List of dictionaries containing any of the
-                following keys. (camera_id), (camera_id, time),
-                (observation_id), (collection_id, image). E.g. data =
+            data (dict or sequence of dicts): Data containing any of these
+                payloads (camera_id), (camera_id, time), (observation_id),
+                (collection_id, image). E.g. data =
                 [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
 
         Returns:
@@ -323,7 +324,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         Args:
             collection_id (str): Collection ID.
-            names (list(str)/str): List of image names to be removed.
+            names (str or sequence of strs): List of image names to be removed.
 
         Returns:
             list(dict): Success responses.

@@ -69,8 +69,8 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         image for the observation time period.
 
         Args:
-            observation_ids (list(str)/str): list of observation IDs.
-            check_for_duds (Optional(bool)): Flag to remove dud images from
+            observation_ids (str or sequence of strs): list of observation IDs.
+            check_for_duds (bool, optional): Flag to remove dud images from
                 results. Defaults to True.
 
         Returns:
