@@ -7,3 +7,6 @@
 .idea
 .project
 .pydevproject
+
+# docs
+docs/_build
