@@ -90,7 +90,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                 keyword tags to be added to the collection.
 
         Returns:
-            Response
+            dict: Dictionary containing the success status and the new
+                collection ID.
 
         """
         # need to strip out the Bearer to work with a POST for collections
@@ -127,8 +128,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             tags (str or sequence of strs, optional): Optional comma-delimited
                 keyword tags to be changed to.
 
-        Returns:
-            Response
+        Returns: Dictionary containing the success status.
 
         """
         if name is None and description is None and tags is None:
@@ -254,7 +254,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                 [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
 
         Returns:
-            list(dict): Success responses.
+            sequence of dicts: Success responses.
 
         """
         assert isinstance(data, (list, tuple, dict))
@@ -327,7 +327,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             names (str or sequence of strs): List of image names to be removed.
 
         Returns:
-            list(dict): Success responses.
+            sequence of dicts: Success responses.
 
         """
         # Force iterable
