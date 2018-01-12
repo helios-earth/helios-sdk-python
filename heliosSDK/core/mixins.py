@@ -5,7 +5,7 @@ from contextlib import closing
 from io import BytesIO
 from itertools import repeat
 from math import ceil
-from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing.pool import ThreadPool
 
 import numpy as np
 from PIL import Image

@@ -8,7 +8,7 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 from contextlib import closing
 from itertools import repeat
-from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing.pool import ThreadPool
 
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, \
     DownloadImagesMixin, RequestManager

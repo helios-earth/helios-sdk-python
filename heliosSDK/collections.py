@@ -9,7 +9,7 @@ import hashlib
 import logging
 from contextlib import closing
 from itertools import repeat
-from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing.pool import ThreadPool
 
 from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, \
     DownloadImagesMixin, RequestManager
