@@ -39,12 +39,12 @@ def test_cameras(output_dir=''):
     json_utils.write_json(cameras_test_2,
                           os.path.join(output_dir, r'cameras_images.json'))
 
-    cameras_test_3 = cameras.show_image(cam_id, cameras_test_2['times'])
+    cameras_test_3 = cameras.show_image(cam_id, cameras_test_2)
     json_utils.write_json(cameras_test_3,
                           os.path.join(output_dir, r'cameras_showImages.json'))
 
     cameras_test_4 = cameras.download_images(
-        cameras_test_3['url'],
+        cameras_test_3,
         out_dir=os.path.join(output_dir, r'Images'),
         return_image_data=True)
 
@@ -58,19 +58,25 @@ def test_observations(output_dir=''):
     json_utils.write_json(observations_test_0,
                           os.path.join(output_dir, r'observations_index.json'))
 
-    temp_id = observations_test_0[0]['features'][0]['id']
+    # Extract id from index query
+    for feature in observations_test_0[0]['features']:
+        temp_id = feature['id']
+        try:
+            temp_id.index('error')
+        except ValueError:
+            break
 
     observations_test_1 = observations.show(temp_id)
     json_utils.write_json(observations_test_1,
                           os.path.join(output_dir, r'observations_show.json'))
 
     observations_test_2 = observations.preview(temp_id)
-    json_utils.write_json(observations_test_2['url'],
+    json_utils.write_json(observations_test_2,
                           os.path.join(output_dir,
                                        r'observations_preview.json'))
 
     observations_test_3 = observations.download_images(
-        observations_test_2['url'],
+        observations_test_2,
         out_dir=os.path.join(output_dir, r'Images_Observation'),
         return_image_data=True)
 
@@ -101,19 +107,19 @@ def test_collections(output_dir=''):
 
     collections_test_4 = collections.show_image(
         '6a59fd46-bdf0-47e4-a719-992a9e9e988b',
-        collections_test_3['images'][0])
+        collections_test_3[0])
     json_utils.write_json(collections_test_4,
                           os.path.join(output_dir,
                                        r'collections_showImage.json'))
 
     collections_test_5 = collections.show_image(
-        '6a59fd46-bdf0-47e4-a719-992a9e9e988b', collections_test_3['images'])
+        '6a59fd46-bdf0-47e4-a719-992a9e9e988b', collections_test_3)
     json_utils.write_json(collections_test_5,
                           os.path.join(output_dir,
                                        r'collections_showImages.json'))
 
     collections_test6 = collections.download_images(
-        collections_test_5['url'],
+        collections_test_5,
         out_dir=os.path.join(output_dir, r'Images_Collection'),
         return_image_data=True)
 

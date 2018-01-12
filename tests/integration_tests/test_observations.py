@@ -43,7 +43,7 @@ def test_observations(utc_range):
     preview_results = observations_instance.preview(id_)
 
     # Extract URL
-    url = preview_results['url'][0]
+    url = preview_results[0]
 
     # Perform downloadImages query
     download_images_results = observations_instance.download_images(

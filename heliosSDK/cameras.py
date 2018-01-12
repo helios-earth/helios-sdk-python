@@ -71,7 +71,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
 
         Returns:
-            dict: Dictionary containing total images and all available times.
+            sequence of strs: Image times.
 
         """
         query_str = '{}/{}/{}/images?time={}&limit={}'.format(self.base_api_url,
@@ -80,9 +80,9 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                                                               start_time,
                                                               limit)
 
-        resp = self.request_manager.get(query_str)
+        resp = self.request_manager.get(query_str).json()
 
-        return resp.json()
+        return resp['times']
 
     @logging_utils.log_entrance_exit
     def images_range(self, camera_id, start_time, end_time, limit=500):
@@ -102,19 +102,16 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                 of 500.  Defaults to 500.
 
         Returns:
-            dict: Dictionary containing total images and all available times.
+            sequence of strs: Image times.
 
         """
         end_time = parse(end_time).utctimetuple()
-        output_json = []
+        image_times = []
         while True:
-            data = self.images(camera_id, start_time, limit=limit)
+            times = self.images(camera_id, start_time, limit=limit)
 
-            # Create new name for brevity.
-            times = data['times']
-
-            # If not times exist, break and return.
-            if data['total'] == 0:
+            # If no times exist, break and return.
+            if len(times) == 0:
                 break
 
             first = parse(times[0]).utctimetuple()
@@ -124,21 +121,21 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                 break
 
             if len(times) == 1:
-                output_json.extend(times)
+                image_times.extend(times)
                 break
 
             # the last image is still newer than our end time, keep looking
             if last < end_time:
-                output_json.extend(times)
+                image_times.extend(times)
                 start_time = times[-1]
                 continue
             else:
                 good_times = [x for x in times if parse(x).utctimetuple()
                               < end_time]
-                output_json.extend(good_times)
+                image_times.extend(good_times)
                 break
 
-        return {'total': len(output_json), 'times': output_json}
+        return image_times
 
     def show_image(self, camera_id, times):
         """
@@ -154,7 +151,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                 image with the closest matching timestamp will be returned.
 
         Returns:
-            str: URL for the camera image.
+            sequence of strs: Image URLs.
 
         """
         return super(Cameras, self).show_image(camera_id, times)

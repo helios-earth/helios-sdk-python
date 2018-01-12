@@ -71,7 +71,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                 matching result will be the first image returned.
 
         Returns:
-            dict: Dictionary contains collection attributes.
+            dict: Dictionary containing collection attributes and image list.
 
         """
         return super(Collections, self).show(collection_id,
@@ -90,8 +90,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                 keyword tags to be added to the collection.
 
         Returns:
-            dict: Dictionary containing the success status and the new
-                collection ID.
+            str: New collection ID.
 
         """
         # need to strip out the Bearer to work with a POST for collections
@@ -112,9 +111,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         post_url = '{}/{}'.format(self.base_api_url, self.core_api)
 
-        resp = self.request_manager.post(post_url, headers=header, data=parms)
+        resp = self.request_manager.post(post_url, headers=header, data=parms).json()
 
-        return resp.json()
+        return resp['collection_id']
 
     @logging_utils.log_entrance_exit
     def update(self, collections_id, name=None, description=None, tags=None):
@@ -127,8 +126,6 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             description (str, optional): Description to be changed to.
             tags (str or sequence of strs, optional): Optional comma-delimited
                 keyword tags to be changed to.
-
-        Returns: Dictionary containing the success status.
 
         """
         if name is None and description is None and tags is None:
@@ -158,11 +155,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                       self.core_api,
                                       collections_id)
 
-        resp = self.request_manager.patch(patch_url,
-                                          headers=header,
-                                          data=parms)
-
-        return resp.json()
+        self.request_manager.patch(patch_url, headers=header, data=parms)
 
     @logging_utils.log_entrance_exit
     def images(self, collection_id, camera=None, old_flag=False):
@@ -180,7 +173,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                 their name will be found.
 
         Returns:
-            dict: Dictionary containing the total and all image names.
+            sequence of strs: Image names.
 
         """
         max_limit = 200
@@ -215,10 +208,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             else:
                 mark_img = good_images[-1]
 
-        json_output = {'total': len(good_images),
-                       'images': good_images}
-
-        return json_output
+        return good_images
 
     def show_image(self, collection_id, image_names, check_for_duds=False):
         """
@@ -231,7 +221,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                 images. Defaults to False.
 
         Returns:
-            dict: Dictionary containing image URLs.
+            sequence of strs: Image URLs.
 
         """
         return super(Collections, self).show_image(
@@ -254,7 +244,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                 [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
 
         Returns:
-            sequence of dicts: Success responses.
+            sequence of dicts: If errors do occur then the data that caused the
+                errors will be returned.
 
         """
         assert isinstance(data, (list, tuple, dict))
@@ -276,22 +267,22 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         else:
             results = self.__add_image_worker((collection_id, data[0]))
 
-        # Remove errors, if they exist
-        results = [x for x in results if x != -1]
+        # Extract failures.
+        failures = [y for x, y in zip(results, data) if x == -1]
 
         # Determine how many were successful
-        n_data = len(results)
-        message = 'addImage({} out of {} successful)'.format(n_data, n_images)
+        n_successful = n_images - len(failures)
+        message = 'addImage({} out of {} successful)'.format(n_successful, n_images)
 
-        if n_data == 0:
+        if n_successful == 0:
             self.logger.error(message)
             return -1
-        elif n_data < n_images:
+        elif n_successful < n_images:
             self.logger.warning(message)
         else:
             self.logger.info(message)
 
-        return results
+        return failures
 
     def __add_image_worker(self, args):
         collection_id, payload = args
@@ -309,13 +300,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                                      collection_id)
 
         try:
-            resp = self.request_manager.post(post_url,
-                                             headers=header,
-                                             data=parms)
+            self.request_manager.post(post_url, headers=header, data=parms)
         except Exception:
             return -1
-
-        return resp.json()
 
     @logging_utils.log_entrance_exit
     def remove_image(self, collection_id, names):
@@ -327,7 +314,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             names (str or sequence of strs): List of image names to be removed.
 
         Returns:
-            sequence of dicts: Success responses.
+            sequence of dicts: If errors do occur then the data that caused the
+                errors will be returned.
 
         """
         # Force iterable
@@ -341,27 +329,27 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         # Process urls.
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
-                data = thread_pool.map(self.__remove_image_worker,
-                                       zip(repeat(collection_id), names))
+                results = thread_pool.map(self.__remove_image_worker,
+                                          zip(repeat(collection_id), names))
         else:
-            data = [self.__remove_image_worker((collection_id, names[0]))]
+            results = [self.__remove_image_worker((collection_id, names[0]))]
 
-        # Remove errors, if they exist
-        data = [x for x in data if x != -1]
+        # Extract failures.
+        failures = [y for x, y in zip(results, names) if x == -1]
 
         # Determine how many were successful
-        n_data = len(data)
-        message = 'removeImage({} out of {} successful)'.format(n_data, n_names)
+        n_successful = n_names - len(failures)
+        message = 'removeImage({} out of {} successful)'.format(n_successful, n_names)
 
-        if n_data == 0:
+        if n_successful == 0:
             self.logger.error(message)
             return -1
-        elif n_data < n_names:
+        elif n_successful < n_names:
             self.logger.warning(message)
         else:
             self.logger.info(message)
 
-        return data
+        return failures
 
     def __remove_image_worker(self, args):
         coll_id, img_name = args
@@ -372,11 +360,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                                                 img_name)
 
         try:
-            resp = self.request_manager.delete(query_str)
+            self.request_manager.delete(query_str)
         except Exception:
             return -1
-
-        return resp.json()
 
     @logging_utils.log_entrance_exit
     def copy(self, collection_id, new_name):

@@ -163,18 +163,19 @@ class ShowImageMixin(object):
         # Process urls.
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
-                data = thread_pool.map(self.__show_image_worker,
-                                       zip(repeat(id_var), samples,
-                                           repeat(check_for_duds)))
+                results = thread_pool.map(self.__show_image_worker,
+                                          zip(repeat(id_var),
+                                              samples,
+                                              repeat(check_for_duds)))
         else:
-            data = [self.__show_image_worker((id_var, samples[0],
-                                              check_for_duds))]
+            results = [self.__show_image_worker((id_var, samples[0],
+                                                 check_for_duds))]
 
         # Remove errors, if they exist
-        data = [x for x in data if x != -1]
+            results = [x for x in results if x != -1]
 
         # Determine how many were successful
-        n_data = len(data)
+        n_data = len(results)
         message = 'showImage({} out of {} successful)'.format(n_data, n_samples)
 
         if n_data == 0:
@@ -185,7 +186,7 @@ class ShowImageMixin(object):
         else:
             self.logger.info(message)
 
-        return {'url': data}
+        return results
 
     def __show_image_worker(self, args):
         id_var, data, check_for_duds = args

@@ -74,7 +74,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
                 results. Defaults to True.
 
         Returns:
-            list: Image URLs.
+            sequence of strs: Image URLs.
 
         """
         # Force iterable
@@ -91,27 +91,27 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         # Process ids.
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
-                data = thread_pool.map(self.__preview_worker,
-                                       zip(observation_ids, repeat(check_for_duds)))
+                results = thread_pool.map(self.__preview_worker,
+                                          zip(observation_ids, repeat(check_for_duds)))
         else:
-            data = [self.__preview_worker((observation_ids[0], check_for_duds))]
+            results = [self.__preview_worker((observation_ids[0], check_for_duds))]
 
         # Remove errors, if they exist
-        data = [x for x in data if x != -1]
+        results = [x for x in results if x != -1]
 
         # Check results
-        n_data = len(data)
-        message = 'Leaving preview({} out of {} successful)'.format(n_data, n_obs)
+        n_successful = len(results)
+        message = 'Leaving preview({} out of {} successful)'.format(n_successful, n_obs)
 
-        if n_data == 0:
+        if n_successful == 0:
             self.logger.error(message)
             return -1
-        elif n_data < n_obs:
+        elif n_successful < n_obs:
             self.logger.warning(message)
         else:
             self.logger.info(message)
 
-        return {'url': data}
+        return results
 
     def __preview_worker(self, args):
         observation_id, check_for_duds = args

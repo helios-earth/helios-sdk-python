@@ -37,13 +37,13 @@ def test_cameras(utc_now):
     images_range_results = cameras.images_range(id_, utc_now[0], utc_now[1])
 
     # Extract a single time
-    t = images_results['times'][0]
+    t = images_results[0]
 
     # Perform showImage query
     show_image_query = cameras.show_image(id_, t)
 
     # Extract URL
-    url = show_image_query['url'][0]
+    url = show_image_query[0]
 
     # Perform downloadImages query
     if url is not None:
