@@ -5,6 +5,18 @@
 
 Helios-SDK-Python
 =================
+Use the Helios APIs in Python.
+
+Helios® weather analytics from Harris Corporation provide fast and 
+accurate local ground weather intelligence to assist organizations 
+with real-time decision making. Helios analyzes content from 
+thousands of existing public and private video cameras, providing 
+immediate confirmation of ground weather condition changes at a 
+detailed local level.
+
+.. raw:: html
+
+    <p>For more details, refer to the <a href="https://helios.earth/" target="_blank"> helios.earth</a><p>
 
 The User Guide
 --------------

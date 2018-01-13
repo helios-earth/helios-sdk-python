@@ -10,7 +10,7 @@ The Helios SDK provides APIs for the core functionality of Helios.
 
 .. raw:: html
 
-    <p>For more details, refer to the <a href="https://helios.earth/developers/"> official documentation</a><p>
+    <p>For more details, refer to the <a href="https://helios.earth/developers/" target="_blank"> official documentation</a><p>
 
 Alerts
 ------
