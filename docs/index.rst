@@ -14,10 +14,8 @@ thousands of existing public and private video cameras, providing
 immediate confirmation of ground weather condition changes at a 
 detailed local level.
 
-.. raw:: html
-
-    <p>For more details, refer to the <a href="https://helios.earth/" target="_blank"> helios.earth</a><p>
-
+For more details, refer to `helios.earth <https://helios.earth/>`_
+    
 The User Guide
 --------------
 
@@ -25,6 +23,8 @@ The User Guide
    :maxdepth: 2
    
    user/intro
+   user/install
+   user/auth
    
 API Documentation
 ---------------------

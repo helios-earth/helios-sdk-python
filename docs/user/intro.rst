@@ -1,14 +1,13 @@
-.. _introduction:
-
 Introduction
 ============
 
 Use the Helios APIs with Python.
 
-Dependencies
-============
-* Python 2 or 3
-* requests
-* pillow
-* numpy
-* python-dateutil
+Under construction.
+
+MIT License
+-----------
+
+The HeliosSDK is released under terms of `MIT license`_.
+
+.. _`MIT License`: https://opensource.org/licenses/MIT
