@@ -20,7 +20,6 @@ Using an Authentication File
 ----------------------------
 
 #. Create a ".helios_auth" file in your home directory.
-  - "C:\\Users\\[username]\\.helios_auth" on Windows.
 #. Copy and paste the following to the ".helios_auth" file and fill in 
    your authentication values:
   - **"HELIOS\_API\_URL"** is optional.
