@@ -130,8 +130,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
                 start_time = times[-1]
                 continue
             else:
-                good_times = [x for x in times if parse(x).utctimetuple()
-                              < end_time]
+                good_times = [x for x in times if parse(x).utctimetuple() < end_time]
                 image_times.extend(good_times)
                 break
 
