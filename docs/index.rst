@@ -16,7 +16,7 @@ detailed local level.
 
 For more details, refer to `helios.earth <https://helios.earth/>`_
     
-The User Guide
+Contents
 --------------
 
 .. toctree::
@@ -40,4 +40,3 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
