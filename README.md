@@ -42,11 +42,5 @@ For more information refer to the authentication [documentation](https://helios.
 * numpy
 * python-dateutil
 
-Installation examples:
-
-`pip install requests pillow numpy python-dateutil`
-
-`conda install requests pillow numpy python-dateutil`
-
 ## SDK Documentation
 For detailed SDK documentation refer to [DOCUMENTATION.md](https://github.com/harris-helios/helios-sdk-python/blob/master/DOCUMENTATION.md)
