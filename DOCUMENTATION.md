@@ -1,3 +1,7 @@
+# DEPRECATION WARNING
+There is no guarantee that this documentation is up-to-date.  This will soon
+be replaced by Sphinx docs and will ultimately be removed.
+
 # Helios-SDK-Python
 # Documentation
 
