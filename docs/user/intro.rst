@@ -5,6 +5,13 @@ Use the Helios APIs with Python.
 
 Under construction.
 
+.. code-block:: python
+    :linenos:
+
+    from heliosSDK import Alerts
+    alerts = Alerts()
+    all_alerts = alerts.index()
+
 MIT License
 -----------
 

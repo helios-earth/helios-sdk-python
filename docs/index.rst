@@ -34,6 +34,7 @@ This section details the core APIs available with the Helios SDK.
    :maxdepth: 2
    
    api
+   utilities
 
 Indices and tables
 ==================
