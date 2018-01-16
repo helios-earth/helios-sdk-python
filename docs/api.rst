@@ -8,9 +8,7 @@ The Helios SDK provides APIs for the core functionality of Helios.
 * :class:`Collections <heliosSDK.collections.Collections>`
 * :class:`Observations <heliosSDK.observations.Observations>`
 
-.. raw:: html
-
-    <p>For more details, refer to the <a href="https://helios.earth/developers/" target="_blank"> official documentation</a><p>
+For more details, refer to `the Helios developer documentation. <https://helios.earth/developers/>`_
 
 Alerts
 ------
@@ -34,4 +32,19 @@ Observations
 ------------
 
 .. autoclass:: heliosSDK.observations.Observations
+    :members:
+    
+Utilities
+=========
+
+json_utils
+----------
+
+.. automodule:: heliosSDK.utilities.json_utils
+    :members:
+
+parsing_utils
+-------------
+    
+.. automodule:: heliosSDK.utilities.parsing_utils
     :members:
