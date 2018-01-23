@@ -32,10 +32,10 @@ class SDKCore(object):
         # Parse input_dict into a str
         for key in input_dict.keys():
             if isinstance(input_dict[key], (list, tuple)):
-                query_str += (str(key)
-                              + '='
-                              + ','.join([str(x) for x in input_dict[key]])
-                              + '&')
+                query_str += (str(key) +
+                              '=' +
+                              ','.join([str(x) for x in input_dict[key]]) +
+                              '&')
             else:
                 query_str += (str(key) + '=' + str(input_dict[key]) + '&')
         query_str = query_str[:-1]
