@@ -1,7 +1,7 @@
 *.pyc
 dist/*
 build/*
-heliosSDK.egg-info
+helios.egg-info
 
 # test-related
 .cache
