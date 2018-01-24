@@ -1,7 +1,7 @@
 from setuptools import find_packages
 from setuptools import setup
 
-setup(name='HeliosSDK',
+setup(name='Helios',
       version='1.1.1',
       description='Use the Helios APIs in Python',
       author='Michael Bayer',

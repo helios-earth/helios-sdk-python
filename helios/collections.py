@@ -11,9 +11,9 @@ from contextlib import closing
 from itertools import repeat
 from multiprocessing.pool import ThreadPool
 
-from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, \
+from helios.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, \
     DownloadImagesMixin, RequestManager
-from heliosSDK.utilities import logging_utils
+from helios.utilities import logging_utils
 
 
 class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):

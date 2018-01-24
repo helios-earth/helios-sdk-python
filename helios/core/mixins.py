@@ -9,8 +9,8 @@ from multiprocessing.pool import ThreadPool
 
 import numpy as np
 from PIL import Image
-from heliosSDK import BASE_API_URL
-from heliosSDK.utilities import logging_utils
+from helios import BASE_API_URL
+from helios.utilities import logging_utils
 
 
 class SDKCore(object):

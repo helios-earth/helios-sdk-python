@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# heliosSDK documentation build configuration file, created by
+# helios documentation build configuration file, created by
 # sphinx-quickstart on Fri Jan 12 10:11:11 2018.
 #
 # This file is execfile()d with the current directory set to its
@@ -49,7 +49,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'heliosSDK'
+project = 'helios'
 copyright = '2018, Michael Bayer'
 author = 'Michael Bayer'
 
@@ -116,7 +116,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'heliosSDKdoc'
+htmlhelp_basename = 'heliosdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -143,7 +143,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'heliosSDK.tex', 'heliosSDK Documentation',
+    (master_doc, 'helios.tex', 'helios Documentation',
      'Michael Bayer', 'manual'),
 ]
 
@@ -153,7 +153,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'heliossdk', 'heliosSDK Documentation',
+    (master_doc, 'helios', 'helios Documentation',
      [author], 1)
 ]
 
@@ -164,8 +164,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'heliosSDK', 'heliosSDK Documentation',
-     author, 'heliosSDK', 'One line description of project.',
+    (master_doc, 'helios', 'helios Documentation',
+     author, 'helios', 'One line description of project.',
      'Miscellaneous'),
 ]
 

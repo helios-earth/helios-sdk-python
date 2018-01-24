@@ -10,9 +10,9 @@ from contextlib import closing
 from itertools import repeat
 from multiprocessing.pool import ThreadPool
 
-from heliosSDK.core import SDKCore, IndexMixin, ShowMixin, \
+from helios.core import SDKCore, IndexMixin, ShowMixin, \
     DownloadImagesMixin, RequestManager
-from heliosSDK.utilities import logging_utils
+from helios.utilities import logging_utils
 
 
 class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):

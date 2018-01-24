@@ -3,33 +3,33 @@ Core APIs
 
 The Helios SDK provides APIs for the core functionality of Helios.
 
-* :class:`Alerts <heliosSDK.alerts.Alerts>`
-* :class:`Cameras <heliosSDK.cameras.Cameras>`
-* :class:`Collections <heliosSDK.collections.Collections>`
-* :class:`Observations <heliosSDK.observations.Observations>`
+* :class:`Alerts <helios.alerts.Alerts>`
+* :class:`Cameras <helios.cameras.Cameras>`
+* :class:`Collections <helios.collections.Collections>`
+* :class:`Observations <helios.observations.Observations>`
 
 For more details, refer to `the Helios developer documentation. <https://helios.earth/developers/>`_
 
 Alerts
 ------
 
-.. autoclass:: heliosSDK.alerts.Alerts
+.. autoclass:: helios.alerts.Alerts
     :members:
     
 Cameras
 -------
 
-.. autoclass:: heliosSDK.cameras.Cameras
+.. autoclass:: helios.cameras.Cameras
     :members:
     
 Collections
 -----------
 
-.. autoclass:: heliosSDK.collections.Collections
+.. autoclass:: helios.collections.Collections
     :members:
     
 Observations
 ------------
 
-.. autoclass:: heliosSDK.observations.Observations
+.. autoclass:: helios.observations.Observations
     :members:

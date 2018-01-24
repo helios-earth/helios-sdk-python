@@ -8,7 +8,7 @@ Under construction.
 .. code-block:: python
     :linenos:
 
-    from heliosSDK import Alerts
+    from helios import Alerts
     alerts = Alerts()
     all_alerts = alerts.index()
 

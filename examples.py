@@ -2,8 +2,8 @@
 import argparse
 import os
 
-from heliosSDK import Cameras, Collections, Observations, Alerts
-from heliosSDK.utilities import json_utils
+from helios import Cameras, Collections, Observations, Alerts
+from helios.utilities import json_utils
 
 
 def test_alerts(output_dir=''):

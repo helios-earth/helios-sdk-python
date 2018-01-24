@@ -3,7 +3,7 @@ import logging
 
 import requests
 
-from heliosSDK import AUTH_TOKEN
+from helios import AUTH_TOKEN
 
 MAX_RETRIES = 3
 TIMEOUT = 5

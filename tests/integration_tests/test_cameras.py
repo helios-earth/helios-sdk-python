@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-import heliosSDK
+import helios
 
 
 @pytest.fixture
@@ -19,7 +19,7 @@ def utc_now():
 
 def test_cameras(utc_now):
     # Create Cameras instance
-    cameras = heliosSDK.Cameras()
+    cameras = helios.Cameras()
 
     # Perform index query
     index_results = cameras.index(state='new york')

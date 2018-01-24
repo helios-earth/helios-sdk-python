@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from heliosSDK.utilities import parsing_utils
+from helios.utilities import parsing_utils
 
 # Python 2 to 3 fix.
 try:

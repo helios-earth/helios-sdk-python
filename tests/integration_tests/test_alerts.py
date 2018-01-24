@@ -1,10 +1,10 @@
-import heliosSDK
+import helios
 import pytest
 
 
 def test_alerts():
     # Create Alerts instance
-    alerts_instance = heliosSDK.Alerts()
+    alerts_instance = helios.Alerts()
 
     # Perform index query
     index_results = alerts_instance.index()

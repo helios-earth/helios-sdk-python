@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-import heliosSDK
+import helios
 
 
 @pytest.fixture
@@ -21,7 +21,7 @@ def utc_range():
 
 def test_observations(utc_range):
     # Create Observations instance
-    observations_instance = heliosSDK.Observations()
+    observations_instance = helios.Observations()
 
     # Perform index query
     index_results = observations_instance.index(state='new york',

@@ -1,5 +1,5 @@
-from heliosSDK.session.logger_setup import configure
-from heliosSDK.session.token_manager import TokenManager
+from helios.session.logger_setup import configure
+from helios.session.token_manager import TokenManager
 
 # Configure logger.
 configure()
