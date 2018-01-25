@@ -18,4 +18,4 @@ from .observations import Observations
 del configure
 del TokenManager
 
-__version__ = '1.1.1'
+__version__ = '2.0.0'

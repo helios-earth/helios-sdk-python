@@ -2,12 +2,12 @@ from setuptools import find_packages
 from setuptools import setup
 
 setup(name='Helios',
-      version='1.1.1',
+      version='2.0.0',
       description='Use the Helios APIs in Python',
       author='Michael Bayer',
       author_email='mbayer@harris.com',
       url='https://github.com/harris-helios/helios-sdk-python',
-      download_url='https://github.com/harris-helios/helios-sdk-python/archive/1.1.1.tar.gz',
+      download_url='https://github.com/harris-helios/helios-sdk-python/archive/2.0.0.tar.gz',
       license='MIT',
       install_requires=['requests',
                         'numpy',
