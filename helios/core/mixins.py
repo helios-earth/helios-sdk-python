@@ -172,7 +172,7 @@ class ShowImageMixin(object):
                                                  check_for_duds))]
 
         # Remove errors, if they exist
-            results = [x for x in results if x != -1]
+        results = [x for x in results if x != -1]
 
         # Determine how many were successful
         n_data = len(results)
@@ -222,6 +222,20 @@ class ShowImageMixin(object):
 class DownloadImagesMixin(object):
     @logging_utils.log_entrance_exit
     def download_images(self, urls, out_dir=None, return_image_data=False):
+        """Download images from URLs.
+
+        Args:
+            urls (str or sequence of strs): Image URLs to download from.
+            out_dir (str, optional): Output directory to save images to.
+                Defaults to None.
+            return_image_data (bool, optional): If True, image data will be
+                read into a Numpy ndarray and returned. Defaults to False.
+
+        Returns:
+            sequence of ndarrays or None: Image data if return_image_data is
+            True or None otherwise.
+
+        """
         # Force iterable
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
@@ -258,7 +272,8 @@ class DownloadImagesMixin(object):
         else:
             self.logger.info(message)
 
-        return data
+        if return_image_data:
+            return data
 
     def __download_images_worker(self, args):
         url, out_dir, return_image_data = args
@@ -280,5 +295,3 @@ class DownloadImagesMixin(object):
         # Read and return image data.
         if return_image_data:
             return np.array(img)
-
-        return True
