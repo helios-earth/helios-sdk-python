@@ -15,21 +15,25 @@ Alerts
 
 .. autoclass:: helios.alerts.Alerts
     :members:
+    :inherited-members:
     
 Cameras
 -------
 
 .. autoclass:: helios.cameras.Cameras
     :members:
+    :inherited-members:
     
 Collections
 -----------
 
 .. autoclass:: helios.collections.Collections
     :members:
+    :inherited-members:
     
 Observations
 ------------
 
 .. autoclass:: helios.observations.Observations
     :members:
+    :inherited-members:
