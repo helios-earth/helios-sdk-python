@@ -227,10 +227,6 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         return super(Collections, self).show_image(
             collection_id, image_names, check_for_duds=check_for_duds)
 
-    def download_images(self, urls, out_dir=None, return_image_data=False):
-        return super(Collections, self).download_images(
-            urls, out_dir=out_dir, return_image_data=return_image_data)
-
     @logging_utils.log_entrance_exit
     def add_image(self, collection_id, data):
         """
@@ -245,7 +241,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         Returns:
             If errors do occur then the data that caused the errors will be
-                returned.
+            returned.
 
         """
         assert isinstance(data, (list, tuple, dict))
@@ -315,7 +311,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         Returns:
             If errors do occur then the data that caused the errors will be
-                returned.
+            returned.
 
         """
         # Force iterable

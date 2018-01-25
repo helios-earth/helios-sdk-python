@@ -154,8 +154,3 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         """
         return super(Cameras, self).show_image(camera_id, times)
-
-    def download_images(self, urls, out_dir=None, return_image_data=False):
-        return super(Cameras, self).download_images(urls,
-                                                    out_dir=out_dir,
-                                                    return_image_data=return_image_data)

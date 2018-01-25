@@ -141,7 +141,3 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
                 return None
 
         return redirect_url
-
-    def download_images(self, urls, out_dir=None, return_image_data=False):
-        return super(Observations, self).download_images(
-            urls, out_dir=out_dir, return_image_data=return_image_data)
