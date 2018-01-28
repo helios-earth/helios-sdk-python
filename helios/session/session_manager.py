@@ -65,7 +65,7 @@ class SessionManager(object):
         """
         # Check for saved token first. If it doesn't exist then get a token.
         try:
-            self.read_token()
+            self.read_token_file()
             if not self.verify_token():
                 self.get_token()
         except (IOError, FileNotFoundError):
@@ -93,19 +93,19 @@ class SessionManager(object):
         self.token = {'name': 'Authorization',
                       'value': 'Bearer ' + token_request['access_token']}
 
-        self.write_token()
+        self.write_token_file()
 
-    def read_token(self):
+    def read_token_file(self):
         """Read token from file."""
         with open(self._token_file, 'r') as token_file:
             self.token = json.load(token_file)
 
-    def write_token(self):
+    def write_token_file(self):
         """Write token to file."""
         with open(self._token_file, 'w+') as token_file:
             json.dump(self.token, token_file)
 
-    def delete_token(self):
+    def delete_token_file(self):
         """Delete token file."""
         os.remove(self._token_file)
 
