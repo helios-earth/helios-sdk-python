@@ -3,8 +3,6 @@ import logging
 
 import requests
 
-from helios import AUTH_TOKEN
-
 MAX_RETRIES = 3
 TIMEOUT = 5
 SSL_VERIFY = True
@@ -12,15 +10,17 @@ SSL_VERIFY = True
 
 class RequestManager(object):
     """Manages all API requests."""
-    _auth_token = AUTH_TOKEN
 
-    def __init__(self, pool_maxsize=32):
+    def __init__(self, auth_token, pool_maxsize=32):
+        self._auth_token = auth_token
+
         # Initialize logger
         self.logger = logging.getLogger(__name__)
 
         # Create API session with authentication credentials
         self.api_session = requests.Session()
-        self.api_session.headers.update({AUTH_TOKEN['name']: AUTH_TOKEN['value']})
+        self.api_session.headers.update(
+            {self._auth_token['name']: self._auth_token['value']})
         self.api_session.verify = SSL_VERIFY
         self.api_session.mount('https://', requests.adapters.HTTPAdapter(
             pool_maxsize=pool_maxsize, max_retries=MAX_RETRIES))

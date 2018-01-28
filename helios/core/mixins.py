@@ -9,7 +9,9 @@ from multiprocessing.pool import ThreadPool
 
 import numpy as np
 from PIL import Image
-from helios import BASE_API_URL
+
+from helios.core.request_manager import RequestManager
+from helios.session.session_manager import SessionManager
 from helios.utilities import logging_utils
 
 
@@ -19,7 +21,22 @@ class SDKCore(object):
 
     This class must be inherited by any additional Core API classes.
     """
-    _base_api_url = BASE_API_URL
+    max_threads = 32
+
+    def __init__(self, session=None):
+        # Start session or use custom session.
+        if session is None:
+            self.session = SessionManager()
+        else:
+            self.session = session
+
+        # If the session hasn't been started, start it.
+        if not self.session.token:
+            self.session.start_session()
+
+        # Create request manager to handle all API requests.
+        self.request_manager = RequestManager(self.session.token,
+                                              pool_maxsize=self.max_threads)
 
     @staticmethod
     def parse_query_inputs(input_dict):
@@ -52,7 +69,7 @@ class SDKCore(object):
 
     @property
     def base_api_url(self):
-        return self._base_api_url
+        return self.session.api_url
 
     @base_api_url.setter
     def base_api_url(self, value):

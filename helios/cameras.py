@@ -18,10 +18,9 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
     """The Cameras API provides access to all cameras in the Helios Network."""
 
     core_api = 'cameras'
-    max_threads = 32
 
-    def __init__(self):
-        self.request_manager = RequestManager(pool_maxsize=self.max_threads)
+    def __init__(self, session=None):
+        super(Cameras, self).__init__(session=session)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):

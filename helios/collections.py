@@ -28,10 +28,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     """
     core_api = 'collections'
-    max_threads = 32
 
-    def __init__(self):
-        self.request_manager = RequestManager(pool_maxsize=self.max_threads)
+    def __init__(self, session=None):
+        super(Collections, self).__init__(session=session)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):

@@ -23,10 +23,9 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
     """
 
     core_api = 'observations'
-    max_threads = 32
 
-    def __init__(self):
-        self.request_manager = RequestManager(pool_maxsize=self.max_threads)
+    def __init__(self, session=None):
+        super(Observations, self).__init__(session=session)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):

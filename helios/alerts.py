@@ -28,11 +28,10 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
     """
 
     core_api = 'alerts'
-    max_threads = 32
 
-    def __init__(self):
-        self.request_manager = RequestManager(pool_maxsize=self.max_threads)
+    def __init__(self, session=None):
         self.logger = logging.getLogger(__name__)
+        super(Alerts, self).__init__(session=session)
 
     def index(self, **kwargs):
         """
