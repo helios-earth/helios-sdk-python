@@ -4,47 +4,62 @@ import os
 
 import requests
 
+# Python 2 compatibility.
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
 
-class TokenManager(object):
+
+class SessionManager(object):
     """Manages API tokens for authentication."""
 
     token_expiration_threshold = 60  # minutes
 
     _token_file = os.path.join(os.path.expanduser('~'), '.helios_token')
     _auth_file = os.path.join(os.path.expanduser('~'), '.helios_auth')
-
-    __default_api_url = r'https://api.helios.earth/v1/'
+    _default_api_url = r'https://api.helios.earth/v1/'
 
     def __init__(self):
-        self.api_url = None
-        self.token_url = None
+        # The token will be established with a call to the start_session method.
         self.token = None
 
-        self._key_id = None
-        self._key_secret = None
+        # Try to load essential authentication data from environment or file.
+        if 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
+            data = os.environ
+        else:
+            try:
+                with open(self._auth_file, 'r') as auth_file:
+                    data = json.load(auth_file)
+            except (IOError, FileNotFoundError):
+                raise Exception('No credentials could be found. Be sure to '
+                                'set environment variables or setup a '
+                                '.helios_auth file.')
 
-        self.get_auth_credentials()
+        # Extract relevant authentication information from data.
+        self._key_id = data['HELIOS_KEY_ID']
+        self._key_secret = data['HELIOS_KEY_SECRET']
+        try:
+            self.api_url = data['HELIOS_API_URL']
+        except KeyError:
+            self.api_url = self._default_api_url
+
+        self.token_url = self.api_url + '/oauth/token'
 
     def start_session(self):
         """
         Begin Helios session.
 
-        Returns:
-            tuple: The authentication token and API URL.
+        This will establish a token for the session.
 
         """
         # Check for saved token first. If it doesn't exist then get a token.
-        if os.path.exists(self._token_file):
+        try:
             self.read_token()
-            try:
-                if not self.verify_token():
-                    self.get_token()
-            except Exception:
-                raise
-        else:
+            if not self.verify_token():
+                self.get_token()
+        except (IOError, FileNotFoundError):
             self.get_token()
-
-        return self.token, self.api_url
 
     def get_token(self):
         """Gets a fresh token and writes the token to file for reuse."""
@@ -88,8 +103,8 @@ class TokenManager(object):
         """
         Verifies if the current token is still valid.
 
-        If the token will expire in 60 minutes, then a new token will be
-        acquired.
+        If the token is bad or if the expiration time is less than the
+        threshold False will be returned.
 
         """
         resp = requests.get(self.api_url + '/session',
@@ -101,39 +116,7 @@ class TokenManager(object):
 
         if json_resp['name'] is None:
             return False
+        elif json_resp['expires_in'] / 60.0 < self.token_expiration_threshold:
+            return False
         else:
-            expiration_time = json_resp['expires_in'] / 60.0
-            if expiration_time < self.token_expiration_threshold:
-                self.get_token()
             return True
-
-    def get_auth_credentials(self):
-        if 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
-            self._key_id = os.environ['HELIOS_KEY_ID']
-            self._key_secret = os.environ['HELIOS_KEY_SECRET']
-
-            # Check for API URL override in environment variables
-            if 'HELIOS_API_URL' in os.environ:
-                self.api_url = os.environ['HELIOS_API_URL']
-                self.token_url = os.environ['HELIOS_API_URL'] + '/oauth/token'
-            else:
-                self.api_url = self.__default_api_url
-                self.token_url = self.__default_api_url + '/oauth/token'
-        elif os.path.exists(self._auth_file):
-            with open(self._auth_file, 'r') as auth_file:
-                data = json.load(auth_file)
-
-            self._key_id = data['HELIOS_KEY_ID']
-            self._key_secret = data['HELIOS_KEY_SECRET']
-
-            # Check for API URL override in .helios_auth file
-            if 'HELIOS_API_URL' in data:
-                self.api_url = data['HELIOS_API_URL']
-                self.token_url = data['HELIOS_API_URL'] + '/oauth/token'
-            else:
-                self.api_url = self.__default_api_url
-                self.token_url = self.__default_api_url + '/oauth/token'
-        else:
-            raise Exception('No credentials could be found. Be sure to set '
-                            'environment variables or .helios_auth file '
-                            'correctly.')
