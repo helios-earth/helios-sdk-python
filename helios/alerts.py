@@ -7,7 +7,7 @@ documentation.  Some may have additional functionality for convenience.
 """
 import logging
 
-from helios.core import SDKCore, IndexMixin, ShowMixin, RequestManager
+from helios.core import SDKCore, IndexMixin, ShowMixin
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):

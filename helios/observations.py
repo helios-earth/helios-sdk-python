@@ -11,7 +11,7 @@ from itertools import repeat
 from multiprocessing.pool import ThreadPool
 
 from helios.core import SDKCore, IndexMixin, ShowMixin, \
-    DownloadImagesMixin, RequestManager
+    DownloadImagesMixin
 from helios.utilities import logging_utils
 
 

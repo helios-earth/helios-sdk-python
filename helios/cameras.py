@@ -9,7 +9,7 @@ import logging
 
 from dateutil.parser import parse
 from helios.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, \
-    DownloadImagesMixin, RequestManager
+    DownloadImagesMixin
 from helios.utilities import logging_utils
 
 
