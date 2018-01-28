@@ -20,12 +20,22 @@ class SessionManager(object):
     _auth_file = os.path.join(os.path.expanduser('~'), '.helios_auth')
     _default_api_url = r'https://api.helios.earth/v1/'
 
-    def __init__(self):
+    def __init__(self, env=None):
+        """Initialize Helios Session.
+
+        Args:
+            env (dict): Dictionary containing HELIOS_KEY_ID,
+                HELIOS_KEY_SECRET, and optionally, 'HELIOS_API_URL'. This will
+                override any information in .helios_auth and environment
+                variables.
+        """
         # The token will be established with a call to the start_session method.
         self.token = None
 
         # Try to load essential authentication data from environment or file.
-        if 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
+        if env:
+            data = env
+        elif 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
             data = os.environ
         else:
             try:
