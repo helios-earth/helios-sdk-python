@@ -24,6 +24,17 @@ class SDKCore(object):
     max_threads = 32
 
     def __init__(self, session=None):
+        """
+        Initialize core capabilities.
+
+        If a session has been started prior to initialization it can be used
+        via the session input parameter. If this is not used a session will
+        be started automatically.
+
+        Args:
+            session (SessionManager object): An instance of the SessionManager.
+
+        """
         # Start session or use custom session.
         if session is None:
             self.session = SessionManager()
