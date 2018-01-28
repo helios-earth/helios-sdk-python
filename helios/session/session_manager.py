@@ -35,6 +35,8 @@ class SessionManager(object):
         # Try to load essential authentication data from environment or file.
         if env:
             data = env
+            # Delete token file so that custom env can be used.
+            self._delete_token()
         elif 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
             data = os.environ
         else:
@@ -55,6 +57,13 @@ class SessionManager(object):
             self.api_url = self._default_api_url
 
         self.token_url = self.api_url + '/oauth/token'
+
+    def _delete_token(self):
+        """Delete token file."""
+        try:
+            os.remove(self._token_file)
+        except (WindowsError, FileNotFoundError):
+            pass
 
     def _read_token_file(self):
         """Read token from file."""
