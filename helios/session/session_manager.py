@@ -112,6 +112,9 @@ class SessionManager(object):
         If the token is bad or if the expiration time is less than the
         threshold False will be returned.
 
+        Returns:
+            bool: True if current token is valid, False otherwise.
+
         """
         resp = requests.get(self.api_url + '/session',
                             headers={self.token['name']: self.token['value']},
