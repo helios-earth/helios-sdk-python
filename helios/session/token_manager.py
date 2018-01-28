@@ -37,8 +37,7 @@ class TokenManager(object):
         if os.path.exists(self._token_file):
             self.read_token()
             try:
-                valid_token = self.verify_token()
-                if not valid_token:
+                if not self.verify_token():
                     self.get_token()
             except Exception:
                 raise
@@ -120,7 +119,6 @@ class TokenManager(object):
             else:
                 self.api_url = self.__default_api_url
                 self.token_url = self.__default_api_url + '/oauth/token'
-
         elif os.path.exists(self._auth_file):
             with open(self._auth_file, 'r') as auth_file:
                 data = json.load(auth_file)
