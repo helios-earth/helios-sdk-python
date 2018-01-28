@@ -56,20 +56,15 @@ class SessionManager(object):
 
         self.token_url = self.api_url + '/oauth/token'
 
-    def start_session(self):
-        """
-        Begin Helios session.
+    def _read_token_file(self):
+        """Read token from file."""
+        with open(self._token_file, 'r') as token_file:
+            self.token = json.load(token_file)
 
-        This will establish a token for the session.
-
-        """
-        # Check for saved token first. If it doesn't exist then get a token.
-        try:
-            self.read_token_file()
-            if not self.verify_token():
-                self.get_token()
-        except (IOError, FileNotFoundError):
-            self.get_token()
+    def _write_token_file(self):
+        """Write token to file."""
+        with open(self._token_file, 'w+') as token_file:
+            json.dump(self.token, token_file)
 
     def get_token(self):
         """Gets a fresh token and writes the token to file for reuse."""
@@ -93,21 +88,22 @@ class SessionManager(object):
         self.token = {'name': 'Authorization',
                       'value': 'Bearer ' + token_request['access_token']}
 
-        self.write_token_file()
+        self._write_token_file()
 
-    def read_token_file(self):
-        """Read token from file."""
-        with open(self._token_file, 'r') as token_file:
-            self.token = json.load(token_file)
+    def start_session(self):
+        """
+        Begin Helios session.
 
-    def write_token_file(self):
-        """Write token to file."""
-        with open(self._token_file, 'w+') as token_file:
-            json.dump(self.token, token_file)
+        This will establish a token for the session.
 
-    def delete_token_file(self):
-        """Delete token file."""
-        os.remove(self._token_file)
+        """
+        # Check for saved token first. If it doesn't exist then get a token.
+        try:
+            self._read_token_file()
+            if not self.verify_token():
+                self.get_token()
+        except (IOError, FileNotFoundError):
+            self.get_token()
 
     def verify_token(self):
         """
