@@ -30,7 +30,7 @@ class Session(object):
     .. code-block:: python
 
         import helios
-        sess = helios.session.Session()
+        sess = helios.Session()
         sess.start_session()
         alerts = helios.Alerts(session=sess)
         cameras = helios.Cameras(session=sess)

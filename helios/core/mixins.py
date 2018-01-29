@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image
 
 from helios.core.request_manager import RequestManager
-from helios.session.session import Session
+from helios.core.session import Session
 from helios.utilities import logging_utils
 
 
