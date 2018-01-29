@@ -30,8 +30,8 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
     core_api = 'alerts'
 
     def __init__(self, session=None):
-        self.logger = logging.getLogger(__name__)
         super(Alerts, self).__init__(session=session)
+        self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
         """
