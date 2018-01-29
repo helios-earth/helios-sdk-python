@@ -12,7 +12,7 @@ from itertools import repeat
 from multiprocessing.pool import ThreadPool
 
 from helios.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, \
-    DownloadImagesMixin, RequestManager
+    DownloadImagesMixin
 from helios.utilities import logging_utils
 
 
@@ -28,10 +28,18 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
     """
     core_api = 'collections'
-    max_threads = 32
 
-    def __init__(self):
-        self.request_manager = RequestManager(pool_maxsize=self.max_threads)
+    def __init__(self, session=None):
+        """
+        Initialize Collection instance.
+
+        Args:
+            session (SessionManager object, optional): An instance of the
+                SessionManager. Defaults to None. If unused a session will be
+                created for you.
+
+        """
+        super(Collections, self).__init__(session=session)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):

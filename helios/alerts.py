@@ -7,7 +7,7 @@ documentation.  Some may have additional functionality for convenience.
 """
 import logging
 
-from helios.core import SDKCore, IndexMixin, ShowMixin, RequestManager
+from helios.core import SDKCore, IndexMixin, ShowMixin
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
@@ -28,10 +28,18 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
     """
 
     core_api = 'alerts'
-    max_threads = 32
 
-    def __init__(self):
-        self.request_manager = RequestManager(pool_maxsize=self.max_threads)
+    def __init__(self, session=None):
+        """
+        Initialize Alerts instance.
+
+        Args:
+            session (SessionManager object, optional): An instance of the
+                SessionManager. Defaults to None. If unused a session will be
+                created for you.
+
+        """
+        super(Alerts, self).__init__(session=session)
         self.logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):

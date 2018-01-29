@@ -3,33 +3,32 @@ import logging
 
 import requests
 
-from helios import AUTH_TOKEN
-
-MAX_RETRIES = 3
-TIMEOUT = 5
-SSL_VERIFY = True
-
 
 class RequestManager(object):
     """Manages all API requests."""
-    _auth_token = AUTH_TOKEN
+    max_retries = 3
+    timeout = 5
+    ssl_verify = True
 
-    def __init__(self, pool_maxsize=32):
+    def __init__(self, auth_token, pool_maxsize=32):
+        self._auth_token = auth_token
+
         # Initialize logger
         self.logger = logging.getLogger(__name__)
 
         # Create API session with authentication credentials
         self.api_session = requests.Session()
-        self.api_session.headers.update({AUTH_TOKEN['name']: AUTH_TOKEN['value']})
-        self.api_session.verify = SSL_VERIFY
+        self.api_session.headers.update(
+            {self._auth_token['name']: self._auth_token['value']})
+        self.api_session.verify = self.ssl_verify
         self.api_session.mount('https://', requests.adapters.HTTPAdapter(
-            pool_maxsize=pool_maxsize, max_retries=MAX_RETRIES))
+            pool_maxsize=pool_maxsize, max_retries=self.max_retries))
 
         # Create bare session without credentials
         self.session = requests.Session()
-        self.session.verify = SSL_VERIFY
+        self.session.verify = self.ssl_verify
         self.session.mount('https://', requests.adapters.HTTPAdapter(
-            pool_maxsize=pool_maxsize, max_retries=MAX_RETRIES))
+            pool_maxsize=pool_maxsize, max_retries=self.max_retries))
 
     @property
     def auth_token(self):
@@ -48,7 +47,7 @@ class RequestManager(object):
                   **kwargs):
 
         query = query.replace(' ', '+')
-        kwargs['timeout'] = kwargs.get('timeout', TIMEOUT)
+        kwargs['timeout'] = kwargs.get('timeout', self.timeout)
 
         # Alias the required session
         if use_api_cred:
