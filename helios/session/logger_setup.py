@@ -1,4 +1,5 @@
 """Configure the logger based on a file or standard parameters."""
+import collections
 import json
 import logging.config
 import os
@@ -26,15 +27,16 @@ def configure():
 
     if config is None:
         # Default logging configuration.
-        config = {'version': 1, 'disable_existing_loggers': 1}
+        config = collections.defaultdict(dict)
 
-        config['formatters'] = {}
+        config['version'] = 1
+        config['disable_existing_loggers'] = 1
+
         config['formatters']['simple'] = {'format': '%(asctime)s-%(levelname)s'
                                                     '-%(module)s-%(name)s'
                                                     '-%(funcName)s: %(message)s',
                                           'datefmt': '%H:%M:%S'}
 
-        config['handlers'] = {}
         config['handlers']['console'] = {'class': 'logging.StreamHandler',
                                          'level': 'WARNING',
                                          'formatter': 'simple',
