@@ -4,7 +4,7 @@ from .alerts import Alerts
 from .cameras import Cameras
 from .collections import Collections
 from .observations import Observations
-
+from .session.session import Session
 # Configure logger.
 from .utilities.logging_utils import configure_logger
 

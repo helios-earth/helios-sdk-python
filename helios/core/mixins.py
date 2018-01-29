@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image
 
 from helios.core.request_manager import RequestManager
-from helios.session.session_manager import SessionManager
+from helios.session.session import Session
 from helios.utilities import logging_utils
 
 
@@ -32,14 +32,14 @@ class SDKCore(object):
         be started automatically.
 
         Args:
-            session (SessionManager object, optional): An instance of the
-                SessionManager. Defaults to None. If unused a session will be
+            session (Session object, optional): An instance of the
+                Session. Defaults to None. If unused a session will be
                 created for you.
 
         """
         # Start session or use custom session.
         if session is None:
-            self.session = SessionManager()
+            self.session = Session()
         else:
             self.session = session
 

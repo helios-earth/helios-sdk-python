@@ -34,8 +34,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         Initialize Collection instance.
 
         Args:
-            session (SessionManager object, optional): An instance of the
-                SessionManager. Defaults to None. If unused a session will be
+            session (Session object, optional): An instance of the
+                Session. Defaults to None. If unused a session will be
                 created for you.
 
         """

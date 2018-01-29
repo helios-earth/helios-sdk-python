@@ -12,7 +12,7 @@ except NameError:
     FileNotFoundError = IOError
 
 
-class SessionManager(object):
+class Session(object):
     """Manages API tokens for authentication.
 
     Authentication credentials can be specified using the env input parameter,
@@ -30,7 +30,7 @@ class SessionManager(object):
     .. code-block:: python
 
         import helios
-        sess = helios.session.SessionManager()
+        sess = helios.session.Session()
         sess.start_session()
         alerts = helios.Alerts(session=sess)
         cameras = helios.Cameras(session=sess)
@@ -76,7 +76,7 @@ class SessionManager(object):
             self._delete_token()
         elif 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
             self.logger.info('Using environment variables for session.')
-            data = os.environ
+            data = os.environ.copy()
         else:
             self.logger.info('Using .helios_auth file for session.')
             try:
