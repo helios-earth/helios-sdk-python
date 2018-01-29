@@ -32,7 +32,9 @@ class SDKCore(object):
         be started automatically.
 
         Args:
-            session (SessionManager object): An instance of the SessionManager.
+            session (SessionManager object, optional): An instance of the
+                SessionManager. Defaults to None. If unused a session will be
+                created for you.
 
         """
         # Start session or use custom session.

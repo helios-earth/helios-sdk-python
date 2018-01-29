@@ -30,6 +30,15 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     core_api = 'collections'
 
     def __init__(self, session=None):
+        """
+        Initialize Collection instance.
+
+        Args:
+            session (SessionManager object, optional): An instance of the
+                SessionManager. Defaults to None. If unused a session will be
+                created for you.
+
+        """
         super(Collections, self).__init__(session=session)
         self.logger = logging.getLogger(__name__)
 

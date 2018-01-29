@@ -30,6 +30,15 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
     core_api = 'alerts'
 
     def __init__(self, session=None):
+        """
+        Initialize Alerts instance.
+
+        Args:
+            session (SessionManager object, optional): An instance of the
+                SessionManager. Defaults to None. If unused a session will be
+                created for you.
+
+        """
         super(Alerts, self).__init__(session=session)
         self.logger = logging.getLogger(__name__)
 
