@@ -13,7 +13,33 @@ except NameError:
 
 
 class SessionManager(object):
-    """Manages API tokens for authentication."""
+    """Manages API tokens for authentication.
+
+    Authentication credentials can be specified using the env input parameter,
+    environment variables, or a .helios_auth file in your home directory.  See
+    the official documentation for more authentication information.
+
+    A session can be established and reused for multiple core API instances.
+
+    .. code-block:: python
+
+        import helios
+        sess = helios.session.SessionManager()
+        sess.start_session()
+        alerts = helios.Alerts(session=sess)
+        cameras = helios.Cameras(session=sess)
+
+    If a session is not specified before hand, one will be initialized
+    automatically.  This is less efficient because each core API instance
+    will try to initialize a session.
+
+    .. code-block:: python
+
+        import helios
+        alerts = helios.Alerts()
+        cameras = helios.Cameras()
+
+    """
 
     token_expiration_threshold = 60  # minutes
 
@@ -83,7 +109,13 @@ class SessionManager(object):
             json.dump(self.token, token_file)
 
     def get_token(self):
-        """Gets a fresh token and writes the token to file for reuse."""
+        """
+        Gets a fresh token.
+
+        The token will be acquired and then written to file for reuse. If the
+        request fails over https, http will be used as a fallback.
+
+        """
         try:
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
@@ -112,7 +144,8 @@ class SessionManager(object):
         """
         Begin Helios session.
 
-        This will establish a token for the session.
+        This will establish and verify a token for the session.  If a token
+        file exists the token will be read and verified.
 
         """
         # Check for saved token first. If it doesn't exist then get a token.
