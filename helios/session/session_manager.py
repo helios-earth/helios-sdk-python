@@ -98,17 +98,7 @@ class SessionManager(object):
         except (WindowsError, FileNotFoundError):
             pass
 
-    def _read_token_file(self):
-        """Read token from file."""
-        with open(self._token_file, 'r') as token_file:
-            self.token = json.load(token_file)
-
-    def _write_token_file(self):
-        """Write token to file."""
-        with open(self._token_file, 'w+') as token_file:
-            json.dump(self.token, token_file)
-
-    def get_token(self):
+    def _get_token(self):
         """
         Gets a fresh token.
 
@@ -140,6 +130,16 @@ class SessionManager(object):
 
         self._write_token_file()
 
+    def _read_token_file(self):
+        """Read token from file."""
+        with open(self._token_file, 'r') as token_file:
+            self.token = json.load(token_file)
+
+    def _write_token_file(self):
+        """Write token to file."""
+        with open(self._token_file, 'w+') as token_file:
+            json.dump(self.token, token_file)
+
     def start_session(self):
         """
         Begin Helios session.
@@ -152,11 +152,11 @@ class SessionManager(object):
         try:
             self._read_token_file()
             if not self.verify_token():
-                self.get_token()
+                self._get_token()
         except (IOError, FileNotFoundError):
             self.logger.warning('Token file was not found. A new token will '
                                 'be acquired and written to .helios_token.')
-            self.get_token()
+            self._get_token()
 
     def verify_token(self):
         """
