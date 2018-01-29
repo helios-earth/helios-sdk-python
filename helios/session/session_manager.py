@@ -1,5 +1,6 @@
 """Manager for the authorization token required to access the Helios API."""
 import json
+import logging
 import os
 
 import requests
@@ -29,17 +30,23 @@ class SessionManager(object):
                 override any information in .helios_auth and environment
                 variables.
         """
+        # Initialize logger
+        self.logger = logging.getLogger(__name__)
+
         # The token will be established with a call to the start_session method.
         self.token = None
 
         # Try to load essential authentication data from environment or file.
         if env:
+            self.logger.info('Using custom env for session.')
             data = env
             # Delete token file so that custom env can be used.
             self._delete_token()
         elif 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
+            self.logger.info('Using environment variables for session.')
             data = os.environ
         else:
+            self.logger.info('Using .helios_auth file for session.')
             try:
                 with open(self._auth_file, 'r') as auth_file:
                     data = json.load(auth_file)
@@ -84,6 +91,8 @@ class SessionManager(object):
                                  verify=True)
             resp.raise_for_status()
         except requests.exceptions.HTTPError:
+            self.logger.warning('Getting token over https failed. Falling '
+                                'back to http.')
             token_url_http = 'http' + self.token_url.split('https')[1]
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
@@ -112,6 +121,8 @@ class SessionManager(object):
             if not self.verify_token():
                 self.get_token()
         except (IOError, FileNotFoundError):
+            self.logger.warning('Token file was not found. A new token will '
+                                'be acquired and written to .helios_token.')
             self.get_token()
 
     def verify_token(self):
@@ -132,9 +143,15 @@ class SessionManager(object):
 
         json_resp = resp.json()
 
+        # Get expiration time.
+        expiration = json_resp['expires_in'] / 60.0
+
         if json_resp['name'] is None:
             return False
-        elif json_resp['expires_in'] / 60.0 < self.token_expiration_threshold:
+        elif expiration < self.token_expiration_threshold:
+            self.logger.warning('Token is valid, but expires in %s minutes.',
+                                expiration)
             return False
         else:
+            self.logger.info('Token is valid for %d minutes.', expiration)
             return True
