@@ -19,6 +19,12 @@ class SessionManager(object):
     environment variables, or a .helios_auth file in your home directory.  See
     the official documentation for more authentication information.
 
+    Required keys:
+        - HELIOS_KEY_ID: Client ID from API key pair.
+        - HELIOS_KEY_SECRET: Client Secret ID from API key pair.
+    Optional keys:
+        - HELIOS_API_URL: Optional, URL for API endpoint.
+
     A session can be established and reused for multiple core API instances.
 
     .. code-block:: python
