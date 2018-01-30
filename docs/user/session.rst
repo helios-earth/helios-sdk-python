@@ -1,23 +1,25 @@
+.. _helios_session_instances:
+
 Helios Session Instances
 ========================
 
-A Helios session depends on properly established authentication 
-procedures.  See :ref:`authentication` for more information.  
-The Helios :meth:`~helios.core.session.Session` stores your
+A Helios :meth:`Session <helios.core.session.Session>` depends 
+on properly established authentication procedures.  See 
+:ref:`authentication` for more information.  It also stores your
 authentication information and will fetch an API token.  This 
 token is required for any API queries.  
 
 Once a session has been created, the token will be written to 
-the ".helios_token" file in your home directory.  This token 
+the `.helios_token` file in your home directory.  This token 
 will be reused until it becomes invalid.
 
 Creating a Session
 ------------------
 
 If authentication is stored on your machine starting a session is
-simple.  Create a :meth:`~helios.core.session.Session` instance
-without any inputs.  The authentication information stored on your
-machine will automatically be applied.
+simple.  Create a :meth:`Session <helios.core.session.Session>`
+instance without any inputs.  The authentication information 
+stored on your machine will automatically be applied.
 
 .. code-block:: python
 
@@ -25,21 +27,21 @@ machine will automatically be applied.
     sess = helios.Session()
     
 From this point make a call to the 
-:meth:`~helios.core.session.Session.start_session` method  to
-fetch the token.
+:meth:`start_session <helios.core.session.Session.start_session>`
+method  to fetch the token.
 
 .. code-block:: python
 
     sess.start_session()
     
-If successful, the :code:`sess` instance will now have all the
+If successful, the ``sess`` instance will now have all the
 authentication information needed to being using the core APIs.
     
-Using a Custom `env`
---------------------
+Using a Custom ``env``
+----------------------
 
-When creating a :meth:`~helios.core.session.Session` instance
-an optional input variable, `env`, can be used for dynamic 
+When creating a :meth:`Session <helios.core.session.Session>` instance
+an optional input variable, ``env``, can be used for dynamic 
 credential usage.
 
 This optional input must consist of a dictionary containing all 

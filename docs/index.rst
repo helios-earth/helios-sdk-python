@@ -36,7 +36,7 @@ For further developer information, refer to
 
 .. toctree::
    :maxdepth: 2
-   :caption: Code Documentation
+   :caption: Documentation
    
    api
 

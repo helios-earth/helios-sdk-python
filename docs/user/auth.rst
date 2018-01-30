@@ -16,15 +16,17 @@ Using Environment Variables
 #. Add **"HELIOS\_KEY\_ID"**: "your ID key"
 #. Add **"HELIOS\_KEY\_SECRET"**: "your secret key"
 #. Add **"HELIOS\_API\_URL"**: "API URL associated with your account credentials"
-  - **"HELIOS\_API\_URL"** is optional.
+
+    - **"HELIOS\_API\_URL"** is optional.
 
 Using an Authentication File
 ----------------------------
 
 #. Create a ".helios_auth" file in your home directory.
-#. Copy and paste the following to the ".helios_auth" file and fill in 
-   your authentication values:
-  - **"HELIOS\_API\_URL"** is optional.
+#. Copy and paste the following to the `.helios_auth` file and fill in 
+   your authentication values.
+
+    - **"HELIOS\_API\_URL"** is optional.
 
 .. code-block:: json
 

@@ -1,16 +1,19 @@
 Installation
 ============
 
-Source Code
------------
-Currently, the package only exists on GitHub.
+Install from PyPI
+-----------------
+Currently unavailable.
+
+Install from source
+-------------------
 
 You can clone the public repository::
 
-    $ git clone https://github.com/harris-helios/helios-sdk-python.git
+$ git clone https://github.com/harris-helios/helios-sdk-python.git
     
 At this point it is a good idea to add the HeliosSDK package to your **PYTHONPATH**.
-This will allow you to :code:`import helios` from any location.
+This will allow you to ``import helios`` from any location.
 
 Dependencies
 ------------
