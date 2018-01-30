@@ -1,5 +1,5 @@
-Installation of HeliosSDK
-=========================
+Installation
+============
 
 Source Code
 -----------

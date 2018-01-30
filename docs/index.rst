@@ -12,30 +12,33 @@ accurate local ground weather intelligence to assist organizations
 with real-time decision making. Helios analyzes content from 
 thousands of existing public and private video cameras, providing 
 immediate confirmation of ground weather condition changes at a 
-detailed local level.
+detailed local level.  For more details, refer to `helios.earth 
+<https://helios.earth/>`_.
 
-For more details, refer to `helios.earth <https://helios.earth/>`_
+The Helios SDK brings the core API functionality along with 
+extensions to Python. Many of the capabilities are thread-enabled
+allowing for batch jobs.  The overall goal is to provide the 
+tools necessary to quickly begin using the Helios product.
+
+For further developer information, refer to 
+`the Helios developer documentation. <https://helios.earth/developers/>`_
     
-Contents
---------------
-
 .. toctree::
    :maxdepth: 2
+   :caption: User Guide
    
-   user/intro
    user/install
    user/auth
+   user/session
+   user/using_apis
+   user/license
    
-API Documentation
----------------------
-This section details the core APIs available with the Helios SDK.
 
 .. toctree::
    :maxdepth: 2
+   :caption: Code Documentation
    
    api
-   session
-   utilities
 
 Indices and tables
 ==================
