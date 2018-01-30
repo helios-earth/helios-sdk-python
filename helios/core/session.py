@@ -182,15 +182,15 @@ class Session(object):
 
         json_resp = resp.json()
 
-        # Get expiration time.
-        expiration = json_resp['expires_in'] / 60.0
-
-        if json_resp['name'] is None:
+        if not json_resp['name'] or not json_resp['expires_in']:
             return False
-        elif expiration < self.token_expiration_threshold:
+
+        # Check token expiration time.
+        expiration = json_resp['expires_in'] / 60.0
+        if expiration < self.token_expiration_threshold:
             self.logger.warning('Token is valid, but expires in %s minutes.',
                                 expiration)
             return False
-        else:
-            self.logger.info('Token is valid for %d minutes.', expiration)
-            return True
+
+        self.logger.info('Token is valid for %d minutes.', expiration)
+        return True
