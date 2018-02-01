@@ -21,10 +21,10 @@ def utc_range():
 
 def test_observations(utc_range):
     # Create Observations instance
-    observations_instance = helios.Observations()
+    observations = helios.Observations()
 
     # Perform index query
-    index_results = observations_instance.index(state='new york',
+    index_results = observations.index(state='new york',
                                                 time_min=utc_range[0],
                                                 time_max=utc_range[1])
 
@@ -37,16 +37,16 @@ def test_observations(utc_range):
             break
 
     # Perform show query
-    show_results = observations_instance.show(id_)
+    show_results = observations.show(id_)
 
     # Perform preview query
-    preview_results = observations_instance.preview(id_)
+    preview_results = observations.preview(id_)
 
     # Extract URL
     url = preview_results[0]
 
     # Perform downloadImages query
-    download_images_results = observations_instance.download_images(
+    download_images_results = observations.download_images(
         url, return_image_data=True)
 
     # Check download for image data.

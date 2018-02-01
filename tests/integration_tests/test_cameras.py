@@ -22,7 +22,7 @@ def test_cameras(utc_now):
     cameras = helios.Cameras()
 
     # Perform index query
-    index_results = cameras.index(state='new york')
+    index_results = cameras.index(limit=10, skip=3900)
 
     # Extract id from index query
     id_ = index_results[0]['features'][0]['id']
@@ -47,8 +47,8 @@ def test_cameras(utc_now):
 
     # Perform downloadImages query
     if url is not None:
-        download_images_results = cameras.download_images(
-            url, return_image_data=True)
+        download_images_results = cameras.download_images(url,
+                                                          return_image_data=True)
 
 
 if __name__ == '__main__':
