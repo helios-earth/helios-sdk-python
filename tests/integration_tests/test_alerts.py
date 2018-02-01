@@ -1,6 +1,10 @@
+import logging
+
 import pytest
 
 import helios
+
+logging.disable(logging.WARNING)
 
 
 def test_alerts():

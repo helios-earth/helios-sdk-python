@@ -1,8 +1,11 @@
+import logging
 from datetime import datetime, timedelta
 
 import pytest
 
 import helios
+
+logging.disable(logging.WARNING)
 
 
 @pytest.fixture
@@ -25,8 +28,8 @@ def test_observations(utc_range):
 
     # Perform index query
     index_results = observations.index(state='new york',
-                                                time_min=utc_range[0],
-                                                time_max=utc_range[1])
+                                       time_min=utc_range[0],
+                                       time_max=utc_range[1])
 
     # Extract id from index query
     for feature in index_results[0]['features']:

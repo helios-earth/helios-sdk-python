@@ -1,8 +1,11 @@
+import logging
 from datetime import datetime, timedelta
 
 import pytest
 
 import helios
+
+logging.disable(logging.WARNING)
 
 
 @pytest.fixture
