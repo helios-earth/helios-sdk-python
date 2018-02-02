@@ -49,7 +49,6 @@ class Session(object):
 
     token_expiration_threshold = 60  # minutes
 
-    _token_file = os.path.join(os.path.expanduser('~'), '.helios_token')
     _auth_file = os.path.join(os.path.expanduser('~'), '.helios_auth')
     _default_api_url = r'https://api.helios.earth/v1/'
 
@@ -72,8 +71,6 @@ class Session(object):
         if env:
             self.logger.info('Using custom env for session.')
             data = env
-            # Delete token file so that custom env can be used.
-            self._delete_token()
         elif 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
             self.logger.info('Using environment variables for session.')
             data = os.environ.copy()
@@ -95,7 +92,9 @@ class Session(object):
         except KeyError:
             self.api_url = self._default_api_url
 
-        self.token_url = self.api_url + '/oauth/token'
+        # Create token filename based on authentication ID.
+        self._token_file = os.path.join(os.path.expanduser('~'),
+                                        self._key_id + '.helios_token')
 
     def _delete_token(self):
         """Delete token file."""
@@ -112,16 +111,17 @@ class Session(object):
         request fails over https, http will be used as a fallback.
 
         """
+        token_url = self.api_url + '/oauth/token'
         try:
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
-            resp = requests.post(self.token_url, data=data, auth=auth,
+            resp = requests.post(token_url, data=data, auth=auth,
                                  verify=True)
             resp.raise_for_status()
         except requests.exceptions.HTTPError:
             self.logger.warning('Getting token over https failed. Falling '
                                 'back to http.')
-            token_url_http = 'http' + self.token_url.split('https')[1]
+            token_url_http = 'http' + token_url.split('https')[1]
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
             resp = requests.post(token_url_http, data=data, auth=auth,
@@ -161,7 +161,7 @@ class Session(object):
                 self._get_token()
         except (IOError, FileNotFoundError):
             self.logger.warning('Token file was not found. A new token will '
-                                'be acquired and written to .helios_token.')
+                                'be acquired.')
             self._get_token()
 
     def verify_token(self):
