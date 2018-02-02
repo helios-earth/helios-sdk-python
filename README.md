@@ -1,5 +1,8 @@
 # Helios - SDK - Python
 
+[![PyPI](https://img.shields.io/pypi/v/helios-sdk.svg?style=flat-square)](https://pypi.python.org/pypi/helios-sdk)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](https://github.com/harris-helios/helios-sdk-python/blob/master/LICENSE)
+
 Use the Helios APIs in Python.
 
 Helios® weather analytics from Harris Corporation provide fast and accurate local ground weather intelligence to assist organizations with real-time decision making. Helios analyzes content from thousands of existing public and private video cameras, providing immediate confirmation of ground weather condition changes at a detailed local level.
