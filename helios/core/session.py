@@ -60,6 +60,7 @@ class Session(object):
                 HELIOS_KEY_SECRET, and optionally, 'HELIOS_API_URL'. This will
                 override any information in .helios_auth and environment
                 variables.
+
         """
         # Initialize logger
         self.logger = logging.getLogger(__name__)
@@ -151,10 +152,11 @@ class Session(object):
         Begin Helios session.
 
         This will establish and verify a token for the session.  If a token
-        file exists the token will be read and verified.
+        file exists the token will be read and verified. If the token file
+        doesn't exist or the token has expired then a new token will be
+        acquired.
 
         """
-        # Check for saved token first. If it doesn't exist then get a token.
         try:
             self._read_token_file()
             if not self.verify_token():
