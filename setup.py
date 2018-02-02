@@ -5,7 +5,7 @@ import helios
 
 __version__ = helios.__version__
 
-setup(name='Helios',
+setup(name='helios-sdk',
       version=__version__,
       description='Use the Helios APIs in Python',
       author='Michael Bayer',
