@@ -35,14 +35,25 @@ def parse_camera(data):
         str: Camera name.
 
     """
-    split1_rev = os.path.splitext(os.path.split(data)[-1])[0][::-1]
-    split2 = split1_rev[split1_rev.index('_') + 1:][::-1]
-    md5_str = hashlib.md5(split2[split2.index('-') + 1:].encode('utf-8')).hexdigest()
 
-    if split2[0:4] == md5_str[0:4]:
-        return split2[5:]
+    # Extract tail and remove the extension.
+    _, tail = os.path.split(os.path.splitext(data)[0])
 
-    return split2
+    # Split by underscore and remove final index (time string).
+    name = '_'.join(tail.split('_')[0:-1])
+
+    # Check for md5 hash (first 4 characters)
+    try:
+        hash_index = name.index('-')
+    except ValueError:
+        return name
+
+    # Verify that the first 4 characters are actually the hash.
+    md5_hash = hashlib.md5(name[hash_index + 1:].encode('utf-8')).hexdigest()
+    if name[0:4] == md5_hash[0:4]:
+        return name[5:]
+    else:
+        return name
 
 
 def parse_image_name(url):
