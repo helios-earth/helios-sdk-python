@@ -11,6 +11,51 @@ For more information visit [helios.earth](https://helios.earth/).
 
 ------------------
 
+## Interacting with the Helios APIs.
+This example creates an instance of the Cameras API, queries for New York 
+cameras and then parses the camera IDs from the resulting GeoJSON information.
+
+```python
+import helios
+from helios.utilities import json_utils
+
+cameras = helios.Cameras()
+
+# Retrieve GeoJSON Feature Collection for New York state cameras.
+ny_cams = cameras.index(state='New York')
+
+# Parse the camera IDs from the results.
+ny_cams_ids = json_utils.merge_json(ny_cams, ['features', 'ids'])
+```
+
+------------------
+
+## Installation
+
+To install the Helios SDK use one of the following two methods:
+
+* __Install the Helios SDK from PyPI:__
+
+```sh
+pip install helios-sdk
+```
+
+* __For the bleeding edge, install from the GitHub source:__
+
+```sh
+git clone https://github.com/harris-helios/helios-sdk-python.git
+```
+
+Then `cd` to the helios-sdk-python folder and run the install command:
+
+```sh
+cd helios-sdk-python
+python setup.py install
+```
+
+------------------
+
+
 ## Authentication
 
 All Helios API methods require valid authentication and are protected using the OAuth 2.0 "client credentials" flow.  The general process for authenticating requests involves first requesting an access token using the developer API key pair, and then requesting protected data using the access token.  [Request access](https://www.harris.com/forms/sishelioscontactus) if you would like to obtain an API key.
@@ -35,15 +80,3 @@ All Helios API methods require valid authentication and are protected using the 
 * __"HELIOS\_API\_URL"__ is optional.
 
 For more information refer to the authentication [documentation](https://helios.earth/developers/api/authentication/).
-
-------------------
-  
-## Dependencies
-* Python 2 or 3
-* requests
-* pillow
-* numpy
-* python-dateutil
-
-## SDK Documentation
-For detailed SDK documentation refer to [DOCUMENTATION.md](https://github.com/harris-helios/helios-sdk-python/blob/master/DOCUMENTATION.md)
