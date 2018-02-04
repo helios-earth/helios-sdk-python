@@ -10,7 +10,7 @@ authentication information and will fetch an API token.  This
 token is required for any API queries.  
 
 Once a session has been created, the token will be written to 
-the `.helios_token` file in your home directory.  This token 
+a `.helios_token` file in your home directory.  This token 
 will be reused until it becomes invalid.
 
 Creating a Session
@@ -52,6 +52,7 @@ necessary information for authentication.
    custom_env = {'HELIOS_KEY_ID': 'mykeyid', 'HELIOS_KEY_SECRET': 'mykeysecret'}
    sess = helios.Session(env=custom_env)
    sess.start_session()
+
 
 
 

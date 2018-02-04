@@ -1,24 +1,30 @@
+.. role:: bash(code)
+   :language: bash
+
 Installation
 ============
 
-Install from PyPI
------------------
-Currently unavailable.
+Install from PyPI (recommended)
+--------------------------------
 
-Install from source
--------------------
+.. code-block:: bash
+  
+    pip install helios-sdk
 
-You can clone the public repository::
 
-$ git clone https://github.com/harris-helios/helios-sdk-python.git
+Install from source (bleeding edge)
+-----------------------------------
+
+Clone the GitHub repository:
+
+.. code-block:: bash
+
+    git clone https://github.com/harris-helios/helios-sdk-python.git
     
-At this point it is a good idea to add the package to your **PYTHONPATH**.
-This will allow you to ``import helios`` from any location.
+Then ``cd`` to the helios-sdk-python directory and run the 
+install command:
 
-Dependencies
-------------
-* Python 2 or 3
-* requests
-* pillow
-* numpy
-* python-dateutil
+.. code-block:: bash
+
+    cd helios-sdk-python
+    python setup.py install
