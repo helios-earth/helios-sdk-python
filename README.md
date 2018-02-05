@@ -50,7 +50,7 @@ Then `cd` to the helios-sdk-python folder and run the install command:
 
 ```sh
 cd helios-sdk-python
-python setup.py install
+pip install .
 ```
 
 ------------------
