@@ -27,4 +27,4 @@ install command:
 .. code-block:: bash
 
     cd helios-sdk-python
-    python setup.py install
+    pip install .
