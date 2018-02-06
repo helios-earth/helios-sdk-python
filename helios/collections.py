@@ -240,6 +240,28 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         """
         Add images to a collection.
 
+        `data` dictionary templates:
+
+        .. code-block:: python
+
+            # Payload examples that can be included in the 'data' input list.
+            {'camera_id': ''}
+            {'camera_id': '', 'time': ''}
+            {'observation_id': ''}
+            {'collection_is': '', 'image': ''}
+
+        Usage example:
+
+        .. code-block:: python
+
+            import helios
+            collections = helios.Collections()
+            camera_id = '...'
+            times = [...] # List of image times.
+            destination_id = '...'
+            payload = [{'camera_id': camera_id, 'time': x} for x in times]
+            collections.add_image(destination_id, data)
+
         Args:
             collection_id (str): Collection ID.
             data (dict or sequence of dicts): Data containing any of these
