@@ -8,6 +8,7 @@ from math import ceil
 from multiprocessing.pool import ThreadPool
 
 import numpy as np
+import requests
 from PIL import Image
 
 from helios.core.request_manager import RequestManager
@@ -265,16 +266,15 @@ class ShowImageMixin(object):
         try:
             resp = self.request_manager.get(query_str)
             redirect_url = resp.url[0:resp.url.index('?')]
-        except Exception:
+        except requests.exceptions.RequestException:
             return -1
 
         # Check header for dud statuses.
         if check_for_duds:
             try:
                 # Redirect URLs do not use api credentials
-                resp2 = self.request_manager.head(redirect_url,
-                                                  use_api_cred=False)
-            except Exception:
+                resp2 = self.request_manager.head(redirect_url, use_api_cred=False)
+            except requests.exceptions.RequestException:
                 return -1
 
             if self.check_headers_for_dud(resp2.headers):
@@ -346,7 +346,7 @@ class DownloadImagesMixin(object):
 
         try:
             resp = self.request_manager.get(url, use_api_cred=False)
-        except Exception:
+        except requests.exceptions.RequestException:
             return -1
 
         # Read image from response

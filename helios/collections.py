@@ -11,6 +11,8 @@ from contextlib import closing
 from itertools import repeat
 from multiprocessing.pool import ThreadPool
 
+import requests
+
 from helios.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, \
     DownloadImagesMixin
 from helios.utilities import logging_utils
@@ -327,7 +329,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         try:
             self.request_manager.post(post_url, headers=header, data=parms)
-        except Exception:
+        except requests.exceptions.RequestException:
             return -1
 
     @logging_utils.log_entrance_exit
@@ -387,7 +389,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         try:
             self.request_manager.delete(query_str)
-        except Exception:
+        except requests.exceptions.RequestException:
             return -1
 
     @logging_utils.log_entrance_exit
