@@ -54,20 +54,25 @@ class SDKCore(object):
     @staticmethod
     def parse_query_inputs(input_dict):
         # Check for unique case: sensors
-        if 'sensors' in input_dict.keys():
+        if 'sensors' in input_dict:
             query_str = input_dict.pop('sensors') + '&'
         else:
             query_str = ''
 
         # Parse input_dict into a str
-        for key in input_dict.keys():
-            if isinstance(input_dict[key], (list, tuple)):
+        for key, val in input_dict.items():
+            if val is None:
+                continue
+
+            if isinstance(val, (list, tuple)):
                 query_str += (str(key) +
                               '=' +
-                              ','.join([str(x) for x in input_dict[key]]) +
+                              ','.join([str(x) for x in val]) +
                               '&')
             else:
-                query_str += (str(key) + '=' + str(input_dict[key]) + '&')
+                query_str += (str(key) + '=' + str(val) + '&')
+
+        # Remove final ampersand
         query_str = query_str[:-1]
 
         return query_str
