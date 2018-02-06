@@ -5,6 +5,7 @@
 
 Helios-SDK-Python
 =================
+
 Use the Helios APIs in Python.
 
 Helios® weather analytics from Harris Corporation provide fast and 
@@ -26,18 +27,18 @@ For further developer information, refer to
 .. toctree::
    :maxdepth: 2
    :caption: User Guide
-   
+
    user/install
    user/auth
-   user/session
-   user/using_apis
+   user/session_guide
+   user/core_apis_guide
    user/license
-   
+
 
 .. toctree::
    :maxdepth: 2
    :caption: Documentation
-   
+
    api
 
 Indices and tables
