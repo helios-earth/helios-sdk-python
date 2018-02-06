@@ -54,19 +54,6 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         """
         return super(Observations, self).index(**kwargs)
 
-    def show(self, observation_id):
-        """
-        Return the attributes for a single observation.
-
-        Args:
-            observation_id (str): Observation ID.
-
-        Returns:
-            dict: GeoJSON feature.
-
-        """
-        return super(Observations, self).show(observation_id)
-
     @logging_utils.log_entrance_exit
     def preview(self, observation_ids, check_for_duds=True):
         """

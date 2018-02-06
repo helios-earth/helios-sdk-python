@@ -169,10 +169,41 @@ class IndexMixin(object):
 
 class ShowMixin(object):
     @logging_utils.log_entrance_exit
-    def show(self, id_var, **kwargs):
-        params_str = self.parse_query_inputs(kwargs)
-        query_str = '{}/{}/{}?{}'.format(self.base_api_url, self.core_api,
-                                         id_var, params_str)
+    def show(self, ids):
+        """
+        Return attributes for Helios assets.
+
+        For example, the input ids can be a single Alert ID, or a list of
+        Alert IDs.  Can also be camera or observation IDs.
+
+        Args:
+            ids (str or sequence of strs): Helios asset ID(s). This can
+                include an alert, observation, or camera ID.
+
+        Returns:
+            (sequence of dicts): GeoJSON feature results.
+
+        """
+        # Force iterable
+        if not isinstance(ids, (list, tuple)):
+            ids = [ids]
+        n_ids = len(ids)
+
+        # Get number of threads
+        num_threads = min(self.max_threads, n_ids)
+
+        if num_threads > 1:
+            with closing(ThreadPool(num_threads)) as thread_pool:
+                results = thread_pool.map(self.__show_worker, ids)
+        else:
+            results = [self.__show_worker(ids[0])]
+
+        return results
+
+    def __show_worker(self, args):
+        id_ = args
+
+        query_str = '{}/{}/{}'.format(self.base_api_url, self.core_api, id_)
 
         resp = self.request_manager.get(query_str)
 
@@ -181,7 +212,7 @@ class ShowMixin(object):
 
 class ShowImageMixin(object):
     @logging_utils.log_entrance_exit
-    def show_image(self, id_var, samples, check_for_duds=True):
+    def show_image(self, id_, samples, check_for_duds=True):
         # Force iterable
         if not isinstance(samples, (list, tuple)):
             samples = [samples]
@@ -194,11 +225,11 @@ class ShowImageMixin(object):
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
                 results = thread_pool.map(self.__show_image_worker,
-                                          zip(repeat(id_var),
+                                          zip(repeat(id_),
                                               samples,
                                               repeat(check_for_duds)))
         else:
-            results = [self.__show_image_worker((id_var, samples[0],
+            results = [self.__show_image_worker((id_, samples[0],
                                                  check_for_duds))]
 
         # Remove errors, if they exist
@@ -219,11 +250,11 @@ class ShowImageMixin(object):
         return results
 
     def __show_image_worker(self, args):
-        id_var, data, check_for_duds = args
+        id_, data, check_for_duds = args
 
         query_str = '{}/{}/{}/images/{}'.format(self.base_api_url,
                                                 self.core_api,
-                                                id_var,
+                                                id_,
                                                 data)
 
         try:

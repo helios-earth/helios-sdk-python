@@ -49,19 +49,6 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         """
         return super(Cameras, self).index(**kwargs)
 
-    def show(self, camera_id):
-        """
-        Return the attributes for a single alert.
-
-        Args:
-            camera_id (str): Camera ID.
-
-        Returns:
-            dict: GeoJSON feature.
-
-        """
-        return super(Cameras, self).show(camera_id)
-
     @logging_utils.log_entrance_exit
     def images(self, camera_id, start_time, limit=500):
         """

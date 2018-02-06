@@ -59,6 +59,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         """
         return super(Collections, self).index(**kwargs)
 
+    @logging_utils.log_entrance_exit
     def show(self, collection_id, limit=200, marker=None):
         """
         Return the attributes and image list for a single collection.
@@ -82,9 +83,15 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             dict: Dictionary containing collection attributes and image list.
 
         """
-        return super(Collections, self).show(collection_id,
-                                             limit=limit,
-                                             marker=marker)
+        params_str = self.parse_query_inputs(dict(limit=limit, marker=marker))
+        query_str = '{}/{}/{}?{}'.format(self.base_api_url,
+                                         self.core_api,
+                                         collection_id,
+                                         params_str)
+
+        resp = self.request_manager.get(query_str)
+
+        return resp.json()
 
     @logging_utils.log_entrance_exit
     def create(self, name, description, tags=None):

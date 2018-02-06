@@ -58,16 +58,3 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
         """
         return super(Alerts, self).index(**kwargs)
-
-    def show(self, alert_id):
-        """
-        Return the attributes for a single alert.
-
-        Args:
-            alert_id (str): Alert ID.
-
-        Returns:
-            dict: GeoJSON feature.
-
-        """
-        return super(Alerts, self).show(alert_id)
