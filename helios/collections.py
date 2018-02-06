@@ -104,15 +104,12 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         # need to strip out the Bearer to work with a POST for collections
         post_token = self.request_manager.auth_token['value'].replace('Bearer ', '')
 
-        # handle more than one tag
-        if isinstance(tags, (list, tuple)):
-            tags = ','.join(tags)
-
         # Compose parms block
-        parms = {'name': name, 'description': description}
+        parms = {'name': name, 'description': description, 'access_token': post_token}
         if tags is not None:
+            if isinstance(tags, (list, tuple)):
+                tags = ','.join(tags)
             parms['tags'] = tags
-        parms['access_token'] = post_token
 
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
@@ -137,14 +134,11 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         """
         if name is None and description is None and tags is None:
-            raise ValueError('Update requires at least one named argument.')
+            raise ValueError('Update requires at least one keyword argument '
+                             'to be used.')
 
         # need to strip out the Bearer to work with a PATCH for collections
         patch_token = self.request_manager.auth_token['value'].replace('Bearer ', '')
-
-        # handle more than one tag
-        if isinstance(tags, (list, tuple)):
-            tags = ','.join(tags)
 
         # Compose parms block
         parms = {}
@@ -153,6 +147,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         if description is not None:
             parms['description'] = description
         if tags is not None:
+            if isinstance(tags, (list, tuple)):
+                tags = ','.join(tags)
             parms['tags'] = tags
         parms['access_token'] = patch_token
 
@@ -187,8 +183,8 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         mark_img = ''
 
         if camera is not None:
-            md5_str = hashlib.md5(camera.encode('utf-8')).hexdigest()
             if not old_flag:
+                md5_str = hashlib.md5(camera.encode('utf-8')).hexdigest()
                 camera = md5_str[0:4] + '-' + camera
             mark_img = camera
 
@@ -382,19 +378,16 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         query_str = '{}/{}/{}'.format(self.base_api_url,
                                       self.core_api,
                                       collection_id)
-        resp_json = self.request_manager.get(query_str).json()
+        metadata = self.request_manager.get(query_str).json()
 
         # Get the images that exist in the collection.
-        image_names = self.images(collection_id)['images']
+        image_names = self.images(collection_id)
+
+        # Create new collection.
+        new_id = self.create(new_name, metadata['description'], metadata['tags'])
 
         # Add images to new collection.
         data = [{'collection_id': collection_id, 'image': x} for x in image_names]
-
-        # Create new collection.
-        output = self.create(new_name, resp_json['description'], resp_json['tags'])
-        new_id = output['collection_id']
-
-        # Add images to new collection.
         _ = self.add_image(new_id, data)
 
         return new_id
