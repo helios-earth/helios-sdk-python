@@ -184,7 +184,6 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             sequence of strs: Image names.
 
         """
-        max_limit = 200
         mark_img = ''
 
         if camera is not None:
@@ -195,9 +194,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         good_images = []
         while True:
-            results = self.show(collection_id,
-                                limit=max_limit,
-                                marker=mark_img)
+            results = self.show(collection_id, marker=mark_img)
 
             # Gather images.
             images_found = results['images']
