@@ -45,6 +45,29 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         The maximum skip value is 4000. If this is reached, truncated results
         will be returned. You will need to refine your query to avoid this.
 
+        Usage example:
+
+        .. code-block:: python
+
+            import helios
+            obs = helios.Observations()
+            state = 'Maryland'
+            bbox = [-169.352,1.137,-1.690,64.008]
+            sensors = 'sensors[visibility][min]=0&sensors[visibility][max]=1'
+            results = obs.index(state=state,
+                                bbox=bbox,
+                                sensors=sensors)
+
+        Usage example for transitions:
+
+        .. code-block:: python
+
+            import helios
+            obs = helios.Observations()
+            # transition from dry/wet to partial/fully-covered snow roads
+            sensors = 'sensors[road_weather][data][min]=6&sensors[road_weather][prev][max]=3'
+            results = obs.index(sensors=sensors_query)
+
         Args:
             **kwargs: Any keyword arguments found in the documentation.
 
