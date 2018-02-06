@@ -70,12 +70,19 @@ class RequestManager(object):
             else:
                 raise ValueError('Unsupported query of type: {}'.format(request_type))
             resp.raise_for_status()
-        # Log exceptions and return
+
+        # Log and raise exceptions.
         except requests.exceptions.HTTPError:
-            self.logger.error('HTTPError %s: %s', resp.status_code, query)
+            self.logger.exception('HTTPError')
             raise
-        except Exception as e:
-            self.logger.error('Error: %s', str(e))
+        except requests.exceptions.ConnectionError:
+            self.logger.exception('ConnectionError')
+            raise
+        except requests.exceptions.Timeout:
+            self.logger.exception('Timeout')
+            raise
+        except requests.exceptions.RequestException:
+            self.logger.exception('RequestException')
             raise
 
         return resp
