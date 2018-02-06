@@ -291,7 +291,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                 results = thread_pool.map(self.__add_image_worker,
                                           zip(repeat(collection_id), data))
         else:
-            results = self.__add_image_worker((collection_id, data[0]))
+            results = [self.__add_image_worker((collection_id, data[0]))]
 
         # Extract failures.
         failures = [y for x, y in zip(results, data) if x == -1]
