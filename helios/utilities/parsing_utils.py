@@ -17,7 +17,7 @@ def parse_time(data):
     Args:
         data (str): Image URL or name.
     Returns:
-        datetime: The parsed time as a datetime object.
+        datetime.datetime: The parsed time as a datetime object.
 
     """
     time_string = str(os.path.splitext(os.path.split(data)[-1])[0].split('_')[-1])
@@ -76,7 +76,7 @@ def parse_url(url):
     Args:
         url (str): Image URL.
     Returns:
-        obj: Parsed URL.
+        urllib.parse.ParseResult: Parsed URL.
 
     """
     return urlparse(url)

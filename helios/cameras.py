@@ -24,7 +24,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
         Initialize Cameras instance.
 
         Args:
-            session (Session object, optional): An instance of the
+            session (helios.Session object, optional): An instance of the
                 Session. Defaults to None. If unused a session will be
                 created for you.
 

@@ -25,14 +25,14 @@ class SDKCore(object):
 
     def __init__(self, session=None):
         """
-        Initialize core capabilities.
+        Initialize core API instance.
 
         If a session has been started prior to initialization it can be used
         via the session input parameter. If this is not used a session will
         be started automatically.
 
         Args:
-            session (Session object, optional): An instance of the
+            session (helios.Session object, optional): An instance of the
                 Session. Defaults to None. If unused a session will be
                 created for you.
 
@@ -186,7 +186,7 @@ class ShowMixin(object):
                 include an alert, observation, or camera ID.
 
         Returns:
-            (sequence of dicts): GeoJSON feature results.
+            sequence of dicts: GeoJSON feature results.
 
         """
         # Force iterable
