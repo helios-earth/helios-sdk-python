@@ -50,7 +50,7 @@ class SDKCore(object):
 
         # Create request manager to handle all API requests.
         self._request_manager = RequestManager(self._session.token,
-                                              pool_maxsize=self._max_threads)
+                                               pool_maxsize=self._max_threads)
 
     @staticmethod
     def _parse_query_inputs(input_dict):
@@ -137,7 +137,7 @@ class IndexMixin(object):
         if total > max_skip:
             # Log truncation warning
             self._logger.warning('Maximum skip level. Truncated results for: %s',
-                                kwargs)
+                                 kwargs)
 
         # Get number of results in initial query.
         try:
@@ -154,27 +154,24 @@ class IndexMixin(object):
         queries = queries[0:n_queries_needed]
 
         # Log number of queries required.
-        self._logger.info('%s index queries required for: %s', n_queries_needed,
-                         kwargs)
+        self._logger.info('%s index queries required for: %s', n_queries_needed, kwargs)
 
-        # Create thread pool and get results
-        num_threads = min(self._max_threads, n_queries_needed)
-        if num_threads > 1:
-            with closing(ThreadPool(num_threads)) as thread_pool:
-                results = thread_pool.map(self.__index_worker, queries)
-        else:
-            results = [self.__index_worker(queries[0])]
+        # Create messages for worker.
+        Message = namedtuple('Message', 'query')
+        messages = [Message(x) for x in queries]
+
+        # Process messages using the worker function.
+        results = self._process_messages(self.__index_worker, messages)
 
         # Put initial query back in list.
         results.insert(0, initial_resp)
 
         return results
 
-    def __index_worker(self, args):
-        query_str = args
-
+    def __index_worker(self, msg):
+        """msg must contain query"""
         # Perform query
-        resp = self._request_manager.get(query_str)
+        resp = self._request_manager.get(msg.query)
 
         return resp.json()
 
@@ -270,7 +267,7 @@ class ShowImageMixin(object):
 
             if self._check_headers_for_dud(resp2.headers):
                 self._logger.info('showImage query returned dud image: %s',
-                                 query_str)
+                                  query_str)
                 return None
 
         return redirect_url
