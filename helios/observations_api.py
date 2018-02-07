@@ -1,5 +1,5 @@
 """
-SDK for the Helios Observations API.
+Helios Observations API.
 
 Methods are meant to represent the core functionality in the developer
 documentation.  Some may have additional functionality for convenience.

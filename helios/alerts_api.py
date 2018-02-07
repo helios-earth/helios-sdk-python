@@ -1,5 +1,5 @@
 """
-SDK for the Helios Alerts API.
+Helios Alerts API.
 
 Methods are meant to represent the core functionality in the developer
 documentation.  Some may have additional functionality for convenience.

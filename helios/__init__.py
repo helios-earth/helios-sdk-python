@@ -1,9 +1,9 @@
 from . import core
 from . import utilities
-from .alerts import Alerts
-from .cameras import Cameras
-from .collections import Collections
-from .observations import Observations
+from .alerts_api import Alerts
+from .cameras_api import Cameras
+from .collections_api import Collections
+from .observations_api import Observations
 from .core.session import Session
 # Configure logger.
 from .utilities.logging_utils import configure_logger

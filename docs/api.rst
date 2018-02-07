@@ -4,28 +4,28 @@ Core APIs
 Alerts
 ------
 
-.. autoclass:: helios.alerts.Alerts
+.. autoclass:: helios.alerts_api.Alerts
     :members:
     :inherited-members:
     
 Cameras
 -------
 
-.. autoclass:: helios.cameras.Cameras
+.. autoclass:: helios.cameras_api.Cameras
     :members:
     :inherited-members:
     
 Collections
 -----------
 
-.. autoclass:: helios.collections.Collections
+.. autoclass:: helios.collections_api.Collections
     :members:
     :inherited-members:
     
 Observations
 ------------
 
-.. autoclass:: helios.observations.Observations
+.. autoclass:: helios.observations_api.Observations
     :members:
     :inherited-members:
 

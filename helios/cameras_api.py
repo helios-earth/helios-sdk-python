@@ -1,5 +1,5 @@
 """
-SDK for the Helios Cameras API.
+Helios Cameras API.
 
 Methods are meant to represent the core functionality in the developer
 documentation.  Some may have additional functionality for convenience.
