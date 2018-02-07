@@ -22,7 +22,7 @@ class SDKCore(object):
 
     This class must be inherited by any additional Core API classes.
     """
-    max_threads = 32
+    _max_threads = 32
 
     def __init__(self, session=None):
         """
@@ -40,20 +40,20 @@ class SDKCore(object):
         """
         # Start session or use custom session.
         if session is None:
-            self.session = Session()
+            self._session = Session()
         else:
-            self.session = session
+            self._session = session
 
         # If the session hasn't been started, start it.
-        if not self.session.token:
-            self.session.start_session()
+        if not self._session.token:
+            self._session.start_session()
 
         # Create request manager to handle all API requests.
-        self.request_manager = RequestManager(self.session.token,
-                                              pool_maxsize=self.max_threads)
+        self._request_manager = RequestManager(self._session.token,
+                                              pool_maxsize=self._max_threads)
 
     @staticmethod
-    def parse_query_inputs(input_dict):
+    def _parse_query_inputs(input_dict):
         # Check for unique case: sensors
         if 'sensors' in input_dict:
             query_str = input_dict.pop('sensors') + '&'
@@ -79,7 +79,7 @@ class SDKCore(object):
         return query_str
 
     @staticmethod
-    def check_headers_for_dud(header_data):
+    def _check_headers_for_dud(header_data):
         if 'x-amz-meta-helios' in header_data:
             meta_block = json.loads(header_data['x-amz-meta-helios'])
             if meta_block['isOutcast'] or meta_block['isDud'] or meta_block['isFrozen']:
@@ -87,16 +87,16 @@ class SDKCore(object):
         return False
 
     @property
-    def base_api_url(self):
-        return self.session.api_url
+    def _base_api_url(self):
+        return self._session.api_url
 
-    @base_api_url.setter
-    def base_api_url(self, value):
-        raise AttributeError('Access to base_api_url is restricted.')
+    @_base_api_url.setter
+    def _base_api_url(self, value):
+        raise AttributeError('Access to _base_api_url is restricted.')
 
-    def process_messages(self, func, messages):
+    def _process_messages(self, func, messages):
         # Create thread pool
-        with closing(ThreadPool(self.max_threads)) as thread_pool:
+        with closing(ThreadPool(self._max_threads)) as thread_pool:
             results = thread_pool.map(func, messages)
         return results
 
@@ -109,7 +109,7 @@ class IndexMixin(object):
         skip = kwargs.get('skip', 0)
 
         # Establish all queries.
-        params_str = self.parse_query_inputs(kwargs)
+        params_str = self._parse_query_inputs(kwargs)
         queries = []
         for i in range(skip, max_skip, limit):
             if i + limit > max_skip:
@@ -117,8 +117,8 @@ class IndexMixin(object):
             else:
                 temp_limit = limit
 
-            query_str = '{}/{}?{}&limit={}&skip={}'.format(self.base_api_url,
-                                                           self.core_api,
+            query_str = '{}/{}?{}&limit={}&skip={}'.format(self._base_api_url,
+                                                           self._core_api,
                                                            params_str,
                                                            temp_limit,
                                                            i)
@@ -126,7 +126,7 @@ class IndexMixin(object):
             queries.append(query_str)
 
         # Do first query to find total number of results to expect.
-        initial_resp = self.request_manager.get(queries.pop(0)).json()
+        initial_resp = self._request_manager.get(queries.pop(0)).json()
 
         try:
             total = initial_resp['properties']['total']
@@ -136,7 +136,7 @@ class IndexMixin(object):
         # Warn the user when truncation occurs. (max_skip is hit)
         if total > max_skip:
             # Log truncation warning
-            self.logger.warning('Maximum skip level. Truncated results for: %s',
+            self._logger.warning('Maximum skip level. Truncated results for: %s',
                                 kwargs)
 
         # Get number of results in initial query.
@@ -154,11 +154,11 @@ class IndexMixin(object):
         queries = queries[0:n_queries_needed]
 
         # Log number of queries required.
-        self.logger.info('%s index queries required for: %s', n_queries_needed,
+        self._logger.info('%s index queries required for: %s', n_queries_needed,
                          kwargs)
 
         # Create thread pool and get results
-        num_threads = min(self.max_threads, n_queries_needed)
+        num_threads = min(self._max_threads, n_queries_needed)
         if num_threads > 1:
             with closing(ThreadPool(num_threads)) as thread_pool:
                 results = thread_pool.map(self.__index_worker, queries)
@@ -174,7 +174,7 @@ class IndexMixin(object):
         query_str = args
 
         # Perform query
-        resp = self.request_manager.get(query_str)
+        resp = self._request_manager.get(query_str)
 
         return resp.json()
 
@@ -204,14 +204,14 @@ class ShowMixin(object):
         messages = [Message(x) for x in ids]
 
         # Process messages using the worker function.
-        results = self.process_messages(self.__show_worker, messages)
+        results = self._process_messages(self.__show_worker, messages)
 
         return results
 
     def __show_worker(self, msg):
         """msg must contain id_"""
-        query_str = '{}/{}/{}'.format(self.base_api_url, self.core_api, msg.id_)
-        resp = self.request_manager.get(query_str)
+        query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, msg.id_)
+        resp = self._request_manager.get(query_str)
 
         return resp.json()
 
@@ -227,7 +227,7 @@ class ShowImageMixin(object):
         messages = [Message(id_, x, check_for_duds) for x in data]
 
         # Process messages using the worker function.
-        results = self.process_messages(self.__show_image_worker, messages)
+        results = self._process_messages(self.__show_image_worker, messages)
 
         # Remove errors, if they exist
         results = [x for x in results if x != -1]
@@ -238,24 +238,24 @@ class ShowImageMixin(object):
         message = 'showImage({} out of {} successful)'.format(n_data, n_samples)
 
         if n_data == 0:
-            self.logger.error(message)
+            self._logger.error(message)
             return -1
         elif n_data < n_samples:
-            self.logger.warning(message)
+            self._logger.warning(message)
         else:
-            self.logger.info(message)
+            self._logger.info(message)
 
         return results
 
     def __show_image_worker(self, msg):
         """msg must contain id_, data, and check_for_duds"""
-        query_str = '{}/{}/{}/images/{}'.format(self.base_api_url,
-                                                self.core_api,
+        query_str = '{}/{}/{}/images/{}'.format(self._base_api_url,
+                                                self._core_api,
                                                 msg.id_,
                                                 msg.data)
 
         try:
-            resp = self.request_manager.get(query_str)
+            resp = self._request_manager.get(query_str)
             redirect_url = resp.url[0:resp.url.index('?')]
         except requests.exceptions.RequestException:
             return -1
@@ -264,12 +264,12 @@ class ShowImageMixin(object):
         if msg.check_for_duds:
             try:
                 # Redirect URLs do not use api credentials
-                resp2 = self.request_manager.head(redirect_url, use_api_cred=False)
+                resp2 = self._request_manager.head(redirect_url, use_api_cred=False)
             except requests.exceptions.RequestException:
                 return -1
 
-            if self.check_headers_for_dud(resp2.headers):
-                self.logger.info('showImage query returned dud image: %s',
+            if self._check_headers_for_dud(resp2.headers):
+                self._logger.info('showImage query returned dud image: %s',
                                  query_str)
                 return None
 
@@ -305,7 +305,7 @@ class DownloadImagesMixin(object):
         messages = [Message(x, out_dir, return_image_data) for x in urls]
 
         # Process messages using the worker function.
-        data = self.process_messages(self.__download_images_worker, messages)
+        data = self._process_messages(self.__download_images_worker, messages)
 
         # Remove errors, if the exist
         data = [x for x in data if isinstance(x, np.ndarray) or x != -1]
@@ -316,12 +316,12 @@ class DownloadImagesMixin(object):
         message = 'downloadImages({} out of {} successful)'.format(n_data, n_urls)
 
         if n_data == 0:
-            self.logger.error(message)
+            self._logger.error(message)
             return -1
         elif n_data < n_urls:
-            self.logger.warning(message)
+            self._logger.warning(message)
         else:
-            self.logger.info(message)
+            self._logger.info(message)
 
         if return_image_data:
             return data
@@ -329,7 +329,7 @@ class DownloadImagesMixin(object):
     def __download_images_worker(self, msg):
         """msg must contain url, out_dir, and return_image_data"""
         try:
-            resp = self.request_manager.get(msg.url, use_api_cred=False)
+            resp = self._request_manager.get(msg.url, use_api_cred=False)
         except requests.exceptions.RequestException:
             return -1
 

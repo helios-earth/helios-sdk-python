@@ -28,7 +28,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
     removed from the system.
 
     """
-    core_api = 'collections'
+    _core_api = 'collections'
 
     def __init__(self, session=None):
         """
@@ -41,7 +41,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         """
         super(Collections, self).__init__(session=session)
-        self.logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
         """
@@ -84,13 +84,13 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             dict: Dictionary containing collection attributes and image list.
 
         """
-        params_str = self.parse_query_inputs(dict(limit=limit, marker=marker))
-        query_str = '{}/{}/{}?{}'.format(self.base_api_url,
-                                         self.core_api,
+        params_str = self._parse_query_inputs(dict(limit=limit, marker=marker))
+        query_str = '{}/{}/{}?{}'.format(self._base_api_url,
+                                         self._core_api,
                                          collection_id,
                                          params_str)
 
-        resp = self.request_manager.get(query_str)
+        resp = self._request_manager.get(query_str)
 
         return resp.json()
 
@@ -110,7 +110,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         """
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self.request_manager.auth_token['value'].replace('Bearer ', '')
+        post_token = self._request_manager.auth_token['value'].replace('Bearer ', '')
 
         # Compose parms block
         parms = {'name': name, 'description': description, 'access_token': post_token}
@@ -122,9 +122,9 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
 
-        post_url = '{}/{}'.format(self.base_api_url, self.core_api)
+        post_url = '{}/{}'.format(self._base_api_url, self._core_api)
 
-        resp = self.request_manager.post(post_url, headers=header, data=parms).json()
+        resp = self._request_manager.post(post_url, headers=header, data=parms).json()
 
         return resp['collection_id']
 
@@ -146,7 +146,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
                              'to be used.')
 
         # need to strip out the Bearer to work with a PATCH for collections
-        patch_token = self.request_manager.auth_token['value'].replace('Bearer ', '')
+        patch_token = self._request_manager.auth_token['value'].replace('Bearer ', '')
 
         # Compose parms block
         parms = {}
@@ -163,11 +163,11 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
 
-        patch_url = '{}/{}/{}'.format(self.base_api_url,
-                                      self.core_api,
+        patch_url = '{}/{}/{}'.format(self._base_api_url,
+                                      self._core_api,
                                       collections_id)
 
-        self.request_manager.patch(patch_url, headers=header, data=parms)
+        self._request_manager.patch(patch_url, headers=header, data=parms)
 
     @logging_utils.log_entrance_exit
     def images(self, collection_id, camera=None, old_flag=False):
@@ -285,7 +285,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         messages = [Message(collection_id, x) for x in assets]
 
         # Process messages using the worker function.
-        results = self.process_messages(self.__add_image_worker, messages)
+        results = self._process_messages(self.__add_image_worker, messages)
 
         # Extract failures.
         failures = [y for x, y in zip(results, assets) if x == -1]
@@ -296,19 +296,19 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         message = 'addImage({} out of {} successful)'.format(n_successful, n_images)
 
         if n_successful == 0:
-            self.logger.error(message)
+            self._logger.error(message)
             return -1
         elif n_successful < n_images:
-            self.logger.warning(message)
+            self._logger.warning(message)
         else:
-            self.logger.info(message)
+            self._logger.info(message)
 
         return failures
 
     def __add_image_worker(self, msg):
         """msg must contain collection_id and data"""
         # need to strip out the Bearer to work with a POST for collections
-        post_token = self.request_manager.auth_token['value'].replace('Bearer ', '')
+        post_token = self._request_manager.auth_token['value'].replace('Bearer ', '')
 
         # Compose post request
         parms = {'access_token': post_token}
@@ -316,11 +316,11 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
-        post_url = '{}/collections/{}/images'.format(self.base_api_url,
+        post_url = '{}/collections/{}/images'.format(self._base_api_url,
                                                      msg.collection_id)
 
         try:
-            self.request_manager.post(post_url, headers=header, data=parms)
+            self._request_manager.post(post_url, headers=header, data=parms)
         except requests.exceptions.RequestException:
             return -1
 
@@ -346,7 +346,7 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         messages = [Message(collection_id, x) for x in names]
 
         # Process messages using the worker function.
-        results = self.process_messages(self.__remove_image_worker, messages)
+        results = self._process_messages(self.__remove_image_worker, messages)
 
         # Extract failures.
         failures = [y for x, y in zip(results, names) if x == -1]
@@ -357,24 +357,24 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
         message = 'removeImage({} out of {} successful)'.format(n_successful, n_names)
 
         if n_successful == 0:
-            self.logger.error(message)
+            self._logger.error(message)
             return -1
         elif n_successful < n_names:
-            self.logger.warning(message)
+            self._logger.warning(message)
         else:
-            self.logger.info(message)
+            self._logger.info(message)
 
         return failures
 
     def __remove_image_worker(self, msg):
         """msg must contain collection_id and img_name"""
-        query_str = '{}/{}/{}/images/{}'.format(self.base_api_url,
-                                                self.core_api,
+        query_str = '{}/{}/{}/images/{}'.format(self._base_api_url,
+                                                self._core_api,
                                                 msg.collection_id,
                                                 msg.img_name)
 
         try:
-            self.request_manager.delete(query_str)
+            self._request_manager.delete(query_str)
         except requests.exceptions.RequestException:
             return -1
 
@@ -392,10 +392,10 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         """
         # Get the collection metadata that needs to be copied.
-        query_str = '{}/{}/{}'.format(self.base_api_url,
-                                      self.core_api,
+        query_str = '{}/{}/{}'.format(self._base_api_url,
+                                      self._core_api,
                                       collection_id)
-        metadata = self.request_manager.get(query_str).json()
+        metadata = self._request_manager.get(query_str).json()
 
         # Get the images that exist in the collection.
         image_names = self.images(collection_id)

@@ -17,7 +17,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
               SDKCore):
     """The Cameras API provides access to all cameras in the Helios Network."""
 
-    core_api = 'cameras'
+    _core_api = 'cameras'
 
     def __init__(self, session=None):
         """
@@ -30,7 +30,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         """
         super(Cameras, self).__init__(session=session)
-        self.logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
         """
@@ -69,13 +69,13 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
             sequence of strs: Image times.
 
         """
-        query_str = '{}/{}/{}/images?time={}&limit={}'.format(self.base_api_url,
-                                                              self.core_api,
+        query_str = '{}/{}/{}/images?time={}&limit={}'.format(self._base_api_url,
+                                                              self._core_api,
                                                               camera_id,
                                                               start_time,
                                                               limit)
 
-        resp = self.request_manager.get(query_str).json()
+        resp = self._request_manager.get(query_str).json()
 
         return resp['times']
 

@@ -14,7 +14,7 @@ class RequestManager(object):
         self._auth_token = auth_token
 
         # Initialize logger
-        self.logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
         # Create API session with authentication credentials
         self.api_session = requests.Session()
@@ -73,16 +73,16 @@ class RequestManager(object):
 
         # Log and raise exceptions.
         except requests.exceptions.HTTPError:
-            self.logger.exception('HTTPError')
+            self._logger.exception('HTTPError')
             raise
         except requests.exceptions.ConnectionError:
-            self.logger.exception('ConnectionError')
+            self._logger.exception('ConnectionError')
             raise
         except requests.exceptions.Timeout:
-            self.logger.exception('Timeout')
+            self._logger.exception('Timeout')
             raise
         except requests.exceptions.RequestException:
-            self.logger.exception('RequestException')
+            self._logger.exception('RequestException')
             raise
 
         return resp

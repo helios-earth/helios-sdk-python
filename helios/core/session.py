@@ -63,20 +63,20 @@ class Session(object):
 
         """
         # Initialize logger
-        self.logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
         # The token will be established with a call to the start_session method.
         self.token = None
 
         # Try to load essential authentication data from environment or file.
         if env:
-            self.logger.info('Using custom env for session.')
+            self._logger.info('Using custom env for session.')
             data = env
         elif 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
-            self.logger.info('Using environment variables for session.')
+            self._logger.info('Using environment variables for session.')
             data = os.environ.copy()
         else:
-            self.logger.info('Using .helios_auth file for session.')
+            self._logger.info('Using .helios_auth file for session.')
             try:
                 with open(self._auth_file, 'r') as auth_file:
                     data = json.load(auth_file)
@@ -120,7 +120,7 @@ class Session(object):
                                  verify=True)
             resp.raise_for_status()
         except requests.exceptions.HTTPError:
-            self.logger.warning('Getting token over https failed. Falling '
+            self._logger.warning('Getting token over https failed. Falling '
                                 'back to http.')
             token_url_http = 'http' + token_url.split('https')[1]
             data = {'grant_type': 'client_credentials'}
@@ -162,7 +162,7 @@ class Session(object):
             if not self.verify_token():
                 self._get_token()
         except (IOError, FileNotFoundError):
-            self.logger.warning('Token file was not found. A new token will '
+            self._logger.warning('Token file was not found. A new token will '
                                 'be acquired.')
             self._get_token()
 
@@ -190,9 +190,9 @@ class Session(object):
         # Check token expiration time.
         expiration = json_resp['expires_in'] / 60.0
         if expiration < self.token_expiration_threshold:
-            self.logger.warning('Token is valid, but expires in %s minutes.',
+            self._logger.warning('Token is valid, but expires in %s minutes.',
                                 expiration)
             return False
 
-        self.logger.info('Token is valid for %d minutes.', expiration)
+        self._logger.info('Token is valid for %d minutes.', expiration)
         return True

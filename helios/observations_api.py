@@ -21,7 +21,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
 
     """
 
-    core_api = 'observations'
+    _core_api = 'observations'
 
     def __init__(self, session=None):
         """
@@ -34,7 +34,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
 
         """
         super(Observations, self).__init__(session=session)
-        self.logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
         """
@@ -103,7 +103,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         messages = [Message(x, check_for_duds) for x in observation_ids]
 
         # Process messages using the worker function.
-        results = self.process_messages(self.__preview_worker, messages)
+        results = self._process_messages(self.__preview_worker, messages)
 
         # Remove errors, if they exist
         results = [x for x in results if x != -1]
@@ -114,24 +114,24 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         message = 'Leaving preview({} out of {} successful)'.format(n_successful, n_obs)
 
         if n_successful == 0:
-            self.logger.error(message)
+            self._logger.error(message)
             return -1
         elif n_successful < n_obs:
-            self.logger.warning(message)
+            self._logger.warning(message)
         else:
-            self.logger.info(message)
+            self._logger.info(message)
 
         return results
 
     def __preview_worker(self, msg):
         """msg must contain observation_id and check_for_duds"""
 
-        query_str = '{}/{}/{}/preview'.format(self.base_api_url,
-                                              self.core_api,
+        query_str = '{}/{}/{}/preview'.format(self._base_api_url,
+                                              self._core_api,
                                               msg.observation_id)
 
         try:
-            resp = self.request_manager.get(query_str)
+            resp = self._request_manager.get(query_str)
             redirect_url = resp.url[0:resp.url.index('?')]
         except requests.exceptions.RequestException:
             return -1
@@ -140,12 +140,12 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         if msg.check_for_duds:
             try:
                 # Redirect URLs do not use api credentials
-                resp2 = self.request_manager.head(redirect_url, use_api_cred=False)
+                resp2 = self._request_manager.head(redirect_url, use_api_cred=False)
             except requests.exceptions.RequestException:
                 return -1
 
-            if self.check_headers_for_dud(resp2.headers):
-                self.logger.info('preview query returned dud image: %s',
+            if self._check_headers_for_dud(resp2.headers):
+                self._logger.info('preview query returned dud image: %s',
                                  query_str)
                 return None
 
