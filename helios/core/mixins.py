@@ -1,9 +1,9 @@
 """Mixins and core functionality."""
 import json
 import os
+from collections import namedtuple
 from contextlib import closing
 from io import BytesIO
-from itertools import repeat
 from math import ceil
 from multiprocessing.pool import ThreadPool
 
@@ -93,6 +93,12 @@ class SDKCore(object):
     @base_api_url.setter
     def base_api_url(self, value):
         raise AttributeError('Access to base_api_url is restricted.')
+
+    def process_messages(self, func, messages):
+        # Create thread pool
+        with closing(ThreadPool(self.max_threads)) as thread_pool:
+            results = thread_pool.map(func, messages)
+        return results
 
 
 class IndexMixin(object):
@@ -190,27 +196,21 @@ class ShowMixin(object):
             sequence of dicts: GeoJSON feature results.
 
         """
-        # Force iterable
         if not isinstance(ids, (list, tuple)):
             ids = [ids]
-        n_ids = len(ids)
 
-        # Get number of threads
-        num_threads = min(self.max_threads, n_ids)
+        # Create messages for worker.
+        Message = namedtuple('Message', 'id_')
+        messages = [Message(x) for x in ids]
 
-        if num_threads > 1:
-            with closing(ThreadPool(num_threads)) as thread_pool:
-                results = thread_pool.map(self.__show_worker, ids)
-        else:
-            results = [self.__show_worker(ids[0])]
+        # Process messages using the worker function.
+        results = self.process_messages(self.__show_worker, messages)
 
         return results
 
-    def __show_worker(self, args):
-        id_ = args
-
-        query_str = '{}/{}/{}'.format(self.base_api_url, self.core_api, id_)
-
+    def __show_worker(self, msg):
+        """msg must contain id_"""
+        query_str = '{}/{}/{}'.format(self.base_api_url, self.core_api, msg.id_)
         resp = self.request_manager.get(query_str)
 
         return resp.json()
@@ -218,31 +218,23 @@ class ShowMixin(object):
 
 class ShowImageMixin(object):
     @logging_utils.log_entrance_exit
-    def show_image(self, id_, samples, check_for_duds=True):
-        # Force iterable
-        if not isinstance(samples, (list, tuple)):
-            samples = [samples]
-        n_samples = len(samples)
+    def show_image(self, id_, data, check_for_duds=True):
+        if not isinstance(data, (list, tuple)):
+            data = [data]
 
-        # Get number of threads
-        num_threads = min(self.max_threads, n_samples)
+        # Create messages for worker.
+        Message = namedtuple('Message', ['id_', 'data', 'check_for_duds'])
+        messages = [Message(id_, x, check_for_duds) for x in data]
 
-        # Process urls.
-        if num_threads > 1:
-            with closing(ThreadPool(num_threads)) as thread_pool:
-                results = thread_pool.map(self.__show_image_worker,
-                                          zip(repeat(id_),
-                                              samples,
-                                              repeat(check_for_duds)))
-        else:
-            results = [self.__show_image_worker((id_, samples[0],
-                                                 check_for_duds))]
+        # Process messages using the worker function.
+        results = self.process_messages(self.__show_image_worker, messages)
 
         # Remove errors, if they exist
         results = [x for x in results if x != -1]
 
         # Determine how many were successful
         n_data = len(results)
+        n_samples = len(data)
         message = 'showImage({} out of {} successful)'.format(n_data, n_samples)
 
         if n_data == 0:
@@ -255,13 +247,12 @@ class ShowImageMixin(object):
 
         return results
 
-    def __show_image_worker(self, args):
-        id_, data, check_for_duds = args
-
+    def __show_image_worker(self, msg):
+        """msg must contain id_, data, and check_for_duds"""
         query_str = '{}/{}/{}/images/{}'.format(self.base_api_url,
                                                 self.core_api,
-                                                id_,
-                                                data)
+                                                msg.id_,
+                                                msg.data)
 
         try:
             resp = self.request_manager.get(query_str)
@@ -270,7 +261,7 @@ class ShowImageMixin(object):
             return -1
 
         # Check header for dud statuses.
-        if check_for_duds:
+        if msg.check_for_duds:
             try:
                 # Redirect URLs do not use api credentials
                 resp2 = self.request_manager.head(redirect_url, use_api_cred=False)
@@ -302,32 +293,26 @@ class DownloadImagesMixin(object):
             True or None otherwise.
 
         """
-        # Force iterable
         if not isinstance(urls, (list, tuple)):
             urls = [urls]
-        n_urls = len(urls)
 
         if out_dir is not None:
             if not os.path.exists(out_dir):
                 os.mkdir(out_dir)
 
-        # Create thread pool
-        num_threads = min(self.max_threads, n_urls)
-        if num_threads > 1:
-            with closing(ThreadPool(num_threads)) as thread_pool:
-                data = thread_pool.map(self.__download_images_worker,
-                                       zip(urls, repeat(out_dir),
-                                           repeat(return_image_data)))
-        else:
-            data = [self.__download_images_worker((urls[0],
-                                                   out_dir,
-                                                   return_image_data))]
+        # Create messages for worker.
+        Message = namedtuple('Message', ['url', 'out_dir', 'return_image_data'])
+        messages = [Message(x, out_dir, return_image_data) for x in urls]
+
+        # Process messages using the worker function.
+        data = self.process_messages(self.__download_images_worker, messages)
 
         # Remove errors, if the exist
         data = [x for x in data if isinstance(x, np.ndarray) or x != -1]
 
         # Determine how many were successful
         n_data = len(data)
+        n_urls = len(urls)
         message = 'downloadImages({} out of {} successful)'.format(n_data, n_urls)
 
         if n_data == 0:
@@ -341,11 +326,10 @@ class DownloadImagesMixin(object):
         if return_image_data:
             return data
 
-    def __download_images_worker(self, args):
-        url, out_dir, return_image_data = args
-
+    def __download_images_worker(self, msg):
+        """msg must contain url, out_dir, and return_image_data"""
         try:
-            resp = self.request_manager.get(url, use_api_cred=False)
+            resp = self.request_manager.get(msg.url, use_api_cred=False)
         except requests.exceptions.RequestException:
             return -1
 
@@ -353,11 +337,11 @@ class DownloadImagesMixin(object):
         img = Image.open(BytesIO(resp.content))
 
         # Write image to file.
-        if out_dir is not None:
-            _, tail = os.path.split(url)
-            out_file = os.path.join(out_dir, tail)
+        if msg.out_dir is not None:
+            _, tail = os.path.split(msg.url)
+            out_file = os.path.join(msg.out_dir, tail)
             img.save(out_file)
 
         # Read and return image data.
-        if return_image_data:
+        if msg.return_image_data:
             return np.array(img)

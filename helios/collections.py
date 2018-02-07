@@ -5,11 +5,10 @@ Methods are meant to represent the core functionality in the developer
 documentation.  Some may have additional functionality for convenience.
 
 """
+
 import hashlib
 import logging
-from contextlib import closing
-from itertools import repeat
-from multiprocessing.pool import ThreadPool
+from collections import namedtuple
 
 import requests
 
@@ -238,15 +237,15 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             collection_id, image_names, check_for_duds=check_for_duds)
 
     @logging_utils.log_entrance_exit
-    def add_image(self, collection_id, data):
+    def add_image(self, collection_id, assets):
         """
-        Add images to a collection.
+        Add images to a collection from Helios assets.
 
-        `data` dictionary templates:
+        `assets` dictionary templates:
 
         .. code-block:: python
 
-            # Payload examples that can be included in the 'data' input list.
+            # Asset examples that can be included in the `assets` input list.
             {'camera_id': ''}
             {'camera_id': '', 'time': ''}
             {'observation_id': ''}
@@ -261,44 +260,38 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             camera_id = '...'
             times = [...] # List of image times.
             destination_id = '...'
-            payload = [{'camera_id': camera_id, 'time': x} for x in times]
+            data = [{'camera_id': camera_id, 'time': x} for x in times]
             collections.add_image(destination_id, data)
 
         Args:
             collection_id (str): Collection ID.
-            data (dict or sequence of dicts): Data containing any of these
+            assets (dict or sequence of dicts): Data containing any of these
                 payloads (camera_id), (camera_id, time), (observation_id),
                 (collection_id, image). E.g. data =
                 [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
 
         Returns:
-            If errors do occur then the data that caused the errors will be
-            returned.
+            (sequence of dicts): If errors do occur then the data that caused
+            the errors will be returned.
 
         """
-        assert isinstance(data, (list, tuple, dict))
+        assert isinstance(assets, (list, tuple, dict))
 
-        # Force iterable.
-        if isinstance(data, dict):
-            data = [data]
+        if isinstance(assets, dict):
+            assets = [assets]
 
-        n_images = len(data)
+        # Create messages for worker.
+        Message = namedtuple('Message', ['collection_id', 'data'])
+        messages = [Message(collection_id, x) for x in assets]
 
-        # Get number of threads
-        num_threads = min(self.max_threads, n_images)
-
-        # Process data.
-        if num_threads > 1:
-            with closing(ThreadPool(num_threads)) as thread_pool:
-                results = thread_pool.map(self.__add_image_worker,
-                                          zip(repeat(collection_id), data))
-        else:
-            results = [self.__add_image_worker((collection_id, data[0]))]
+        # Process messages using the worker function.
+        results = self.process_messages(self.__add_image_worker, messages)
 
         # Extract failures.
-        failures = [y for x, y in zip(results, data) if x == -1]
+        failures = [y for x, y in zip(results, assets) if x == -1]
 
         # Determine how many were successful
+        n_images = len(assets)
         n_successful = n_images - len(failures)
         message = 'addImage({} out of {} successful)'.format(n_successful, n_images)
 
@@ -312,20 +305,19 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         return failures
 
-    def __add_image_worker(self, args):
-        collection_id, payload = args
-
+    def __add_image_worker(self, msg):
+        """msg must contain collection_id and data"""
         # need to strip out the Bearer to work with a POST for collections
         post_token = self.request_manager.auth_token['value'].replace('Bearer ', '')
 
         # Compose post request
         parms = {'access_token': post_token}
-        parms.update(payload)
+        parms.update(msg.data)
 
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
         post_url = '{}/collections/{}/images'.format(self.base_api_url,
-                                                     collection_id)
+                                                     msg.collection_id)
 
         try:
             self.request_manager.post(post_url, headers=header, data=parms)
@@ -342,30 +334,25 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
             names (str or sequence of strs): List of image names to be removed.
 
         Returns:
-            If errors do occur then the data that caused the errors will be
-            returned.
+            (sequence of strs): If errors do occur then the data that caused
+            the errors will be returned.
 
         """
-        # Force iterable
         if not isinstance(names, (list, tuple)):
             names = [names]
-        n_names = len(names)
 
-        # Get number of threads
-        num_threads = min(self.max_threads, n_names)
+        # Create messages for worker.
+        Message = namedtuple('Message', ['collection_id', 'img_name'])
+        messages = [Message(collection_id, x) for x in names]
 
-        # Process urls.
-        if num_threads > 1:
-            with closing(ThreadPool(num_threads)) as thread_pool:
-                results = thread_pool.map(self.__remove_image_worker,
-                                          zip(repeat(collection_id), names))
-        else:
-            results = [self.__remove_image_worker((collection_id, names[0]))]
+        # Process messages using the worker function.
+        results = self.process_messages(self.__remove_image_worker, messages)
 
         # Extract failures.
         failures = [y for x, y in zip(results, names) if x == -1]
 
         # Determine how many were successful
+        n_names = len(names)
         n_successful = n_names - len(failures)
         message = 'removeImage({} out of {} successful)'.format(n_successful, n_names)
 
@@ -379,13 +366,12 @@ class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SD
 
         return failures
 
-    def __remove_image_worker(self, args):
-        coll_id, img_name = args
-
+    def __remove_image_worker(self, msg):
+        """msg must contain collection_id and img_name"""
         query_str = '{}/{}/{}/images/{}'.format(self.base_api_url,
                                                 self.core_api,
-                                                coll_id,
-                                                img_name)
+                                                msg.collection_id,
+                                                msg.img_name)
 
         try:
             self.request_manager.delete(query_str)

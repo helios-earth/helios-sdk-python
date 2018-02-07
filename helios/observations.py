@@ -6,14 +6,11 @@ documentation.  Some may have additional functionality for convenience.
 
 """
 import logging
-from contextlib import closing
-from itertools import repeat
-from multiprocessing.pool import ThreadPool
+from collections import namedtuple
 
 import requests
 
-from helios.core import SDKCore, IndexMixin, ShowMixin, \
-    DownloadImagesMixin
+from helios.core import SDKCore, IndexMixin, ShowMixin, DownloadImagesMixin
 from helios.utilities import logging_utils
 
 
@@ -100,26 +97,19 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
         # Force iterable
         if not isinstance(observation_ids, (list, tuple)):
             observation_ids = [observation_ids]
-        n_obs = len(observation_ids)
 
-        # Log entrance
-        self.logger.info('Entering preview(%s observation_ids)', n_obs)
+        # Create messages for worker.
+        Message = namedtuple('Message', ['observation_id', 'check_for_duds'])
+        messages = [Message(x, check_for_duds) for x in observation_ids]
 
-        # Get number of threads
-        num_threads = min(self.max_threads, n_obs)
-
-        # Process ids.
-        if num_threads > 1:
-            with closing(ThreadPool(num_threads)) as thread_pool:
-                results = thread_pool.map(self.__preview_worker,
-                                          zip(observation_ids, repeat(check_for_duds)))
-        else:
-            results = [self.__preview_worker((observation_ids[0], check_for_duds))]
+        # Process messages using the worker function.
+        results = self.process_messages(self.__preview_worker, messages)
 
         # Remove errors, if they exist
         results = [x for x in results if x != -1]
 
         # Check results
+        n_obs = len(observation_ids)
         n_successful = len(results)
         message = 'Leaving preview({} out of {} successful)'.format(n_successful, n_obs)
 
@@ -133,12 +123,12 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
 
         return results
 
-    def __preview_worker(self, args):
-        observation_id, check_for_duds = args
+    def __preview_worker(self, msg):
+        """msg must contain observation_id and check_for_duds"""
 
         query_str = '{}/{}/{}/preview'.format(self.base_api_url,
                                               self.core_api,
-                                              observation_id)
+                                              msg.observation_id)
 
         try:
             resp = self.request_manager.get(query_str)
@@ -147,7 +137,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
             return -1
 
         # Check header for dud statuses.
-        if check_for_duds:
+        if msg.check_for_duds:
             try:
                 # Redirect URLs do not use api credentials
                 resp2 = self.request_manager.head(redirect_url, use_api_cred=False)
