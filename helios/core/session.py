@@ -121,7 +121,7 @@ class Session(object):
             resp.raise_for_status()
         except requests.exceptions.HTTPError:
             self._logger.warning('Getting token over https failed. Falling '
-                                'back to http.')
+                                 'back to http.')
             token_url_http = 'http' + token_url.split('https')[1]
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
@@ -163,7 +163,7 @@ class Session(object):
                 self._get_token()
         except (IOError, FileNotFoundError):
             self._logger.warning('Token file was not found. A new token will '
-                                'be acquired.')
+                                 'be acquired.')
             self._get_token()
 
     def verify_token(self):
@@ -191,7 +191,7 @@ class Session(object):
         expiration = json_resp['expires_in'] / 60.0
         if expiration < self.token_expiration_threshold:
             self._logger.warning('Token is valid, but expires in %s minutes.',
-                                expiration)
+                                 expiration)
             return False
 
         self._logger.info('Token is valid for %d minutes.', expiration)

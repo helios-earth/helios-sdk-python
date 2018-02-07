@@ -146,7 +146,7 @@ class Observations(DownloadImagesMixin, ShowMixin, IndexMixin, SDKCore):
 
             if self._check_headers_for_dud(resp2.headers):
                 self._logger.info('preview query returned dud image: %s',
-                                 query_str)
+                                  query_str)
                 return None
 
         return redirect_url
