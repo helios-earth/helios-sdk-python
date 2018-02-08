@@ -16,8 +16,7 @@ Instances of the core APIs are easy to create.
 
 Each instance will internally initialize a Helios 
 :meth:`Session <helios.core.session.Session>` and call 
-:meth:`start_session <helios.core.session.Session.start_session>`.  This is
-not efficient, but does work.  
+:meth:`start_session <helios.core.session.Session.start_session>`.
 
 Instead you should create a session, start it, and then use this 
 for the duration of your work.
@@ -27,7 +26,8 @@ Reusing a Session
 -----------------
 
 Creating a :meth:`Session <helios.core.session.Session>` instance allows 
-you to use a single instance across all Core APIs.  Refer to 
+you to use a single instance across all Core APIs.  This avoids multiple token
+verifications with the initialization of every Core API instance. Refer to
 :ref:`helios_session_instances` for more information.
 
     .. code-block:: python
