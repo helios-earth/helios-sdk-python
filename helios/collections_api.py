@@ -12,12 +12,11 @@ from collections import namedtuple
 
 import requests
 
-from helios.core import SDKCore, IndexMixin, ShowMixin, ShowImageMixin, \
-    DownloadImagesMixin
+from helios.core import SDKCore, IndexMixin, ShowImageMixin, DownloadImagesMixin
 from helios.utilities import logging_utils
 
 
-class Collections(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
+class Collections(DownloadImagesMixin, ShowImageMixin, IndexMixin, SDKCore):
     """
     The Collections API allows users to group and organize individual image
     frames.
