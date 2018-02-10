@@ -5,6 +5,7 @@ helios.egg-info
 
 # test-related
 .cache
+.pytest_cache
 
 # developer environments
 .idea
