@@ -100,34 +100,34 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
             sequence of strs: Image times.
 
         """
-        end_time = parse(end_time).utctimetuple()
+        end = parse(end_time).utctimetuple()
         image_times = []
         while True:
             times = self.images(camera_id, start_time, limit=limit)
 
-            # If no times exist, break and return.
-            if len(times) == 0:
-                break
-
-            first = parse(times[0]).utctimetuple()
-            last = parse(times[-1]).utctimetuple()
-
-            if first > end_time:
-                break
-
-            if len(times) == 1:
-                image_times.extend(times)
+            try:
+                last = parse(times[-1]).utctimetuple()
+            except IndexError:
                 break
 
             # the last image is still newer than our end time, keep looking
-            if last < end_time:
+            if last < end:
                 image_times.extend(times)
-                start_time = times[-1]
-                continue
-            else:
-                good_times = [x for x in times if parse(x).utctimetuple() < end_time]
+                if len(times) == 1:
+                    break
+                else:
+                    start_time = times[-1]
+            elif last > end:
+                good_times = [x for x in times if parse(x).utctimetuple() < end]
                 image_times.extend(good_times)
                 break
+            else:
+                image_times.extend(times)
+                break
+
+        if len(image_times) == 0:
+            self._logger.warning('No images were found for %s in the %s to %s range.',
+                                 camera_id, start_time, end_time)
 
         return image_times
 
