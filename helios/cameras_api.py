@@ -112,11 +112,12 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
             # the last image is still newer than our end time, keep looking
             if last < end:
-                image_times.extend(times)
-                if len(times) == 1:
-                    break
-                else:
+                if len(times) > 1:
+                    image_times.extend(times[0:-1])
                     start_time = times[-1]
+                else:
+                    image_times.extend(times)
+                    break
             elif last > end:
                 good_times = [x for x in times if parse(x).utctimetuple() < end]
                 image_times.extend(good_times)
