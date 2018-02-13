@@ -8,13 +8,11 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from dateutil.parser import parse
-from helios.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin, \
-    DownloadImagesMixin
+from helios.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
 from helios.utilities import logging_utils
 
 
-class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
-              SDKCore):
+class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
     """The Cameras API provides access to all cameras in the Helios Network."""
 
     _core_api = 'cameras'
