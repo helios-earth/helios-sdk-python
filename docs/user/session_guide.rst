@@ -1,7 +1,7 @@
-.. _helios_session_instances:
+.. _session_instances:
 
-Helios Session Instances
-========================
+Session Instances
+=================
 
 A Helios :meth:`Session <helios.core.session.Session>` depends 
 on properly established authentication procedures.  See 
@@ -37,6 +37,26 @@ method  to fetch the token.
 If successful, the ``sess`` instance will now have all the
 authentication information needed to being using the core APIs.
     
+Reusing a Session
+-----------------
+
+Creating a :meth:`Session <helios.core.session.Session>` instance allows
+you to use a single instance across all Core APIs.  This avoids multiple token
+verifications with the initialization of every Core API instance. Refer to
+:ref:`helios_session_instances` for more information.
+
+    .. code-block:: python
+
+        import helios
+        sess = helios.Session()
+        sess.start_session()
+        alerts = helios.Alerts(session=sess)
+        cameras = helios.Cameras(session=sess)
+
+In the above code ``sess`` is started once and used across
+:class:`Alerts <helios.alerts.Alerts>` and
+:class:`Cameras <helios.cameras.Cameras>`.
+
 Using a Custom ``env``
 ----------------------
 
@@ -52,8 +72,3 @@ necessary information for authentication.
    custom_env = {'HELIOS_KEY_ID': 'mykeyid', 'HELIOS_KEY_SECRET': 'mykeysecret'}
    sess = helios.Session(env=custom_env)
    sess.start_session()
-
-
-
-
-
