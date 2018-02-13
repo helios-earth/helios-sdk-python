@@ -6,12 +6,15 @@ documentation.  Some may have additional functionality for convenience.
 
 """
 import logging
+import os
 from collections import namedtuple
+from io import BytesIO
 
+import numpy as np
 import requests
-
+from PIL import Image
 from helios.core import SDKCore, IndexMixin, ShowMixin
-from helios.utilities import logging_utils
+from helios.utilities import logging_utils, parsing_utils
 
 
 class Observations(ShowMixin, IndexMixin, SDKCore):
@@ -77,7 +80,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         return super(Observations, self).index(**kwargs)
 
     @logging_utils.log_entrance_exit
-    def preview(self, observation_ids, check_for_duds=True):
+    def preview(self, observation_ids, out_dir=None, return_image_data=False):
         """
         Return a preview image for an observation.
 
@@ -87,8 +90,10 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         Args:
             observation_ids (str or sequence of strs): list of observation IDs.
-            check_for_duds (bool, optional): Flag to remove dud images from
-                results. Defaults to True.
+            out_dir (optional, str): Directory to write images to.  Defaults to
+                None.
+            return_image_data (optional, bool): If True images will be returned
+                as numpy.ndarrays.  Defaults to False.
 
         Returns:
             sequence of strs: Image URLs.
@@ -99,8 +104,9 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             observation_ids = [observation_ids]
 
         # Create messages for worker.
-        Message = namedtuple('Message', ['observation_id', 'check_for_duds'])
-        messages = [Message(x, check_for_duds) for x in observation_ids]
+        Message = namedtuple('Message', ['observation_id', 'out_dir',
+                                         'return_image_data'])
+        messages = [Message(x, out_dir, return_image_data) for x in observation_ids]
 
         # Process messages using the worker function.
         results = self._process_messages(self.__preview_worker, messages)
@@ -132,21 +138,44 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         try:
             resp = self._request_manager.get(query_str)
-            redirect_url = resp.url[0:resp.url.index('?')]
-        except requests.exceptions.RequestException:
-            return -1
+        except requests.exceptions.RequestException as e:
+            return PreviewRecord(query=query_str, error=e)
 
-        # Check header for dud statuses.
-        if msg.check_for_duds:
-            try:
-                # Redirect URLs do not use api credentials
-                resp2 = self._request_manager.head(redirect_url, use_api_cred=False)
-            except requests.exceptions.RequestException:
-                return -1
+        # Parse key from url.
+        parsed_url = parsing_utils.parse_url(resp.url)
+        _, asset_key = os.path.split(parsed_url.path)
 
-            if self._check_headers_for_dud(resp2.headers):
-                self._logger.info('preview query returned dud image: %s',
-                                  query_str)
-                return None
+        # Read image from response.
+        img = Image.open(BytesIO(resp.content))
 
-        return redirect_url
+        # Write image to file.
+        if msg.out_dir is not None:
+            out_file = os.path.join(msg.out_dir, asset_key)
+            img.save(out_file)
+        else:
+            out_file = None
+
+        # Read and return image data.
+        if msg.return_image_data:
+            img_data = np.array(img)
+        else:
+            img_data = None
+
+        return PreviewRecord(query=query_str, key=asset_key, data=img_data,
+                             output_file=out_file)
+
+
+class PreviewRecord(object):
+    def __init__(self, query=None, key=None, data=None, output_file=None, error=None):
+        self.query = query
+        self.key = key
+        self.data = data
+        self.output_file = output_file
+        self.error = error
+
+    @property
+    def ok(self):
+        if self.error:
+            return False
+        else:
+            return True

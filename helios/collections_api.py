@@ -228,9 +228,10 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         Args:
             collection_id (str): Collection ID.
             image_names (str or sequence of strs): Image names.
-            out_dir (optional, str): Directory to write images to.
+            out_dir (optional, str): Directory to write images to.  Defaults to
+                None.
             return_image_data (optional, bool): If True images will be returned
-                as numpy.ndarrays.
+                as numpy.ndarrays.  Defaults to False.
 
         Returns:
             sequence of strs: Image URLs.

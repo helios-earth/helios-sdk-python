@@ -10,10 +10,9 @@ from multiprocessing.pool import ThreadPool
 import numpy as np
 import requests
 from PIL import Image
-
 from helios.core.request_manager import RequestManager
 from helios.core.session import Session
-from helios.utilities import logging_utils,parsing_utils
+from helios.utilities import logging_utils, parsing_utils
 
 
 class SDKCore(object):
