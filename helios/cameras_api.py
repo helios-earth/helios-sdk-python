@@ -132,7 +132,7 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
 
         return image_times
 
-    def show_image(self, camera_id, times):
+    def show_image(self, camera_id, times, out_dir=None, return_image_data=False):
         """
         Return a single image from the media cache.
 
@@ -144,9 +144,13 @@ class Cameras(DownloadImagesMixin, ShowImageMixin, ShowMixin, IndexMixin,
             times (str or sequence of strs): Image times, specified in UTC as an ISO 8601
                 string (e.g. 2017-08-01 or 2017-08-01T12:34:56.000Z). The
                 image with the closest matching timestamp will be returned.
+            out_dir (optional, str): Directory to write images to.
+            return_image_data (optional, bool): If True images will be returned
+                as numpy.ndarrays.
 
         Returns:
             sequence of strs: Image URLs.
 
         """
-        return super(Cameras, self).show_image(camera_id, times)
+        return super(Cameras, self).show_image(camera_id, times, out_dir=out_dir,
+                                               return_image_data=return_image_data)

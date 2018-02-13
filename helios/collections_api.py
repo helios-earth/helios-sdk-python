@@ -218,22 +218,28 @@ class Collections(DownloadImagesMixin, ShowImageMixin, IndexMixin, SDKCore):
 
         return good_images
 
-    def show_image(self, collection_id, image_names, check_for_duds=False):
+    def show_image(self, collection_id,
+                   image_names,
+                   out_dir=None,
+                   return_image_data=False):
         """
         Return image URLs from a collection.
 
         Args:
             collection_id (str): Collection ID.
             image_names (str or sequence of strs): Image names.
-            check_for_duds (bool, optional): Flag for the removal of dud
-                images. Defaults to False.
+            out_dir (optional, str): Directory to write images to.
+            return_image_data (optional, bool): If True images will be returned
+                as numpy.ndarrays.
 
         Returns:
             sequence of strs: Image URLs.
 
         """
-        return super(Collections, self).show_image(
-            collection_id, image_names, check_for_duds=check_for_duds)
+        return super(Collections, self).show_image(collection_id,
+                                                   image_names,
+                                                   out_dir=out_dir,
+                                                   return_image_data=return_image_data)
 
     @logging_utils.log_entrance_exit
     def add_image(self, collection_id, assets):

@@ -13,7 +13,7 @@ from PIL import Image
 
 from helios.core.request_manager import RequestManager
 from helios.core.session import Session
-from helios.utilities import logging_utils
+from helios.utilities import logging_utils,parsing_utils
 
 
 class SDKCore(object):
@@ -215,13 +215,13 @@ class ShowMixin(object):
 
 class ShowImageMixin(object):
     @logging_utils.log_entrance_exit
-    def show_image(self, id_, data, check_for_duds=True):
+    def show_image(self, id_, data, out_dir=None, return_image_data=False):
         if not isinstance(data, (list, tuple)):
             data = [data]
 
         # Create messages for worker.
-        Message = namedtuple('Message', ['id_', 'data', 'check_for_duds'])
-        messages = [Message(id_, x, check_for_duds) for x in data]
+        Message = namedtuple('Message', ['id_', 'data', 'out_dir', 'return_image_data'])
+        messages = [Message(id_, x, out_dir, return_image_data) for x in data]
 
         # Process messages using the worker function.
         results = self._process_messages(self.__show_image_worker, messages)
@@ -245,7 +245,7 @@ class ShowImageMixin(object):
         return results
 
     def __show_image_worker(self, msg):
-        """msg must contain id_, data, and check_for_duds"""
+        """msg must contain id_, data, out_dir, and return_image_data"""
         query_str = '{}/{}/{}/images/{}'.format(self._base_api_url,
                                                 self._core_api,
                                                 msg.id_,
@@ -253,24 +253,31 @@ class ShowImageMixin(object):
 
         try:
             resp = self._request_manager.get(query_str)
-            redirect_url = resp.url[0:resp.url.index('?')]
-        except requests.exceptions.RequestException:
-            return -1
+        except requests.exceptions.RequestException as e:
+            return ShowImageRecord(query=query_str, error=e)
 
-        # Check header for dud statuses.
-        if msg.check_for_duds:
-            try:
-                # Redirect URLs do not use api credentials
-                resp2 = self._request_manager.head(redirect_url, use_api_cred=False)
-            except requests.exceptions.RequestException:
-                return -1
+        # Parse key from url.
+        parsed_url = parsing_utils.parse_url(resp.url)
+        _, asset_key = os.path.split(parsed_url.path)
 
-            if self._check_headers_for_dud(resp2.headers):
-                self._logger.info('showImage query returned dud image: %s',
-                                  query_str)
-                return None
+        # Read image from response.
+        img = Image.open(BytesIO(resp.content))
 
-        return redirect_url
+        # Write image to file.
+        if msg.out_dir is not None:
+            out_file = os.path.join(msg.out_dir, asset_key)
+            img.save(out_file)
+        else:
+            out_file = None
+
+        # Read and return image data.
+        if msg.return_image_data:
+            img_data = np.array(img)
+        else:
+            img_data = None
+
+        return ShowImageRecord(query=query_str, key=asset_key, data=img_data,
+                               output_file=out_file)
 
 
 class DownloadImagesMixin(object):
@@ -342,3 +349,19 @@ class DownloadImagesMixin(object):
         # Read and return image data.
         if msg.return_image_data:
             return np.array(img)
+
+
+class ShowImageRecord(object):
+    def __init__(self, query=None, key=None, data=None, output_file=None, error=None):
+        self.query = query
+        self.key = key
+        self.data = data
+        self.output_file = output_file
+        self.error = error
+
+    @property
+    def ok(self):
+        if self.error:
+            return False
+        else:
+            return True
