@@ -77,14 +77,6 @@ class SDKCore(object):
 
         return query_str
 
-    @staticmethod
-    def _check_headers_for_dud(header_data):
-        if 'x-amz-meta-helios' in header_data:
-            meta_block = json.loads(header_data['x-amz-meta-helios'])
-            if meta_block['isOutcast'] or meta_block['isDud'] or meta_block['isFrozen']:
-                return True
-        return False
-
     @property
     def _base_api_url(self):
         return self._session.api_url
