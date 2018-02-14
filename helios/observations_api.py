@@ -71,8 +71,11 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             sensors = 'sensors[road_weather][data][min]=6&sensors[road_weather][prev][max]=3'
             results = obs.index(sensors=sensors_query)
 
+        .. _observations_index_documentation: https://helios.earth/developers/api/observations/#index
+
         Args:
-            **kwargs: Any keyword arguments found in the documentation.
+            **kwargs: Any keyword arguments found in the
+                observations_index_documentation_.
 
         Returns:
              list: GeoJSON feature collections.

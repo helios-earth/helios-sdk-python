@@ -38,8 +38,10 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         The maximum skip value is 4000. If this is reached, truncated results
         will be returned. You will need to refine your query to avoid this.
 
+        .. _cameras_index_documentation: https://helios.earth/developers/api/cameras/#index
+
         Args:
-            **kwargs: Any keyword arguments found in the documentation.
+            **kwargs: Any keyword arguments found in the cameras_index_documentation_.
 
         Returns:
              list: GeoJSON feature collections.

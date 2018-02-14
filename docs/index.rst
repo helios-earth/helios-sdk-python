@@ -30,8 +30,8 @@ For further developer information, refer to
 
    user/install
    user/auth
-   user/session_guide
    user/core_apis_guide
+   user/session_guide
    user/license
 
 
