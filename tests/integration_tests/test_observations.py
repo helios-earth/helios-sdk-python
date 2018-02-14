@@ -43,17 +43,10 @@ def test_observations(utc_range):
     show_results = observations.show(id_)
 
     # Perform preview query
-    preview_results = observations.preview(id_)
+    preview_results = observations.preview(id_, return_image_data=True)[0]
 
-    # Extract URL
-    url = preview_results[0]
-
-    # Perform downloadImages query
-    download_images_results = observations.download_images(
-        url, return_image_data=True)
-
-    # Check download for image data.
-    assert (download_images_results[0].size > 0)
+    # Check image data.
+    assert (preview_results.data.size > 0)
 
 
 if __name__ == '__main__':

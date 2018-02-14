@@ -14,6 +14,7 @@ import numpy as np
 import requests
 from PIL import Image
 from helios.core import SDKCore, IndexMixin, ShowMixin
+from helios.core.records import PreviewRecord
 from helios.utilities import logging_utils, parsing_utils
 
 
@@ -111,22 +112,6 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__preview_worker, messages)
 
-        # Remove errors, if they exist
-        results = [x for x in results if x != -1]
-
-        # Check results
-        n_obs = len(observation_ids)
-        n_successful = len(results)
-        message = 'Leaving preview({} out of {} successful)'.format(n_successful, n_obs)
-
-        if n_successful == 0:
-            self._logger.error(message)
-            return -1
-        elif n_successful < n_obs:
-            self._logger.warning(message)
-        else:
-            self._logger.info(message)
-
         return results
 
     def __preview_worker(self, msg):
@@ -143,14 +128,14 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         # Parse key from url.
         parsed_url = parsing_utils.parse_url(resp.url)
-        _, asset_key = os.path.split(parsed_url.path)
+        _, image_name = os.path.split(parsed_url.path)
 
         # Read image from response.
         img = Image.open(BytesIO(resp.content))
 
         # Write image to file.
         if msg.out_dir is not None:
-            out_file = os.path.join(msg.out_dir, asset_key)
+            out_file = os.path.join(msg.out_dir, image_name)
             img.save(out_file)
         else:
             out_file = None
@@ -161,21 +146,5 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         else:
             img_data = None
 
-        return PreviewRecord(query=query_str, key=asset_key, data=img_data,
+        return PreviewRecord(query=query_str, name=image_name, data=img_data,
                              output_file=out_file)
-
-
-class PreviewRecord(object):
-    def __init__(self, query=None, key=None, data=None, output_file=None, error=None):
-        self.query = query
-        self.key = key
-        self.data = data
-        self.output_file = output_file
-        self.error = error
-
-    @property
-    def ok(self):
-        if self.error:
-            return False
-        else:
-            return True

@@ -43,15 +43,7 @@ def test_cameras(utc_now):
     t = images_results[0]
 
     # Perform showImage query
-    show_image_query = cameras.show_image(id_, t)
-
-    # Extract URL
-    url = show_image_query[0]
-
-    # Perform downloadImages query
-    if url is not None:
-        download_images_results = cameras.download_images(url,
-                                                          return_image_data=True)
+    show_image_query = cameras.show_image(id_, t, return_image_data=True)
 
 
 if __name__ == '__main__':

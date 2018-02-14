@@ -1,5 +1,4 @@
 """Mixins and core functionality."""
-import json
 import os
 from collections import namedtuple
 from contextlib import closing
@@ -10,6 +9,7 @@ from multiprocessing.pool import ThreadPool
 import numpy as np
 import requests
 from PIL import Image
+from helios.core.records import ShowImageRecord
 from helios.core.request_manager import RequestManager
 from helios.core.session import Session
 from helios.utilities import logging_utils, parsing_utils
@@ -89,6 +89,21 @@ class SDKCore(object):
         # Create thread pool
         with closing(ThreadPool(self._max_threads)) as thread_pool:
             results = thread_pool.map(func, messages)
+
+        # Try to determine how many were successful.
+        try:
+            n_messages = len(messages)
+            n_successful = sum([True for x in results if x.ok])
+            log_message = '{} out of {} successful'.format(n_successful, n_messages)
+            if n_successful == 0:
+                self._logger.error(log_message)
+            elif n_successful < n_messages:
+                self._logger.warning(log_message)
+            else:
+                self._logger.info(log_message)
+        except AttributeError:
+            pass
+
         return results
 
 
@@ -217,22 +232,6 @@ class ShowImageMixin(object):
         # Process messages using the worker function.
         results = self._process_messages(self.__show_image_worker, messages)
 
-        # Remove errors, if they exist
-        results = [x for x in results if x != -1]
-
-        # Determine how many were successful
-        n_data = len(results)
-        n_samples = len(data)
-        message = 'showImage({} out of {} successful)'.format(n_data, n_samples)
-
-        if n_data == 0:
-            self._logger.error(message)
-            return -1
-        elif n_data < n_samples:
-            self._logger.warning(message)
-        else:
-            self._logger.info(message)
-
         return results
 
     def __show_image_worker(self, msg):
@@ -249,14 +248,14 @@ class ShowImageMixin(object):
 
         # Parse key from url.
         parsed_url = parsing_utils.parse_url(resp.url)
-        _, asset_key = os.path.split(parsed_url.path)
+        _, image_name = os.path.split(parsed_url.path)
 
         # Read image from response.
         img = Image.open(BytesIO(resp.content))
 
         # Write image to file.
         if msg.out_dir is not None:
-            out_file = os.path.join(msg.out_dir, asset_key)
+            out_file = os.path.join(msg.out_dir, image_name)
             img.save(out_file)
         else:
             out_file = None
@@ -267,21 +266,5 @@ class ShowImageMixin(object):
         else:
             img_data = None
 
-        return ShowImageRecord(query=query_str, key=asset_key, data=img_data,
-                               output_file=out_file)
-
-
-class ShowImageRecord(object):
-    def __init__(self, query=None, key=None, data=None, output_file=None, error=None):
-        self.query = query
-        self.key = key
-        self.data = data
-        self.output_file = output_file
-        self.error = error
-
-    @property
-    def ok(self):
-        if self.error:
-            return False
-        else:
-            return True
+        return ShowImageRecord(query=query_str, name=image_name, data=img_data,
+                           output_file=out_file)
