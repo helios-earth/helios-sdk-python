@@ -267,4 +267,4 @@ class ShowImageMixin(object):
             img_data = None
 
         return ShowImageRecord(query=query_str, name=image_name, data=img_data,
-                           output_file=out_file)
+                               output_file=out_file)
