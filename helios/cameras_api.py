@@ -150,7 +150,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            sequence of strs: Image URLs.
+            sequence of :class:`ShowImageRecord <helios.core.records.ShowImageRecord>`
 
         """
         return super(Cameras, self).show_image(camera_id, times, out_dir=out_dir,

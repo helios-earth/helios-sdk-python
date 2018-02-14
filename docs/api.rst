@@ -49,3 +49,9 @@ parsing_utils
     
 .. automodule:: helios.utilities.parsing_utils
     :members:
+
+Data Records
+============
+
+.. automodule:: helios.core.records
+    :members:

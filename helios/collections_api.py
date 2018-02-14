@@ -236,7 +236,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            sequence of strs: Image URLs.
+            sequence of :class:`ShowImageRecord <helios.core.records.ShowImageRecord>`
 
         """
         return super(Collections, self).show_image(collection_id,

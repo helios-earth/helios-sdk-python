@@ -100,7 +100,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            sequence of strs: Image URLs.
+            sequence of :class:`PreviewRecord <helios.core.records.PreviewRecord>`
 
         """
         # Force iterable
