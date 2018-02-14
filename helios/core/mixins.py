@@ -9,7 +9,7 @@ from multiprocessing.pool import ThreadPool
 import numpy as np
 import requests
 from PIL import Image
-from helios.core.records import ShowImageRecord
+from helios.core.records import ShowImageRecord, ShowRecord
 from helios.core.request_manager import RequestManager
 from helios.core.session import Session
 from helios.utilities import logging_utils, parsing_utils
@@ -196,7 +196,7 @@ class ShowMixin(object):
                 include an alert, observation, or camera ID.
 
         Returns:
-            sequence of dicts: GeoJSON feature results.
+            sequence of :class:`ShowRecord <helios.core.records.ShowRecord>`
 
         """
         if not isinstance(ids, (list, tuple)):
@@ -214,9 +214,13 @@ class ShowMixin(object):
     def __show_worker(self, msg):
         """msg must contain id_"""
         query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, msg.id_)
-        resp = self._request_manager.get(query_str)
 
-        return resp.json()
+        try:
+            resp = self._request_manager.get(query_str)
+        except requests.exceptions.RequestException as e:
+            return ShowRecord(query=query_str, error=e)
+
+        return ShowRecord(query=query_str, data=resp.json())
 
 
 class ShowImageMixin(object):

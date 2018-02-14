@@ -1,4 +1,4 @@
-"""This module holds the container classes used by the SDK."""
+"""This module holds the record classes used by the SDK."""
 
 
 class Record(object):
@@ -33,7 +33,7 @@ class Record(object):
 
 class ImageRecord(Record):
     """
-    Container for queries involving images.
+    Record for queries involving images.
 
     Attributes:
         query (str): The API query that occurred.
@@ -53,8 +53,12 @@ class ImageRecord(Record):
 
 
 class PreviewRecord(ImageRecord):
-    """Container for preview queries."""
+    """Record for preview queries."""
 
 
 class ShowImageRecord(ImageRecord):
-    """Container for show_image queries."""
+    """Record for show_image queries."""
+
+
+class ShowRecord(Record):
+    """Record for show queries."""
