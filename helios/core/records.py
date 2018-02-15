@@ -5,11 +5,12 @@ class Record(object):
     """
     Base Record Class
 
-    This class can be used instantiated or as a base for expanded containers.
+    This class can be initialized or used as a base for other record types.
+
     The purpose is to record various data when working with the SDK and to
     better handle exceptions in batch jobs.
 
-    Attributes:
+    Args:
         query (str): The API query that occurred.
         data: The data that was fetched.
         error (exception): Exception that occurred.
@@ -35,7 +36,7 @@ class ImageRecord(Record):
     """
     Record for queries involving images.
 
-    Attributes:
+    Args:
         query (str): The API query that occurred.
         data (numpy.ndarray): Image data.
         error (exception): Exception that occurred.
