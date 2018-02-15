@@ -1,23 +1,8 @@
-"""This module holds the record classes used by the SDK."""
+"""Record classes used by the SDK."""
 
 
 class Record(object):
-    """
-    Base Record Class
-
-    This class can be initialized or used as a base for other record types.
-
-    The purpose is to record various data when working with the SDK and to
-    better handle exceptions in batch jobs.
-
-    Args:
-        query (str): The API query that occurred.
-        data: The data that was fetched.
-        error (exception): Exception that occurred.
-        ok (bool): Returns True if the query was successful and False
-            otherwise.
-
-    """
+    """Base Record Class"""
 
     def __init__(self, query=None, data=None, error=None):
         self.query = query
@@ -34,10 +19,10 @@ class Record(object):
 
 class ImageRecord(Record):
     """
-    Record for queries involving images.
+    Base Record for media queries.
 
     Args:
-        query (str): The API query that occurred.
+        query (str): The API query.
         data (numpy.ndarray): Image data.
         error (exception): Exception that occurred.
         name (str): Image name.
@@ -62,4 +47,17 @@ class ShowImageRecord(ImageRecord):
 
 
 class ShowRecord(Record):
-    """Record for show queries."""
+    """
+    Record for show queries.
+
+    Args:
+        query (str): The API query that occurred.
+        data (dict): Attribute data.
+        error (exception): Exception that occurred.
+        ok (bool): Returns True if the query was successful and False
+            otherwise.
+
+    """
+
+    def __init__(self, query=None, data=None, error=None):
+        super(ShowRecord, self).__init__(query=query, data=data, error=error)
