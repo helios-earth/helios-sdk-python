@@ -185,20 +185,6 @@ class IndexMixin(object):
 class ShowMixin(object):
     @logging_utils.log_entrance_exit
     def show(self, ids):
-        """
-        Return attributes for Helios assets.
-
-        For example, the input ids can be a single Alert ID, or a list of
-        Alert IDs.  Can also be camera or observation IDs.
-
-        Args:
-            ids (str or sequence of strs): Helios asset ID(s). This can
-                include an alert, observation, or camera ID.
-
-        Returns:
-            sequence of :class:`ShowRecord <helios.core.records.ShowRecord>`
-
-        """
         if not isinstance(ids, (list, tuple)):
             ids = [ids]
 

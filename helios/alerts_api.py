@@ -62,3 +62,16 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
         """
         return super(Alerts, self).index(**kwargs)
+
+    def show(self, alert_ids):
+        """
+        Return attributes for alerts.
+
+        Args:
+            alert_ids (str or sequence of strs): Helios alert ID(s).
+
+        Returns:
+            sequence of :class:`ShowRecord <helios.core.records.ShowRecord>`
+
+        """
+        return super(Alerts, self).show(alert_ids)

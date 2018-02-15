@@ -14,6 +14,7 @@ import requests
 
 from helios.core import SDKCore, IndexMixin, ShowImageMixin
 from helios.utilities import logging_utils
+from helios.core.records import ShowRecord
 
 
 class Collections(ShowImageMixin, IndexMixin, SDKCore):
@@ -82,7 +83,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 matching result will be the first image returned.
 
         Returns:
-            dict: Dictionary containing collection attributes and image list.
+            :class:`ShowRecord <helios.core.records.ShowRecord>`
 
         """
         params_str = self._parse_query_inputs(dict(limit=limit, marker=marker))
@@ -91,9 +92,12 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                          collection_id,
                                          params_str)
 
-        resp = self._request_manager.get(query_str)
+        try:
+            resp = self._request_manager.get(query_str)
+        except requests.exceptions.RequestException as e:
+            return ShowRecord(query=query_str, error=e)
 
-        return resp.json()
+        return ShowRecord(query=query_str, data=resp.json())
 
     @logging_utils.log_entrance_exit
     def create(self, name, description, tags=None):

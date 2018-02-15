@@ -151,3 +151,16 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         return PreviewRecord(query=query_str, name=image_name, data=img_data,
                              output_file=out_file)
+
+    def show(self, observation_ids):
+        """
+        Return attributes for observations.
+
+        Args:
+            observation_ids (str or sequence of strs): Helios observation ID(s).
+
+        Returns:
+            sequence of :class:`ShowRecord <helios.core.records.ShowRecord>`
+
+        """
+        return super(Observations, self).show(observation_ids)

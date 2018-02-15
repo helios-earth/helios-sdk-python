@@ -132,6 +132,19 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         return image_times
 
+    def show(self, camera_ids):
+        """
+        Return attributes for cameras.
+
+        Args:
+            camera_ids (str or sequence of strs): Helios camera ID(s).
+
+        Returns:
+            sequence of :class:`ShowRecord <helios.core.records.ShowRecord>`
+
+        """
+        return super(Cameras, self).show(camera_ids)
+
     def show_image(self, camera_id, times, out_dir=None, return_image_data=False):
         """
         Return a single image from the media cache.
