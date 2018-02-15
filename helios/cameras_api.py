@@ -32,7 +32,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
     def index(self, **kwargs):
         """
-        Return a list of cameras matching the provided spatial, text, or
+        Get a list of cameras matching the provided spatial, text, or
         metadata filters.
 
         The maximum skip value is 4000. If this is reached, truncated results
@@ -52,7 +52,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
     @logging_utils.log_entrance_exit
     def images(self, camera_id, start_time, limit=500):
         """
-        Return the image times available for a given camera in the media cache.
+        Get the image times available for a given camera in the media cache.
 
         The media cache contains all recent images archived by Helios, either
         for internal analytics or for end user recording purposes.
@@ -82,7 +82,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
     @logging_utils.log_entrance_exit
     def images_range(self, camera_id, start_time, end_time, limit=500):
         """
-        Return image times available in a given time range.
+        Get image times available in a given time range.
 
         The media cache contains all recent images archived by Helios, either
         for internal analytics or for end user recording purposes.
@@ -134,7 +134,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
     def show(self, camera_ids):
         """
-        Return attributes for cameras.
+        Get attributes for cameras.
 
         Args:
             camera_ids (str or sequence of strs): Helios camera ID(s).
@@ -147,7 +147,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
     def show_image(self, camera_id, times, out_dir=None, return_image_data=False):
         """
-        Return a single image from the media cache.
+        Get images from the media cache.
 
         The media cache contains all recent images archived by Helios, either
         for internal analytics or for end user recording purposes.

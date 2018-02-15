@@ -45,7 +45,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
     def index(self, **kwargs):
         """
-        Return a list of collections matching the provided spatial, text, or
+        Get a list of collections matching the provided spatial, text, or
         metadata filters.
 
         The maximum skip value is 4000. If this is reached, truncated results
@@ -65,7 +65,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
     @logging_utils.log_entrance_exit
     def show(self, collection_id, limit=200, marker=None):
         """
-        Return the attributes and image list for a single collection.
+        Get the attributes and image list for collections.
 
         The results will also contain image names available in the collection.
         These are limited to a maximum of 200 per query.
@@ -177,7 +177,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
     @logging_utils.log_entrance_exit
     def images(self, collection_id, camera=None, old_flag=False):
         """
-        Returns all image names in a given collection.
+        Get all image names in a given collection.
 
         When using the optional camera input parameter only images from that
         camera will be returned.
@@ -229,7 +229,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                    out_dir=None,
                    return_image_data=False):
         """
-        Return image URLs from a collection.
+        Get images from a collection.
 
         Args:
             collection_id (str): Collection ID.

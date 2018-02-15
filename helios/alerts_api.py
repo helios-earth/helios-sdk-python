@@ -46,7 +46,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
     def index(self, **kwargs):
         """
-        Return a list of alerts matching the provided spatial, text, or
+        Get a list of alerts matching the provided spatial, text, or
         metadata filters.
 
         The maximum skip value is 4000. If this is reached, truncated results
@@ -65,7 +65,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
     def show(self, alert_ids):
         """
-        Return attributes for alerts.
+        Get attributes for alerts.
 
         Args:
             alert_ids (str or sequence of strs): Helios alert ID(s).

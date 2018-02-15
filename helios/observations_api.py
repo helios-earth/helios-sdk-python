@@ -42,7 +42,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
     def index(self, **kwargs):
         """
-        Return a list of observations matching the provided spatial, text, or
+        Get a list of observations matching the provided spatial, text, or
         metadata filters.
 
         The maximum skip value is 4000. If this is reached, truncated results
@@ -86,7 +86,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
     @logging_utils.log_entrance_exit
     def preview(self, observation_ids, out_dir=None, return_image_data=False):
         """
-        Return a preview image for an observation.
+        Get preview images from observations.
 
         This API call will attempt to filter out unusable images
         (e.g. full image text/logos, etc.) and will return the most recent
@@ -154,7 +154,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
     def show(self, observation_ids):
         """
-        Return attributes for observations.
+        Get attributes for observations.
 
         Args:
             observation_ids (str or sequence of strs): Helios observation ID(s).
