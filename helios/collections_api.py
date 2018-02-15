@@ -206,7 +206,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             results = self.show(collection_id, marker=mark_img)
 
             # Gather images.
-            images_found = results['images']
+            images_found = results.data['images']
 
             if camera is not None:
                 imgs_found_temp = [x for x in images_found if x.split('_')[0] == camera]
