@@ -26,16 +26,23 @@ stored on your machine will automatically be applied.
     import helios
     sess = helios.Session()
     
-From this point make a call to the 
+This will automatically make a call to the
 :meth:`start_session <helios.core.session.Session.start_session>`
-method  to fetch the token.
-
-.. code-block:: python
-
-    sess.start_session()
+method to fetch the token.
     
 If successful, the ``sess`` instance will now have all the
 authentication information needed to being using the core APIs.
+
+Token Expiration
+~~~~~~~~~~~~~~~~
+
+Restarting Python if your token expires while the SDK is in use is not
+necessary.  Call :meth:`start_session <helios.core.session.Session.start_session>`
+to perform the token verification process. This will acquire a new token if it
+has expired.
+
+After the a token has been re-acquired you will need to create new core API
+instances using the session.
     
 Reusing a Session
 -----------------

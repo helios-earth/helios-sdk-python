@@ -31,7 +31,6 @@ class Session(object):
 
         import helios
         sess = helios.Session()
-        sess.start_session()
         alerts = helios.Alerts(session=sess)
         cameras = helios.Cameras(session=sess)
 
@@ -96,6 +95,9 @@ class Session(object):
         # Create token filename based on authentication ID.
         self._token_file = os.path.join(os.path.expanduser('~'),
                                         self._key_id + '.helios_token')
+
+        # Finally, start the session.
+        self.start_session()
 
     def _delete_token(self):
         """Delete token file."""
