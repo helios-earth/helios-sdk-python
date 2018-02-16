@@ -8,7 +8,8 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from dateutil.parser import parse
-from helios.core import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
+
+from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
 from helios.utilities import logging_utils
 
 
@@ -140,7 +141,8 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             camera_ids (str or sequence of strs): Helios camera ID(s).
 
         Returns:
-            sequence of :class:`ShowRecord <helios.core.records.ShowRecord>`
+            :class:`DataContainer <helios.core.records.DataContainer>`:
+            Container of :class:`Record <helios.core.records.Record>`.
 
         """
         return super(Cameras, self).show(camera_ids)
@@ -154,16 +156,17 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         Args:
             camera_id (str): Camera ID.
-            times (str or sequence of strs): Image times, specified in UTC as an ISO 8601
-                string (e.g. 2017-08-01 or 2017-08-01T12:34:56.000Z). The
-                image with the closest matching timestamp will be returned.
+            times (str or sequence of strs): Image times, specified in UTC as
+                an ISO 8601 string (e.g. 2017-08-01 or 2017-08-01T12:34:56.000Z).
+                The image with the closest matching timestamp will be returned.
             out_dir (optional, str): Directory to write images to.  Defaults to
                 None.
             return_image_data (optional, bool): If True images will be returned
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            sequence of :class:`ShowImageRecord <helios.core.records.ShowImageRecord>`
+            :class:`DataContainer <helios.core.records.DataContainer>`:
+            Container of :class:`ImageRecord <helios.core.records.ImageRecord>`.
 
         """
         return super(Cameras, self).show_image(camera_id, times, out_dir=out_dir,

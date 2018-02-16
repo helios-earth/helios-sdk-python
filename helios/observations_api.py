@@ -13,8 +13,9 @@ from io import BytesIO
 import numpy as np
 import requests
 from PIL import Image
-from helios.core import SDKCore, IndexMixin, ShowMixin
-from helios.core.records import PreviewRecord
+
+from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
+from helios.core.records import ImageRecord, DataContainer
 from helios.utilities import logging_utils, parsing_utils
 
 
@@ -88,10 +89,6 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         """
         Get preview images from observations.
 
-        This API call will attempt to filter out unusable images
-        (e.g. full image text/logos, etc.) and will return the most recent
-        image for the observation time period.
-
         Args:
             observation_ids (str or sequence of strs): list of observation IDs.
             out_dir (optional, str): Directory to write images to.  Defaults to
@@ -100,10 +97,10 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            sequence of :class:`PreviewRecord <helios.core.records.PreviewRecord>`
+            :class:`DataContainer <helios.core.records.DataContainer>`:
+            Container of :class:`ImageRecord <helios.core.records.ImageRecord>`.
 
         """
-        # Force iterable
         if not isinstance(observation_ids, (list, tuple)):
             observation_ids = [observation_ids]
 
@@ -115,7 +112,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__preview_worker, messages)
 
-        return results
+        return DataContainer(results)
 
     def __preview_worker(self, msg):
         """msg must contain observation_id and check_for_duds"""
@@ -127,7 +124,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         try:
             resp = self._request_manager.get(query_str)
         except requests.exceptions.RequestException as e:
-            return PreviewRecord(query=query_str, error=e)
+            return ImageRecord(query=query_str, error=e)
 
         # Parse key from url.
         parsed_url = parsing_utils.parse_url(resp.url)
@@ -149,8 +146,8 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         else:
             img_data = None
 
-        return PreviewRecord(query=query_str, name=image_name, data=img_data,
-                             output_file=out_file)
+        return ImageRecord(query=query_str, name=image_name, content=img_data,
+                           output_file=out_file)
 
     def show(self, observation_ids):
         """
@@ -160,7 +157,8 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             observation_ids (str or sequence of strs): Helios observation ID(s).
 
         Returns:
-            sequence of :class:`ShowRecord <helios.core.records.ShowRecord>`
+            :class:`DataContainer <helios.core.records.DataContainer>`:
+            Container of :class:`Record <helios.core.records.Record>`.
 
         """
         return super(Observations, self).show(observation_ids)

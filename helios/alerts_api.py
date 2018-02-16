@@ -7,7 +7,7 @@ documentation.  Some may have additional functionality for convenience.
 """
 import logging
 
-from helios.core import SDKCore, IndexMixin, ShowMixin
+from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
@@ -71,7 +71,8 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             alert_ids (str or sequence of strs): Helios alert ID(s).
 
         Returns:
-            sequence of :class:`ShowRecord <helios.core.records.ShowRecord>`
+            :class:`DataContainer <helios.core.records.DataContainer>`:
+            Container of :class:`Record <helios.core.records.Record>`.
 
         """
         return super(Alerts, self).show(alert_ids)

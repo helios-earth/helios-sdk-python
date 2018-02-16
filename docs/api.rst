@@ -55,3 +55,4 @@ Data Records
 
 .. automodule:: helios.core.records
     :members:
+    :special-members: __getattr__

@@ -12,7 +12,7 @@ from collections import namedtuple
 
 import requests
 
-from helios.core import SDKCore, IndexMixin, ShowImageMixin
+from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
 from helios.utilities import logging_utils
 
 
@@ -82,7 +82,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 matching result will be the first image returned.
 
         Returns:
-            :class:`ShowRecord <helios.core.records.ShowRecord>`
+            dict: Collection attributes.
 
         """
         params_str = self._parse_query_inputs(dict(limit=limit, marker=marker))
@@ -236,7 +236,8 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            sequence of :class:`ShowImageRecord <helios.core.records.ShowImageRecord>`
+            :class:`DataContainer <helios.core.records.DataContainer>`:
+            Container of :class:`ImageRecord <helios.core.records.ImageRecord>`.
 
         """
         return super(Collections, self).show_image(collection_id,

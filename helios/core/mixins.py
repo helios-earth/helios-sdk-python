@@ -9,7 +9,8 @@ from multiprocessing.pool import ThreadPool
 import numpy as np
 import requests
 from PIL import Image
-from helios.core.records import ShowImageRecord, ShowRecord
+
+from helios.core.records import ImageRecord, Record, DataContainer
 from helios.core.request_manager import RequestManager
 from helios.core.session import Session
 from helios.utilities import logging_utils, parsing_utils
@@ -195,7 +196,7 @@ class ShowMixin(object):
         # Process messages using the worker function.
         results = self._process_messages(self.__show_worker, messages)
 
-        return results
+        return DataContainer(results)
 
     def __show_worker(self, msg):
         """msg must contain id_"""
@@ -204,9 +205,9 @@ class ShowMixin(object):
         try:
             resp = self._request_manager.get(query_str)
         except requests.exceptions.RequestException as e:
-            return ShowRecord(query=query_str, error=e)
+            return Record(query=query_str, error=e)
 
-        return ShowRecord(query=query_str, data=resp.json())
+        return Record(query=query_str, content=resp.json())
 
 
 class ShowImageMixin(object):
@@ -222,7 +223,7 @@ class ShowImageMixin(object):
         # Process messages using the worker function.
         results = self._process_messages(self.__show_image_worker, messages)
 
-        return results
+        return DataContainer(results)
 
     def __show_image_worker(self, msg):
         """msg must contain id_, data, out_dir, and return_image_data"""
@@ -234,7 +235,7 @@ class ShowImageMixin(object):
         try:
             resp = self._request_manager.get(query_str)
         except requests.exceptions.RequestException as e:
-            return ShowImageRecord(query=query_str, error=e)
+            return ImageRecord(query=query_str, error=e)
 
         # Parse key from url.
         parsed_url = parsing_utils.parse_url(resp.url)
@@ -256,5 +257,5 @@ class ShowImageMixin(object):
         else:
             img_data = None
 
-        return ShowImageRecord(query=query_str, name=image_name, data=img_data,
-                               output_file=out_file)
+        return ImageRecord(query=query_str, name=image_name, content=img_data,
+                           output_file=out_file)
