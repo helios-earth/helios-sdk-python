@@ -14,7 +14,6 @@ import requests
 
 from helios.core import SDKCore, IndexMixin, ShowImageMixin
 from helios.utilities import logging_utils
-from helios.core.records import ShowRecord
 
 
 class Collections(ShowImageMixin, IndexMixin, SDKCore):
@@ -92,12 +91,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                          collection_id,
                                          params_str)
 
-        try:
-            resp = self._request_manager.get(query_str)
-        except requests.exceptions.RequestException as e:
-            return ShowRecord(query=query_str, error=e)
+        resp = self._request_manager.get(query_str)
 
-        return ShowRecord(query=query_str, data=resp.json())
+        return resp.json()
 
     @logging_utils.log_entrance_exit
     def create(self, name, description, tags=None):
@@ -206,7 +202,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             results = self.show(collection_id, marker=mark_img)
 
             # Gather images.
-            images_found = results.data['images']
+            images_found = results['images']
 
             if camera is not None:
                 imgs_found_temp = [x for x in images_found if x.split('_')[0] == camera]
