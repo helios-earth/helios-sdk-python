@@ -13,6 +13,7 @@ from collections import namedtuple
 import requests
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
+from helios.core.records import Record, DataContainer
 from helios.utilities import logging_utils
 
 
@@ -228,7 +229,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         Get images from a collection.
 
         Args:
-            collection_id (str): Collection ID.
+            collection_id (str): Collection ID to add images into.
             image_names (str or sequence of strs): Image names.
             out_dir (optional, str): Directory to write images to.  Defaults to
                 None.
@@ -280,8 +281,8 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
 
         Returns:
-            (sequence of dicts): If errors do occur then the data that caused
-            the errors will be returned.
+            :class:`DataContainer <helios.core.records.DataContainer>`:
+            Container of :class:`Record <helios.core.records.Record>`.
 
         """
         assert isinstance(assets, (list, tuple, dict))
@@ -296,23 +297,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__add_image_worker, messages)
 
-        # Extract failures.
-        failures = [y for x, y in zip(results, assets) if x == -1]
-
-        # Determine how many were successful
-        n_images = len(assets)
-        n_successful = n_images - len(failures)
-        message = 'addImage({} out of {} successful)'.format(n_successful, n_images)
-
-        if n_successful == 0:
-            self._logger.error(message)
-            return -1
-        elif n_successful < n_images:
-            self._logger.warning(message)
-        else:
-            self._logger.info(message)
-
-        return failures
+        return DataContainer(results)
 
     def __add_image_worker(self, msg):
         """msg must contain collection_id and data"""
@@ -329,9 +314,11 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                                      msg.collection_id)
 
         try:
-            self._request_manager.post(post_url, headers=header, data=parms)
-        except requests.exceptions.RequestException:
-            return -1
+            resp = self._request_manager.post(post_url, headers=header, data=parms)
+        except requests.exceptions.RequestException as e:
+            return Record(message=msg, query=post_url, error=e)
+
+        return Record(message=msg, query=post_url, content=resp.json())
 
     @logging_utils.log_entrance_exit
     def remove_image(self, collection_id, names):
@@ -339,12 +326,12 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         Remove images from a collection.
 
         Args:
-            collection_id (str): Collection ID.
+            collection_id (str): Collection ID to remove images from.
             names (str or sequence of strs): List of image names to be removed.
 
         Returns:
-            (sequence of strs): If errors do occur then the data that caused
-            the errors will be returned.
+            :class:`DataContainer <helios.core.records.DataContainer>`:
+            Container of :class:`Record <helios.core.records.Record>`.
 
         """
         if not isinstance(names, (list, tuple)):
@@ -357,23 +344,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__remove_image_worker, messages)
 
-        # Extract failures.
-        failures = [y for x, y in zip(results, names) if x == -1]
-
-        # Determine how many were successful
-        n_names = len(names)
-        n_successful = n_names - len(failures)
-        message = 'removeImage({} out of {} successful)'.format(n_successful, n_names)
-
-        if n_successful == 0:
-            self._logger.error(message)
-            return -1
-        elif n_successful < n_names:
-            self._logger.warning(message)
-        else:
-            self._logger.info(message)
-
-        return failures
+        return DataContainer(results)
 
     def __remove_image_worker(self, msg):
         """msg must contain collection_id and img_name"""
@@ -383,9 +354,11 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                                 msg.img_name)
 
         try:
-            self._request_manager.delete(query_str)
-        except requests.exceptions.RequestException:
-            return -1
+            resp = self._request_manager.delete(query_str)
+        except requests.exceptions.RequestException as e:
+            return Record(message=msg, query=query_str, error=e)
+
+        return Record(message=msg, query=query_str, content=resp.json())
 
     @logging_utils.log_entrance_exit
     def copy(self, collection_id, new_name):
