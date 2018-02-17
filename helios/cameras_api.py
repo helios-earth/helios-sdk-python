@@ -31,25 +31,6 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         super(Cameras, self).__init__(session=session)
         self._logger = logging.getLogger(__name__)
 
-    def index(self, **kwargs):
-        """
-        Get a list of cameras matching the provided spatial, text, or
-        metadata filters.
-
-        The maximum skip value is 4000. If this is reached, truncated results
-        will be returned. You will need to refine your query to avoid this.
-
-        .. _cameras_index_documentation: https://helios.earth/developers/api/cameras/#index
-
-        Args:
-            **kwargs: Any keyword arguments found in the cameras_index_documentation_.
-
-        Returns:
-             list: GeoJSON feature collections.
-
-        """
-        return super(Cameras, self).index(**kwargs)
-
     @logging_utils.log_entrance_exit
     def images(self, camera_id, start_time, end_time=None, limit=500):
         """
@@ -120,6 +101,25 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                                  camera_id, start_time, end_time)
 
         return image_times
+
+    def index(self, **kwargs):
+        """
+        Get a list of cameras matching the provided spatial, text, or
+        metadata filters.
+
+        The maximum skip value is 4000. If this is reached, truncated results
+        will be returned. You will need to refine your query to avoid this.
+
+        .. _cameras_index_documentation: https://helios.earth/developers/api/cameras/#index
+
+        Args:
+            **kwargs: Any keyword arguments found in the cameras_index_documentation_.
+
+        Returns:
+             list: GeoJSON feature collections.
+
+        """
+        return super(Cameras, self).index(**kwargs)
 
     def show(self, camera_ids):
         """

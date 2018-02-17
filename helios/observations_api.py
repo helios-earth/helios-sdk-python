@@ -110,6 +110,11 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                                          'return_image_data'])
         messages = [Message(x, out_dir, return_image_data) for x in observation_ids]
 
+        # Make sure directory exists.
+        if out_dir:
+            if not os.path.exists(out_dir):
+                os.makedirs(out_dir)
+
         # Process messages using the worker function.
         results = self._process_messages(self.__preview_worker, messages)
 

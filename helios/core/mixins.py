@@ -52,6 +52,14 @@ class SDKCore(object):
         self._request_manager = RequestManager(self._session.token,
                                                pool_maxsize=self._max_threads)
 
+    @property
+    def _base_api_url(self):
+        return self._session.api_url
+
+    @_base_api_url.setter
+    def _base_api_url(self, value):
+        raise AttributeError('Access to _base_api_url is restricted.')
+
     @staticmethod
     def _parse_query_inputs(input_dict):
         # Check for unique case: sensors
@@ -77,14 +85,6 @@ class SDKCore(object):
         query_str = query_str[:-1]
 
         return query_str
-
-    @property
-    def _base_api_url(self):
-        return self._session.api_url
-
-    @_base_api_url.setter
-    def _base_api_url(self, value):
-        raise AttributeError('Access to _base_api_url is restricted.')
 
     def _process_messages(self, func, messages):
         # Create thread pool
@@ -225,6 +225,11 @@ class ShowImageMixin(object):
         # Create messages for worker.
         Message = namedtuple('Message', ['id_', 'data', 'out_dir', 'return_image_data'])
         messages = [Message(id_, x, out_dir, return_image_data) for x in data]
+
+        # Make sure directory exists.
+        if out_dir:
+            if not os.path.exists(out_dir):
+                os.makedirs(out_dir)
 
         # Process messages using the worker function.
         results = self._process_messages(self.__show_image_worker, messages)
