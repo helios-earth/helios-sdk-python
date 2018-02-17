@@ -89,7 +89,7 @@ class Record(object):
     @property
     def ok(self):
         """
-        Check if failure occurred
+        Check if failure occurred.
 
         Returns:
             bool: False if error occurred, and True otherwise.
@@ -111,7 +111,7 @@ class ImageRecord(Record):
         content (numpy.ndarray): Image as a Numpy ndarray.
         error (exception): Exception that occurred, if any.
         name (str): Name of image.
-        output_file (str): Full path to file that was written.
+        output_file (str): Full path to image file that was written.
 
     """
 
