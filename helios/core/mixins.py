@@ -205,9 +205,9 @@ class ShowMixin(object):
         try:
             resp = self._request_manager.get(query_str)
         except requests.exceptions.RequestException as e:
-            return Record(query=query_str, error=e)
+            return Record(message=msg, query=query_str, error=e)
 
-        return Record(query=query_str, content=resp.json())
+        return Record(message=msg, query=query_str, content=resp.json())
 
 
 class ShowImageMixin(object):
@@ -235,7 +235,7 @@ class ShowImageMixin(object):
         try:
             resp = self._request_manager.get(query_str)
         except requests.exceptions.RequestException as e:
-            return ImageRecord(query=query_str, error=e)
+            return ImageRecord(message=msg, query=query_str, error=e)
 
         # Parse key from url.
         parsed_url = parsing_utils.parse_url(resp.url)
@@ -257,5 +257,5 @@ class ShowImageMixin(object):
         else:
             img_data = None
 
-        return ImageRecord(query=query_str, name=image_name, content=img_data,
-                           output_file=out_file)
+        return ImageRecord(message=msg, query=query_str, name=image_name,
+                           content=img_data, output_file=out_file)

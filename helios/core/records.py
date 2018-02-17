@@ -35,8 +35,9 @@ class DataContainer(object):
         .. code-block:: python
 
             #data is an instance of DataContainer and contains Record instances.
+            all_input_messages = data.message
             all_queries = data.query
-            all_content = data.content  # Will be None or content, depending on errors.
+            all_content = data.content  # Will be None or data, depending on errors.
             all_errors = data.errors  # Will be None or an exception.
 
         """
@@ -71,13 +72,16 @@ class Record(object):
     Record class for general use.
 
     Args:
+        message (tuple): Original message. This will be a namedtuple containing
+            all the inputs for an individual call within a batch job.
         query (str): API query.
         content: Returned content. To be defined by method.
         error (exception): Exception that occurred, if any.
 
     """
 
-    def __init__(self, query=None, content=None, error=None):
+    def __init__(self, message=None, query=None, content=None, error=None):
+        self.message = message
         self.query = query
         self.content = content
         self.error = error
@@ -95,6 +99,8 @@ class ImageRecord(Record):
     Record class for images.
 
     Args:
+        message (tuple): Original message. This will be a namedtuple containing
+            all the inputs for an individual call within a batch job.
         query (str): API query.
         content (numpy.ndarray): Image as a Numpy ndarray.
         error (exception): Exception that occurred, if any.
@@ -103,7 +109,9 @@ class ImageRecord(Record):
 
     """
 
-    def __init__(self, query=None, content=None, error=None, name=None, output_file=None):
-        super(ImageRecord, self).__init__(query=query, content=content, error=error)
+    def __init__(self, message=None, query=None, content=None, error=None,
+                 name=None, output_file=None):
+        super(ImageRecord, self).__init__(message=message, query=query,
+                                          content=content, error=error)
         self.name = name
         self.output_file = output_file

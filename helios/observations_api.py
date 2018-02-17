@@ -124,7 +124,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         try:
             resp = self._request_manager.get(query_str)
         except requests.exceptions.RequestException as e:
-            return ImageRecord(query=query_str, error=e)
+            return ImageRecord(message=msg, query=query_str, error=e)
 
         # Parse key from url.
         parsed_url = parsing_utils.parse_url(resp.url)
@@ -146,8 +146,8 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         else:
             img_data = None
 
-        return ImageRecord(query=query_str, name=image_name, content=img_data,
-                           output_file=out_file)
+        return ImageRecord(message=msg, query=query_str, name=image_name,
+                           content=img_data, output_file=out_file)
 
     def show(self, observation_ids):
         """
