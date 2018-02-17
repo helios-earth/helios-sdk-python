@@ -109,6 +109,8 @@ class SDKCore(object):
 
 
 class IndexMixin(object):
+    """Mixin for index queries."""
+
     @logging_utils.log_entrance_exit
     def index(self, **kwargs):
         max_skip = 4000
@@ -184,6 +186,8 @@ class IndexMixin(object):
 
 
 class ShowMixin(object):
+    """Mixin for show queries"""
+
     @logging_utils.log_entrance_exit
     def show(self, ids):
         if not isinstance(ids, (list, tuple)):
@@ -211,6 +215,8 @@ class ShowMixin(object):
 
 
 class ShowImageMixin(object):
+    """Mixin for show_image queries"""
+
     @logging_utils.log_entrance_exit
     def show_image(self, id_, data, out_dir=None, return_image_data=False):
         if not isinstance(data, (list, tuple)):

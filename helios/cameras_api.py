@@ -127,7 +127,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 image_times.extend(times)
                 break
 
-        if len(image_times) == 0:
+        if not image_times:
             self._logger.warning('No images were found for %s in the %s to %s range.',
                                  camera_id, start_time, end_time)
 

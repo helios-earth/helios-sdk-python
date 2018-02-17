@@ -1,3 +1,4 @@
+"""Use the Helios APIs in Python"""
 from . import core
 from . import utilities
 from .alerts_api import Alerts

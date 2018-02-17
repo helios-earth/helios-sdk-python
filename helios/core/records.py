@@ -88,10 +88,16 @@ class Record(object):
 
     @property
     def ok(self):
+        """
+        Check if failure occurred
+
+        Returns:
+            bool: False if error occurred, and True otherwise.
+
+        """
         if self.error:
             return False
-        else:
-            return True
+        return True
 
 
 class ImageRecord(Record):

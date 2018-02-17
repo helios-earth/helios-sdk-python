@@ -52,8 +52,7 @@ def parse_camera(data):
     md5_hash = hashlib.md5(name[hash_index + 1:].encode('utf-8')).hexdigest()
     if name[0:4] == md5_hash[0:4]:
         return name[5:]
-    else:
-        return name
+    return name
 
 
 def parse_image_name(url):
