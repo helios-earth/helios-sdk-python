@@ -142,7 +142,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         Returns:
             :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`Record <helios.core.records.Record>`.
+            Container of :class:`Record <helios.core.records.Record>` instances.
 
         """
         return super(Cameras, self).show(camera_ids)
@@ -166,7 +166,8 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         Returns:
             :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`ImageRecord <helios.core.records.ImageRecord>`.
+            Container of :class:`ImageRecord <helios.core.records.ImageRecord>`
+            instances.
 
         """
         return super(Cameras, self).show_image(camera_id, times, out_dir=out_dir,

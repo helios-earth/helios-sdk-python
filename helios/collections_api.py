@@ -282,7 +282,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         Returns:
             :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`Record <helios.core.records.Record>`.
+            Container of :class:`Record <helios.core.records.Record>` instances.
 
         """
         assert isinstance(assets, (list, tuple, dict))
@@ -331,7 +331,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         Returns:
             :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`Record <helios.core.records.Record>`.
+            Container of :class:`Record <helios.core.records.Record>` instances.
 
         """
         if not isinstance(names, (list, tuple)):

@@ -72,7 +72,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
         Returns:
             :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`Record <helios.core.records.Record>`.
+            Container of :class:`Record <helios.core.records.Record>` instances.
 
         """
         return super(Alerts, self).show(alert_ids)
