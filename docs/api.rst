@@ -34,7 +34,14 @@ Session
 
 .. automodule:: helios.core.session
     :members:
-    
+
+Data Records
+============
+
+.. automodule:: helios.core.records
+    :members:
+    :special-members: __getattr__
+
 Utilities
 =========
 
@@ -49,10 +56,3 @@ parsing_utils
     
 .. automodule:: helios.utilities.parsing_utils
     :members:
-
-Data Records
-============
-
-.. automodule:: helios.core.records
-    :members:
-    :special-members: __getattr__
