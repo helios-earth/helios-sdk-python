@@ -51,7 +51,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         return super(Cameras, self).index(**kwargs)
 
     @logging_utils.log_entrance_exit
-    def images(self, camera_id, start_time, limit=500):
+    def images(self, camera_id, start_time, end_time=None, limit=500):
         """
         Get the image times available for a given camera in the media cache.
 
@@ -62,56 +62,43 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             camera_id (str): Camera ID.
             start_time (str): Starting image timestamp, specified in UTC as an
                 ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
+            end_time (str, optional): Ending image timestamp, specified in UTC
+                as an ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
             limit (int, optional): Number of images to be returned, up to a max
                 of 500. Defaults to 500.
 
-
         Returns:
             sequence of strs: Image times.
 
         """
-        query_str = '{}/{}/{}/images?time={}&limit={}'.format(self._base_api_url,
-                                                              self._core_api,
-                                                              camera_id,
-                                                              start_time,
-                                                              limit)
+        if end_time:
+            end = parse(end_time).utctimetuple()
+        else:
+            end = None
 
-        resp = self._request_manager.get(query_str).json()
-
-        return resp['times']
-
-    @logging_utils.log_entrance_exit
-    def images_range(self, camera_id, start_time, end_time, limit=500):
-        """
-        Get image times available in a given time range.
-
-        The media cache contains all recent images archived by Helios, either
-        for internal analytics or for end user recording purposes.
-
-        Args:
-            camera_id (str): Camera ID.
-            start_time (str): Starting image timestamp, specified in UTC as an
-                ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
-            end_time (str): Ending image timestamp, specified in UTC as an
-                ISO 8601 string (e.g. 2014-08-01 or 2014-08-01T12:34:56.000Z).
-            limit (int, optional): Number of images to be returned, up to a max
-                of 500.  Defaults to 500.
-
-        Returns:
-            sequence of strs: Image times.
-
-        """
-        end = parse(end_time).utctimetuple()
         image_times = []
         while True:
-            times = self.images(camera_id, start_time, limit=limit)
+            query_str = '{}/{}/{}/images?time={}&limit={}'.format(self._base_api_url,
+                                                                  self._core_api,
+                                                                  camera_id,
+                                                                  start_time,
+                                                                  limit)
+            # Get image times available.
+            resp = self._request_manager.get(query_str)
+            times = resp.json()['times']
 
+            # Return now if no end_time was provided.
+            if end_time is None:
+                image_times.extend(times)
+                break
+
+            # Parse the last time and break if no times were found
             try:
                 last = parse(times[-1]).utctimetuple()
             except IndexError:
                 break
 
-            # the last image is still newer than our end time, keep looking
+            # the last image is still newer than the end time, keep looking
             if last < end:
                 if len(times) > 1:
                     image_times.extend(times[0:-1])
@@ -119,6 +106,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 else:
                     image_times.extend(times)
                     break
+            # The end time is somewhere in between.
             elif last > end:
                 good_times = [x for x in times if parse(x).utctimetuple() < end]
                 image_times.extend(good_times)

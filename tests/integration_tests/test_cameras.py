@@ -34,10 +34,11 @@ def test_cameras(utc_now):
     show_results = cameras.show(id_)
 
     # Perform images query
-    images_results = cameras.images(id_, utc_now[0])
+    images_results = cameras.images(id_, utc_now[0], limit=5)
+    assert len(images_results) == 5
 
     # Perform images range query
-    images_range_results = cameras.images_range(id_, utc_now[0], utc_now[1])
+    images_range_results = cameras.images(id_, utc_now[0], end_time=utc_now[1])
 
     # Extract a single time
     t = images_results[0]
