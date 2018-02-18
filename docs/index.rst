@@ -25,21 +25,21 @@ For further developer information, refer to
 `the Helios developer documentation. <https://helios.earth/developers/>`_
     
 .. toctree::
-   :maxdepth: 2
-   :caption: User Guide
+    :maxdepth: 2
+    :caption: User Guide
 
-   user/install
-   user/auth
-   user/core_apis_guide
-   user/session_guide
-   user/license
+    user/install
+    user/auth
+    user/core_apis_guide
+    user/session_guide
+    user/license
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Documentation
+    :maxdepth: 2
+    :caption: Documentation
 
-   api
+    api
 
 Indices and tables
 ==================
