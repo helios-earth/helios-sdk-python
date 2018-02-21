@@ -35,7 +35,7 @@ class DataContainer(object):
         .. code-block:: python
 
             #data is an instance of DataContainer and contains Record instances.
-            all_input_messages = data.message
+            all_messages = data.message  # Messages are what is sent to processing pools and contain input parameters, etc.
             all_queries = data.query
             all_content = data.content  # Will be None or data, depending on errors.
             all_errors = data.errors  # Will be None or an exception.

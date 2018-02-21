@@ -40,6 +40,7 @@ Data Records
 
 .. automodule:: helios.core.records
     :members:
+    :inherited-members:
     :special-members: __getattr__
 
 Utilities
