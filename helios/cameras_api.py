@@ -12,7 +12,6 @@ from dateutil.parser import parse
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
 from helios.core.structure import FeatureCollection
 from helios.utilities import logging_utils
-from helios.utilities.json_utils import merge_json
 
 
 class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
@@ -168,31 +167,38 @@ class CamerasIndex(FeatureCollection):
     """Index results for the Cameras API."""
 
     def __init__(self, geojson):
-        super(CamerasIndex, self).__init__()
+        super(CamerasIndex, self).__init__(geojson)
 
-        self.raw = geojson
-
-        self.features = None
-        self.id = None
-        self.city = None
-        self.state = None
-        self.country = None
-        self.description = None
-        self.provider = None
-
-        self._get_features()
-        self._build()
-
-    def _get_features(self):
+    def _combine_features(self):
         # Combine all features into a list.
         self.features = []
         for x in self.raw:
             self.features.extend(x['features'])
 
-    def _build(self):
-        self.id = merge_json(self.features, 'id')
-        self.city = merge_json(self.features, ['properties', 'city'])
-        self.state = merge_json(self.features, ['properties', 'state'])
-        self.country = merge_json(self.features, ['properties', 'country'])
-        self.description = merge_json(self.features, ['properties', 'description'])
-        self.provider = merge_json(self.features, ['properties', 'provider'])
+    @property
+    def city(self):
+        return [x['properties']['city'] for x in self.features]
+
+    @property
+    def country(self):
+        return [x['properties']['country'] for x in self.features]
+
+    @property
+    def description(self):
+        return [x['properties']['description'] for x in self.features]
+
+    @property
+    def id(self):
+        return [x['id'] for x in self.features]
+
+    @property
+    def region(self):
+        return [x['properties']['region'] for x in self.features]
+
+    @property
+    def state(self):
+        return [x['properties']['state'] for x in self.features]
+
+    @property
+    def video(self):
+        return [x['properties']['video'] for x in self.features]

@@ -9,7 +9,6 @@ import logging
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import FeatureCollection
-from helios.utilities.json_utils import merge_json
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
@@ -84,50 +83,73 @@ class AlertsIndex(FeatureCollection):
     """Index results for the Alerts API."""
 
     def __init__(self, geojson):
-        super(AlertsIndex, self).__init__()
+        super(AlertsIndex, self).__init__(geojson)
 
-        self.raw = geojson
-
-        self.features = None
-        self.id = None
-        self.bbox = None
-        self.area_description = None
-        self.category = None
-        self.certainty = None
-        self.country = None
-        self.description = None
-        self.effective = None
-        self.event = None
-        self.expires = None
-        self.headline = None
-        self.origin = None
-        self.severity = None
-        self.states = None
-        self.status = None
-        self.urgency = None
-
-        self._get_features()
-        self._build()
-
-    def _get_features(self):
+    def _combine_features(self):
         self.features = []
         for x in self.raw:
             self.features.extend(x['features'])
 
-    def _build(self):
-        self.id = merge_json(self.features, 'id')
-        self.bbox = merge_json(self.features, 'bbox')
-        self.area_description = merge_json(self.features, ['properties', 'areaDesc'])
-        self.category = merge_json(self.features, ['properties', 'category'])
-        self.certainty = merge_json(self.features, ['properties', 'certainty'])
-        self.country = merge_json(self.features, ['properties', 'country'])
-        self.description = merge_json(self.features, ['properties', 'description'])
-        self.effective = merge_json(self.features, ['properties', 'effective'])
-        self.event = merge_json(self.features, ['properties', 'event'])
-        self.expires = merge_json(self.features, ['properties', 'expires'])
-        self.headline = merge_json(self.features, ['properties', 'headline'])
-        self.origin = merge_json(self.features, ['properties', 'origin'])
-        self.severity = merge_json(self.features, ['properties', 'severity'])
-        self.states = merge_json(self.features, ['properties', 'states'])
-        self.status = merge_json(self.features, ['properties', 'status'])
-        self.urgency = merge_json(self.features, ['properties', 'urgency'])
+    @property
+    def area_description(self):
+        return [x['properties']['areaDesc'] for x in self.features]
+
+    @property
+    def bbox(self):
+        return [x['bbox'] for x in self.features]
+
+    @property
+    def category(self):
+        return [x['properties']['category'] for x in self.features]
+
+    @property
+    def certainty(self):
+        return [x['properties']['certainty'] for x in self.features]
+
+    @property
+    def country(self):
+        return [x['properties']['country'] for x in self.features]
+
+    @property
+    def description(self):
+        return [x['properties']['description'] for x in self.features]
+
+    @property
+    def effective(self):
+        return [x['properties']['effective'] for x in self.features]
+
+    @property
+    def event(self):
+        return [x['properties']['event'] for x in self.features]
+
+    @property
+    def expires(self):
+        return [x['properties']['expires'] for x in self.features]
+
+    @property
+    def headline(self):
+        return [x['properties']['headline'] for x in self.features]
+
+    @property
+    def id(self):
+        return [x['id'] for x in self.features]
+
+    @property
+    def origin(self):
+        return [x['properties']['origin'] for x in self.features]
+
+    @property
+    def severity(self):
+        return [x['properties']['severity'] for x in self.features]
+
+    @property
+    def states(self):
+        return [x['properties']['states'] for x in self.features]
+
+    @property
+    def status(self):
+        return [x['properties']['status'] for x in self.features]
+
+    @property
+    def urgency(self):
+        return [x['properties']['urgency'] for x in self.features]

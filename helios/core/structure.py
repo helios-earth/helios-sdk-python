@@ -3,6 +3,8 @@ import abc
 
 import six
 
+from helios.utilities.json_utils import merge_json
+
 
 @six.add_metaclass(abc.ABCMeta)
 class FeatureCollection(object):
@@ -14,21 +16,26 @@ class FeatureCollection(object):
 
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, data):
+        self.raw = data
+        self._combine_features()
 
     @abc.abstractmethod
-    def _get_features(self):
+    def _combine_features(self):
         """
-        _build must be implemented in children.
+        _combine_features must be implemented in children.
 
-        Features will be extracted into a list and any important instance
-        attributes will be merged.
-
-        self.features must be a list of individual GeoJSON features.
+        For GeoJSON all 'feature' sections will be merged and for Collections
+        index results, 'results' will be merged.
 
         """
         self.features = []
+
+    def _merge(self, keys):
+        return merge_json(self.features, keys)
+
+    def __delitem__(self, index):
+        del self.features[index]
 
     def __getitem__(self, item):
         return self.features[item]

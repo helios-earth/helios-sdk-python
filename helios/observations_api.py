@@ -15,6 +15,7 @@ import requests
 from PIL import Image
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
+from helios.core.structure import FeatureCollection
 from helios.core.structure import ImageRecord, DataContainer
 from helios.utilities import logging_utils, parsing_utils
 
@@ -168,3 +169,52 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         """
         return super(Observations, self).show(observation_ids)
+
+
+class ObservationsIndex(FeatureCollection):
+    """Index results for the Cameras API."""
+
+    def __init__(self, geojson):
+        super(ObservationsIndex, self).__init__(geojson)
+
+    def _combine_features(self):
+        # Combine all features into a list.
+        self.features = []
+        for x in self.raw:
+            self.features.extend(x['features'])
+
+    @property
+    def city(self):
+        return [x['properties']['city'] for x in self.features]
+
+    @property
+    def country(self):
+        return [x['properties']['country'] for x in self.features]
+
+    @property
+    def description(self):
+        return [x['properties']['description'] for x in self.features]
+
+    @property
+    def id(self):
+        return [x['id'] for x in self.features]
+
+    @property
+    def prev_id(self):
+        return [x['properties']['prev_id'] for x in self.features]
+
+    @property
+    def region(self):
+        return [x['properties']['region'] for x in self.features]
+
+    @property
+    def sensors(self):
+        return [x['properties']['sensors'] for x in self.features]
+
+    @property
+    def state(self):
+        return [x['properties']['state'] for x in self.features]
+
+    @property
+    def time(self):
+        return [x['properties']['time'] for x in self.features]

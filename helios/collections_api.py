@@ -13,6 +13,7 @@ from collections import namedtuple
 import requests
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
+from helios.core.structure import FeatureCollection
 from helios.core.structure import Record, DataContainer
 from helios.utilities import logging_utils
 
@@ -249,7 +250,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
              list: GeoJSON feature collections.
 
         """
-        return super(Collections, self).index(**kwargs)
+        return CollectionsIndex(super(Collections, self).index(**kwargs))
 
     @logging_utils.log_entrance_exit
     def remove_image(self, collection_id, names):
@@ -390,3 +391,48 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                       collections_id)
 
         self._request_manager.patch(patch_url, headers=header, data=parms)
+
+
+class CollectionsIndex(FeatureCollection):
+    """Index results for the Cameras API."""
+
+    def __init__(self, geojson):
+        super(CollectionsIndex, self).__init__(geojson)
+
+    def _combine_features(self):
+        # Combine all features into a list.
+        self.features = []
+        for x in self.raw:
+            self.features.extend(x['results'])
+
+    @property
+    def bucket(self):
+        return [x['bucket'] for x in self.features]
+
+    @property
+    def created_at(self):
+        return [x['created_at'] for x in self.features]
+
+    @property
+    def description(self):
+        return [x['description'] for x in self.features]
+
+    @property
+    def id(self):
+        return [x['_id'] for x in self.features]
+
+    @property
+    def name(self):
+        return [x['name'] for x in self.features]
+
+    @property
+    def tags(self):
+        return [x['tags'] for x in self.features]
+
+    @property
+    def updated_at(self):
+        return [x['updated_at'] for x in self.features]
+
+    @property
+    def user_id(self):
+        return [x['user_id'] for x in self.features]
