@@ -8,6 +8,7 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
+from helios.utilities.json_utils import merge_json
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
@@ -61,7 +62,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
              list: GeoJSON feature collections.
 
         """
-        return super(Alerts, self).index(**kwargs)
+        return AlertsIndex(super(Alerts, self).index(**kwargs))
 
     def show(self, alert_ids):
         """
@@ -76,3 +77,51 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
         """
         return super(Alerts, self).show(alert_ids)
+
+
+class AlertsIndex(object):
+    """Index results for the Alerts API."""
+
+    def __init__(self, geojson):
+        self.raw = geojson
+
+        self.id = None
+        self.bbox = None
+        self.area_description = None
+        self.category = None
+        self.certainty = None
+        self.country = None
+        self.description = None
+        self.effective = None
+        self.event = None
+        self.expires = None
+        self.headline = None
+        self.origin = None
+        self.severity = None
+        self.states = None
+        self.status = None
+        self.urgency = None
+
+        self._build()
+
+    def _build(self):
+        self.features = []
+        for x in self.raw:
+            self.features.extend(x['features'])
+
+        self.id = merge_json(self.features, 'id')
+        self.bbox = merge_json(self.features, 'bbox')
+        self.area_description = merge_json(self.features, ['properties', 'areaDesc'])
+        self.category = merge_json(self.features, ['properties', 'category'])
+        self.certainty = merge_json(self.features, ['properties', 'certainty'])
+        self.country = merge_json(self.features, ['properties', 'country'])
+        self.description = merge_json(self.features, ['properties', 'description'])
+        self.effective = merge_json(self.features, ['properties', 'effective'])
+        self.event = merge_json(self.features, ['properties', 'event'])
+        self.expires = merge_json(self.features, ['properties', 'expires'])
+        self.headline = merge_json(self.features, ['properties', 'headline'])
+        self.origin = merge_json(self.features, ['properties', 'origin'])
+        self.severity = merge_json(self.features, ['properties', 'severity'])
+        self.states = merge_json(self.features, ['properties', 'states'])
+        self.status = merge_json(self.features, ['properties', 'status'])
+        self.urgency = merge_json(self.features, ['properties', 'urgency'])

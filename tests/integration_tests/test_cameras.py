@@ -28,7 +28,7 @@ def test_cameras(utc_now):
     index_results = cameras.index(limit=10, skip=3900)
 
     # Extract id from index query
-    id_ = index_results[0]['features'][0]['id']
+    id_ = index_results.id[0]
 
     # Perform show query
     show_results = cameras.show(id_)
