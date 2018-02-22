@@ -1,4 +1,54 @@
-"""Records and Data Containers used by the SDK."""
+"""Data structures for the SDK."""
+import abc
+
+import six
+
+
+@six.add_metaclass(abc.ABCMeta)
+class FeatureCollection(object):
+    """
+    Abstract base class for feature results.
+
+    Features can be from GeoJSON feature collections or generic feature
+    results.
+
+    """
+
+    def __init__(self):
+        pass
+
+    @abc.abstractmethod
+    def _get_features(self):
+        """
+        _build must be implemented in children.
+
+        Features will be extracted into a list and any important instance
+        attributes will be merged.
+
+        self.features must be a list of individual GeoJSON features.
+
+        """
+        self.features = []
+
+    def __getitem__(self, item):
+        return self.features[item]
+
+    def __iter__(self):
+        self._idx = 0
+        return self
+
+    def __len__(self):
+        return len(self.features)
+
+    def __next__(self):
+        if self._idx >= self.__len__():
+            self._idx = 0
+            raise StopIteration
+        temp = self.features[self._idx]
+        self._idx += 1
+        return temp
+
+    next = __next__  # For Python 2
 
 
 class DataContainer(object):

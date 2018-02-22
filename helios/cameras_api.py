@@ -10,6 +10,7 @@ import logging
 from dateutil.parser import parse
 
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
+from helios.core.structure import FeatureCollection
 from helios.utilities import logging_utils
 from helios.utilities.json_utils import merge_json
 
@@ -163,29 +164,35 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                                                return_image_data=return_image_data)
 
 
-class CamerasIndex(object):
+class CamerasIndex(FeatureCollection):
     """Index results for the Cameras API."""
 
     def __init__(self, geojson):
+        super(CamerasIndex, self).__init__()
+
         self.raw = geojson
 
         self.features = None
         self.id = None
         self.city = None
+        self.state = None
         self.country = None
         self.description = None
         self.provider = None
 
+        self._get_features()
         self._build()
 
-    def _build(self):
+    def _get_features(self):
         # Combine all features into a list.
         self.features = []
         for x in self.raw:
             self.features.extend(x['features'])
 
+    def _build(self):
         self.id = merge_json(self.features, 'id')
         self.city = merge_json(self.features, ['properties', 'city'])
+        self.state = merge_json(self.features, ['properties', 'state'])
         self.country = merge_json(self.features, ['properties', 'country'])
         self.description = merge_json(self.features, ['properties', 'description'])
         self.provider = merge_json(self.features, ['properties', 'provider'])

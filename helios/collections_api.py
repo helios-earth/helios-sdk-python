@@ -13,7 +13,7 @@ from collections import namedtuple
 import requests
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
-from helios.core.records import Record, DataContainer
+from helios.core.structure import Record, DataContainer
 from helios.utilities import logging_utils
 
 

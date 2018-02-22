@@ -8,6 +8,7 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
+from helios.core.structure import FeatureCollection
 from helios.utilities.json_utils import merge_json
 
 
@@ -79,12 +80,15 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
         return super(Alerts, self).show(alert_ids)
 
 
-class AlertsIndex(object):
+class AlertsIndex(FeatureCollection):
     """Index results for the Alerts API."""
 
     def __init__(self, geojson):
+        super(AlertsIndex, self).__init__()
+
         self.raw = geojson
 
+        self.features = None
         self.id = None
         self.bbox = None
         self.area_description = None
@@ -102,13 +106,15 @@ class AlertsIndex(object):
         self.status = None
         self.urgency = None
 
+        self._get_features()
         self._build()
 
-    def _build(self):
+    def _get_features(self):
         self.features = []
         for x in self.raw:
             self.features.extend(x['features'])
 
+    def _build(self):
         self.id = merge_json(self.features, 'id')
         self.bbox = merge_json(self.features, 'bbox')
         self.area_description = merge_json(self.features, ['properties', 'areaDesc'])

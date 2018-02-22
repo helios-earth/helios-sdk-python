@@ -15,7 +15,7 @@ import requests
 from PIL import Image
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
-from helios.core.records import ImageRecord, DataContainer
+from helios.core.structure import ImageRecord, DataContainer
 from helios.utilities import logging_utils, parsing_utils
 
 

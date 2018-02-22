@@ -10,9 +10,9 @@ import numpy as np
 import requests
 from PIL import Image
 
-from helios.core.records import ImageRecord, Record, DataContainer
 from helios.core.request_manager import RequestManager
 from helios.core.session import Session
+from helios.core.structure import ImageRecord, Record, DataContainer
 from helios.utilities import logging_utils, parsing_utils
 
 
