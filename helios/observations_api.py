@@ -16,7 +16,7 @@ from PIL import Image
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import FeatureCollection
-from helios.core.structure import ImageRecord, DataContainer
+from helios.core.structure import ImageRecord, RecordCollection
 from helios.utilities import logging_utils, parsing_utils
 
 
@@ -83,7 +83,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
              list: GeoJSON feature collections.
 
         """
-        return super(Observations, self).index(**kwargs)
+        return IndexResults(super(Observations, self).index(**kwargs))
 
     @logging_utils.log_entrance_exit
     def preview(self, observation_ids, out_dir=None, return_image_data=False):
@@ -119,7 +119,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__preview_worker, messages)
 
-        return DataContainer(results)
+        return PreviewResults(results)
 
     def __preview_worker(self, msg):
         """msg must contain observation_id and check_for_duds"""
@@ -168,19 +168,19 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             Container of :class:`Record <helios.core.records.Record>` instances.
 
         """
-        return super(Observations, self).show(observation_ids)
+        return ShowResults(super(Observations, self).show(observation_ids))
 
 
-class ObservationsIndex(FeatureCollection):
-    """Index results for the Cameras API."""
+class IndexResults(FeatureCollection):
+    """Index results for the Observations API."""
 
     def __init__(self, geojson):
-        super(ObservationsIndex, self).__init__(geojson)
+        super(IndexResults, self).__init__(geojson)
 
-    def _combine_features(self):
+    def _build(self):
         # Combine all features into a list.
         self.features = []
-        for x in self.raw:
+        for x in self._raw:
             self.features.extend(x['features'])
 
     @property
@@ -218,3 +218,61 @@ class ObservationsIndex(FeatureCollection):
     @property
     def time(self):
         return [x['properties']['time'] for x in self.features]
+
+
+class PreviewResults(RecordCollection):
+    """Preview results from the Observations API."""
+
+    def __init__(self, records):
+        super(PreviewResults, self).__init__(records)
+
+    @property
+    def output_file(self):
+        return [x.output_file for x in self.raw_records if x.ok]
+
+    @property
+    def name(self):
+        return [x.name for x in self.raw_records if x.ok]
+
+
+class ShowResults(RecordCollection):
+    """Show results from the Observations API."""
+
+    def __init__(self, records):
+        super(ShowResults, self).__init__(records)
+
+    @property
+    def city(self):
+        return [x['properties']['city'] for x in self.content]
+
+    @property
+    def country(self):
+        return [x['properties']['country'] for x in self.content]
+
+    @property
+    def description(self):
+        return [x['properties']['description'] for x in self.content]
+
+    @property
+    def id(self):
+        return [x['id'] for x in self.content]
+
+    @property
+    def prev_id(self):
+        return [x['properties']['prev_id'] for x in self.content]
+
+    @property
+    def region(self):
+        return [x['properties']['region'] for x in self.content]
+
+    @property
+    def sensors(self):
+        return [x['properties']['sensors'] for x in self.content]
+
+    @property
+    def state(self):
+        return [x['properties']['state'] for x in self.content]
+
+    @property
+    def time(self):
+        return [x['properties']['time'] for x in self.content]

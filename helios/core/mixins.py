@@ -12,7 +12,7 @@ from PIL import Image
 
 from helios.core.request_manager import RequestManager
 from helios.core.session import Session
-from helios.core.structure import ImageRecord, Record, DataContainer
+from helios.core.structure import ImageRecord, Record
 from helios.utilities import logging_utils, parsing_utils
 
 
@@ -200,7 +200,7 @@ class ShowMixin(object):
         # Process messages using the worker function.
         results = self._process_messages(self.__show_worker, messages)
 
-        return DataContainer(results)
+        return results
 
     def __show_worker(self, msg):
         """msg must contain id_"""
@@ -234,7 +234,7 @@ class ShowImageMixin(object):
         # Process messages using the worker function.
         results = self._process_messages(self.__show_image_worker, messages)
 
-        return DataContainer(results)
+        return results
 
     def __show_image_worker(self, msg):
         """msg must contain id_, data, out_dir, and return_image_data"""

@@ -32,8 +32,7 @@ def test_observations(utc_range):
                                        time_max=utc_range[1])
 
     # Extract id from index query
-    for feature in index_results[0]['features']:
-        id_ = feature['id']
+    for id_ in index_results.id:
         try:
             id_.index('error')
         except ValueError:
@@ -43,10 +42,10 @@ def test_observations(utc_range):
     show_results = observations.show(id_)
 
     # Perform preview query
-    preview_results = observations.preview(id_, return_image_data=True)[0]
+    preview_results = observations.preview(id_, return_image_data=True)
 
     # Check image data.
-    assert (preview_results.content.size > 0)
+    assert (preview_results.content[0].size > 0)
 
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ import requests
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
 from helios.core.structure import FeatureCollection
-from helios.core.structure import Record, DataContainer
+from helios.core.structure import Record, RecordCollection
 from helios.utilities import logging_utils
 
 
@@ -95,7 +95,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__add_image_worker, messages)
 
-        return DataContainer(results)
+        return AddImageResults(results)
 
     def __add_image_worker(self, msg):
         """msg must contain collection_id and data"""
@@ -215,7 +215,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             results = self.show(collection_id, marker=mark_img)
 
             # Gather images.
-            images_found = results['images']
+            images_found = results.images
 
             if camera is not None:
                 imgs_found_temp = [x for x in images_found if x.split('_')[0] == camera]
@@ -250,7 +250,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
              list: GeoJSON feature collections.
 
         """
-        return CollectionsIndex(super(Collections, self).index(**kwargs))
+        return IndexResults(super(Collections, self).index(**kwargs))
 
     @logging_utils.log_entrance_exit
     def remove_image(self, collection_id, names):
@@ -276,7 +276,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__remove_image_worker, messages)
 
-        return DataContainer(results)
+        return RemoveImageResults(results)
 
     def __remove_image_worker(self, msg):
         """msg must contain collection_id and img_name"""
@@ -324,7 +324,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         resp = self._request_manager.get(query_str)
 
-        return resp.json()
+        return ShowResults(resp.json())
 
     def show_image(self, collection_id,
                    image_names,
@@ -346,10 +346,10 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             Container of :class:`ImageRecord <helios.core.records.ImageRecord>`.
 
         """
-        return super(Collections, self).show_image(collection_id,
-                                                   image_names,
-                                                   out_dir=out_dir,
-                                                   return_image_data=return_image_data)
+        return ShowImageResults(
+            super(Collections, self).show_image(collection_id, image_names,
+                                                out_dir=out_dir,
+                                                return_image_data=return_image_data))
 
     @logging_utils.log_entrance_exit
     def update(self, collections_id, name=None, description=None, tags=None):
@@ -393,16 +393,27 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         self._request_manager.patch(patch_url, headers=header, data=parms)
 
 
-class CollectionsIndex(FeatureCollection):
-    """Index results for the Cameras API."""
+class AddImageResults(RecordCollection):
+    """Add_image results for Collections API."""
+
+    def __init__(self, records):
+        super(AddImageResults, self).__init__(records)
+
+    @property
+    def ok(self):
+        return [x['ok'] for x in self.content]
+
+
+class IndexResults(FeatureCollection):
+    """Index results for the Collections API."""
 
     def __init__(self, geojson):
-        super(CollectionsIndex, self).__init__(geojson)
+        super(IndexResults, self).__init__(geojson)
 
-    def _combine_features(self):
+    def _build(self):
         # Combine all features into a list.
         self.features = []
-        for x in self.raw:
+        for x in self._raw:
             self.features.extend(x['results'])
 
     @property
@@ -436,3 +447,45 @@ class CollectionsIndex(FeatureCollection):
     @property
     def user_id(self):
         return [x['user_id'] for x in self.features]
+
+
+class RemoveImageResults(RecordCollection):
+    """Remove_image results for the Collections API."""
+
+    def __init__(self, records):
+        super(RemoveImageResults, self).__init__(records)
+
+    @property
+    def ok(self):
+        return [x['ok'] for x in self.content]
+
+
+class ShowImageResults(RecordCollection):
+    """Show_image results for the Cameras API."""
+
+    def __init__(self, records):
+        super(ShowImageResults, self).__init__(records)
+
+    @property
+    def output_file(self):
+        return [x.output_file for x in self.raw_records if x.ok]
+
+    @property
+    def name(self):
+        return [x.name for x in self.raw_records if x.ok]
+
+
+class ShowResults(object):
+    """Show results for the Collections API."""
+
+    def __init__(self, geojson):
+        self.raw = geojson
+        self.id = geojson['_id']
+        self.bucket = geojson['bucket']
+        self.created_at = geojson['created_at']
+        self.description = geojson['description']
+        self.images = geojson['images']
+        self.name = geojson['name']
+        self.tags = geojson['tags']
+        self.updated_at = geojson['updated_at']
+        self.user_id = geojson['user_id']

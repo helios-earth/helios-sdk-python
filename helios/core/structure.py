@@ -1,15 +1,13 @@
-"""Data structures for the SDK."""
+"""Base data structures for the SDK."""
 import abc
 
 import six
-
-from helios.utilities.json_utils import merge_json
 
 
 @six.add_metaclass(abc.ABCMeta)
 class FeatureCollection(object):
     """
-    Abstract base class for feature results.
+    Abstract base class for feature/data results.
 
     Features can be from GeoJSON feature collections or generic feature
     results.
@@ -17,22 +15,23 @@ class FeatureCollection(object):
     """
 
     def __init__(self, data):
-        self.raw = data
-        self._combine_features()
+        self._raw = data
+        self._build()
 
     @abc.abstractmethod
-    def _combine_features(self):
+    def _build(self):
         """
-        _combine_features must be implemented in children.
+        Combine data into a list.
+
+        _build must be implemented in children.
 
         For GeoJSON all 'feature' sections will be merged and for Collections
         index results, 'results' will be merged.
 
         """
         self.features = []
-
-    def _merge(self, keys):
-        return merge_json(self.features, keys)
+        for _ in self._raw:
+            self.features.append([])
 
     def __delitem__(self, index):
         del self.features[index]
@@ -58,68 +57,50 @@ class FeatureCollection(object):
     next = __next__  # For Python 2
 
 
-class DataContainer(object):
-    """Container for batch jobs."""
+@six.add_metaclass(abc.ABCMeta)
+class RecordCollection(object):
+    """
+    Abstract base class for batch jobs.
+
+    This class is a variation of the FeatureCollection class to work with
+    Records.
+
+    """
 
     def __init__(self, records):
-        self._raw_data = records
+        self.raw_records = records
+        self.failed = [x for x in records if not x.ok]
+        self.succeeded = [x for x in records if x.ok]
+        self.content = [x.content for x in records if x.ok]
 
     @property
-    def failed(self):
-        """Retrieve raw failed queries."""
-        return [x for x in self._raw_data if not x.ok]
+    def message(self):
+        return [x.message for x in self.raw_records if x.ok]
 
     @property
-    def succeeded(self):
-        """Retrieve raw successful queries."""
-        return [x for x in self._raw_data if x.ok]
-
-    @property
-    def results(self):
-        """Retrieve content from successful queries."""
-        return [x.content for x in self._raw_data if x.ok]
-
-    def __contains__(self, item):
-        return item in self._raw_data
+    def query(self):
+        return [x.query for x in self.raw_records if x.ok]
 
     def __delitem__(self, index):
-        del self._raw_data[index]
-
-    def __getattr__(self, item):
-        """
-        Retrieve combined attributes from all records in container.
-
-        .. code-block:: python
-
-            #data is an instance of DataContainer and contains Record instances.
-            all_messages = data.message  # Messages are what is sent to processing pools and contain input parameters, etc.
-            all_queries = data.query
-            all_content = data.content  # Will be None or data, depending on errors.
-            all_errors = data.errors  # Will be None or an exception.
-
-        """
-        return [getattr(x, item) for x in self._raw_data]
+        del self.content[index]
 
     def __getitem__(self, item):
-        return self._raw_data[item]
+        return self.content[item]
 
     def __iter__(self):
         self._idx = 0
         return self
 
     def __len__(self):
-        return len(self._raw_data)
+        return len(self.content)
 
     def __next__(self):
         if self._idx >= self.__len__():
             self._idx = 0
             raise StopIteration
-        temp = self._raw_data[self._idx]
+        temp = self.__getitem__[self._idx]
         self._idx += 1
         return temp
-
-    def __setitem__(self, index, value):
-        self._raw_data[index] = value
 
     next = __next__  # For Python 2
 

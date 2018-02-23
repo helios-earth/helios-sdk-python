@@ -10,7 +10,7 @@ import logging
 from dateutil.parser import parse
 
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
-from helios.core.structure import FeatureCollection
+from helios.core.structure import FeatureCollection, RecordCollection
 from helios.utilities import logging_utils
 
 
@@ -120,7 +120,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
              list: GeoJSON feature collections.
 
         """
-        return CamerasIndex(super(Cameras, self).index(**kwargs))
+        return IndexResults(super(Cameras, self).index(**kwargs))
 
     def show(self, camera_ids):
         """
@@ -134,7 +134,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             Container of :class:`Record <helios.core.records.Record>` instances.
 
         """
-        return super(Cameras, self).show(camera_ids)
+        return ShowResults(super(Cameras, self).show(camera_ids))
 
     def show_image(self, camera_id, times, out_dir=None, return_image_data=False):
         """
@@ -159,20 +159,20 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             instances.
 
         """
-        return super(Cameras, self).show_image(camera_id, times, out_dir=out_dir,
-                                               return_image_data=return_image_data)
+        return ShowImageResults(super(Cameras, self).show_image(
+            camera_id, times, out_dir=out_dir, return_image_data=return_image_data))
 
 
-class CamerasIndex(FeatureCollection):
+class IndexResults(FeatureCollection):
     """Index results for the Cameras API."""
 
     def __init__(self, geojson):
-        super(CamerasIndex, self).__init__(geojson)
+        super(IndexResults, self).__init__(geojson)
 
-    def _combine_features(self):
+    def _build(self):
         # Combine all features into a list.
         self.features = []
-        for x in self.raw:
+        for x in self._raw:
             self.features.extend(x['features'])
 
     @property
@@ -202,3 +202,57 @@ class CamerasIndex(FeatureCollection):
     @property
     def video(self):
         return [x['properties']['video'] for x in self.features]
+
+
+class ShowImageResults(RecordCollection):
+    """Show_image results for the Cameras API."""
+
+    def __init__(self, records):
+        super(ShowImageResults, self).__init__(records)
+
+    @property
+    def output_file(self):
+        return [x.output_file for x in self.raw_records if x.ok]
+
+    @property
+    def name(self):
+        return [x.name for x in self.raw_records if x.ok]
+
+
+class ShowResults(RecordCollection):
+    """Show results for the Cameras API."""
+
+    def __init__(self, records):
+        super(ShowResults, self).__init__(records)
+
+    @property
+    def city(self):
+        return [x['properties']['city'] for x in self.content]
+
+    @property
+    def country(self):
+        return [x['properties']['country'] for x in self.content]
+
+    @property
+    def description(self):
+        return [x['properties']['description'] for x in self.content]
+
+    @property
+    def direction(self):
+        return [x['properties']['direction'] for x in self.content]
+
+    @property
+    def id(self):
+        return [x['id'] for x in self.content]
+
+    @property
+    def region(self):
+        return [x['properties']['region'] for x in self.content]
+
+    @property
+    def state(self):
+        return [x['properties']['state'] for x in self.content]
+
+    @property
+    def video(self):
+        return [x['properties']['video'] for x in self.content]
