@@ -13,7 +13,7 @@ from collections import namedtuple
 import requests
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
-from helios.core.structure import FeatureCollection
+from helios.core.structure import ContentCollection
 from helios.core.structure import Record, RecordCollection
 from helios.utilities import logging_utils
 
@@ -404,49 +404,49 @@ class AddImageResults(RecordCollection):
         return [x['ok'] for x in self.content]
 
 
-class IndexResults(FeatureCollection):
+class IndexResults(ContentCollection):
     """Index results for the Collections API."""
 
     def __init__(self, geojson):
         super(IndexResults, self).__init__(geojson)
 
     def _build(self):
-        # Combine all features into a list.
-        self.features = []
+        """Combine all results into the content attribute."""
+        self.content = []
         for x in self._raw:
-            self.features.extend(x['results'])
+            self.content.extend(x['results'])
 
     @property
     def bucket(self):
-        return [x['bucket'] for x in self.features]
+        return [x['bucket'] for x in self.content]
 
     @property
     def created_at(self):
-        return [x['created_at'] for x in self.features]
+        return [x['created_at'] for x in self.content]
 
     @property
     def description(self):
-        return [x['description'] for x in self.features]
+        return [x['description'] for x in self.content]
 
     @property
     def id(self):
-        return [x['_id'] for x in self.features]
+        return [x['_id'] for x in self.content]
 
     @property
     def name(self):
-        return [x['name'] for x in self.features]
+        return [x['name'] for x in self.content]
 
     @property
     def tags(self):
-        return [x['tags'] for x in self.features]
+        return [x['tags'] for x in self.content]
 
     @property
     def updated_at(self):
-        return [x['updated_at'] for x in self.features]
+        return [x['updated_at'] for x in self.content]
 
     @property
     def user_id(self):
-        return [x['user_id'] for x in self.features]
+        return [x['user_id'] for x in self.content]
 
 
 class RemoveImageResults(RecordCollection):
@@ -461,18 +461,18 @@ class RemoveImageResults(RecordCollection):
 
 
 class ShowImageResults(RecordCollection):
-    """Show_image results for the Cameras API."""
+    """Show_image results for the Collections API."""
 
     def __init__(self, records):
         super(ShowImageResults, self).__init__(records)
 
     @property
     def output_file(self):
-        return [x.output_file for x in self.raw_records if x.ok]
+        return [x.output_file for x in self._raw if x.ok]
 
     @property
     def name(self):
-        return [x.name for x in self.raw_records if x.ok]
+        return [x.name for x in self._raw if x.ok]
 
 
 class ShowResults(object):

@@ -15,7 +15,7 @@ import requests
 from PIL import Image
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
-from helios.core.structure import FeatureCollection
+from helios.core.structure import ContentCollection
 from helios.core.structure import ImageRecord, RecordCollection
 from helios.utilities import logging_utils, parsing_utils
 
@@ -171,53 +171,53 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         return ShowResults(super(Observations, self).show(observation_ids))
 
 
-class IndexResults(FeatureCollection):
+class IndexResults(ContentCollection):
     """Index results for the Observations API."""
 
     def __init__(self, geojson):
         super(IndexResults, self).__init__(geojson)
 
     def _build(self):
-        # Combine all features into a list.
-        self.features = []
+        """Combine all GeoJSON features into the content attribute."""
+        self.content = []
         for x in self._raw:
-            self.features.extend(x['features'])
+            self.content.extend(x['features'])
 
     @property
     def city(self):
-        return [x['properties']['city'] for x in self.features]
+        return [x['properties']['city'] for x in self.content]
 
     @property
     def country(self):
-        return [x['properties']['country'] for x in self.features]
+        return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
-        return [x['properties']['description'] for x in self.features]
+        return [x['properties']['description'] for x in self.content]
 
     @property
     def id(self):
-        return [x['id'] for x in self.features]
+        return [x['id'] for x in self.content]
 
     @property
     def prev_id(self):
-        return [x['properties']['prev_id'] for x in self.features]
+        return [x['properties']['prev_id'] for x in self.content]
 
     @property
     def region(self):
-        return [x['properties']['region'] for x in self.features]
+        return [x['properties']['region'] for x in self.content]
 
     @property
     def sensors(self):
-        return [x['properties']['sensors'] for x in self.features]
+        return [x['properties']['sensors'] for x in self.content]
 
     @property
     def state(self):
-        return [x['properties']['state'] for x in self.features]
+        return [x['properties']['state'] for x in self.content]
 
     @property
     def time(self):
-        return [x['properties']['time'] for x in self.features]
+        return [x['properties']['time'] for x in self.content]
 
 
 class PreviewResults(RecordCollection):
@@ -228,11 +228,11 @@ class PreviewResults(RecordCollection):
 
     @property
     def output_file(self):
-        return [x.output_file for x in self.raw_records if x.ok]
+        return [x.output_file for x in self._raw if x.ok]
 
     @property
     def name(self):
-        return [x.name for x in self.raw_records if x.ok]
+        return [x.name for x in self._raw if x.ok]
 
 
 class ShowResults(RecordCollection):

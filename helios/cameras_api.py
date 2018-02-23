@@ -10,7 +10,7 @@ import logging
 from dateutil.parser import parse
 
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
-from helios.core.structure import FeatureCollection, RecordCollection
+from helios.core.structure import ContentCollection, RecordCollection
 from helios.utilities import logging_utils
 
 
@@ -163,45 +163,45 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             camera_id, times, out_dir=out_dir, return_image_data=return_image_data))
 
 
-class IndexResults(FeatureCollection):
+class IndexResults(ContentCollection):
     """Index results for the Cameras API."""
 
     def __init__(self, geojson):
         super(IndexResults, self).__init__(geojson)
 
     def _build(self):
-        # Combine all features into a list.
-        self.features = []
+        """Combine GeoJSON features into the content attribute."""
+        self.content = []
         for x in self._raw:
-            self.features.extend(x['features'])
+            self.content.extend(x['features'])
 
     @property
     def city(self):
-        return [x['properties']['city'] for x in self.features]
+        return [x['properties']['city'] for x in self.content]
 
     @property
     def country(self):
-        return [x['properties']['country'] for x in self.features]
+        return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
-        return [x['properties']['description'] for x in self.features]
+        return [x['properties']['description'] for x in self.content]
 
     @property
     def id(self):
-        return [x['id'] for x in self.features]
+        return [x['id'] for x in self.content]
 
     @property
     def region(self):
-        return [x['properties']['region'] for x in self.features]
+        return [x['properties']['region'] for x in self.content]
 
     @property
     def state(self):
-        return [x['properties']['state'] for x in self.features]
+        return [x['properties']['state'] for x in self.content]
 
     @property
     def video(self):
-        return [x['properties']['video'] for x in self.features]
+        return [x['properties']['video'] for x in self.content]
 
 
 class ShowImageResults(RecordCollection):
@@ -212,11 +212,11 @@ class ShowImageResults(RecordCollection):
 
     @property
     def output_file(self):
-        return [x.output_file for x in self.raw_records if x.ok]
+        return [x.output_file for x in self._raw if x.ok]
 
     @property
     def name(self):
-        return [x.name for x in self.raw_records if x.ok]
+        return [x.name for x in self._raw if x.ok]
 
 
 class ShowResults(RecordCollection):

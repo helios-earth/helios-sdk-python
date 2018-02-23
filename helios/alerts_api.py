@@ -8,7 +8,7 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
-from helios.core.structure import FeatureCollection, RecordCollection
+from helios.core.structure import ContentCollection, RecordCollection
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
@@ -79,80 +79,81 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
         return ShowResults(super(Alerts, self).show(alert_ids))
 
 
-class IndexResults(FeatureCollection):
+class IndexResults(ContentCollection):
     """Index results for the Alerts API."""
 
     def __init__(self, geojson):
         super(IndexResults, self).__init__(geojson)
 
     def _build(self):
-        self.features = []
+        """Combine GeoJSON features into the content attribute."""
+        self.content = []
         for x in self._raw:
-            self.features.extend(x['features'])
+            self.content.extend(x['features'])
 
     @property
     def area_description(self):
-        return [x['properties']['areaDesc'] for x in self.features]
+        return [x['properties']['areaDesc'] for x in self.content]
 
     @property
     def bbox(self):
-        return [x['bbox'] for x in self.features]
+        return [x['bbox'] for x in self.content]
 
     @property
     def category(self):
-        return [x['properties']['category'] for x in self.features]
+        return [x['properties']['category'] for x in self.content]
 
     @property
     def certainty(self):
-        return [x['properties']['certainty'] for x in self.features]
+        return [x['properties']['certainty'] for x in self.content]
 
     @property
     def country(self):
-        return [x['properties']['country'] for x in self.features]
+        return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
-        return [x['properties']['description'] for x in self.features]
+        return [x['properties']['description'] for x in self.content]
 
     @property
     def effective(self):
-        return [x['properties']['effective'] for x in self.features]
+        return [x['properties']['effective'] for x in self.content]
 
     @property
     def event(self):
-        return [x['properties']['event'] for x in self.features]
+        return [x['properties']['event'] for x in self.content]
 
     @property
     def expires(self):
-        return [x['properties']['expires'] for x in self.features]
+        return [x['properties']['expires'] for x in self.content]
 
     @property
     def headline(self):
-        return [x['properties']['headline'] for x in self.features]
+        return [x['properties']['headline'] for x in self.content]
 
     @property
     def id(self):
-        return [x['id'] for x in self.features]
+        return [x['id'] for x in self.content]
 
     @property
     def origin(self):
-        return [x['properties']['origin'] for x in self.features]
+        return [x['properties']['origin'] for x in self.content]
 
     @property
     def severity(self):
-        return [x['properties']['severity'] for x in self.features]
+        return [x['properties']['severity'] for x in self.content]
 
     @property
     def states(self):
-        return [x['properties']['states'] for x in self.features]
+        return [x['properties']['states'] for x in self.content]
 
     @property
     def status(self):
-        return [x['properties']['status'] for x in self.features]
+        return [x['properties']['status'] for x in self.content]
 
     @property
     def urgency(self):
-        return [x['properties']['urgency'] for x in self.features]
+        return [x['properties']['urgency'] for x in self.content]
 
 
 class ShowResults(RecordCollection):
