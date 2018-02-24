@@ -17,15 +17,14 @@ cameras and then parses the camera IDs from the resulting GeoJSON information.
 
 ```python
 import helios
-from helios.utilities import json_utils
 
 cameras = helios.Cameras()
 
 # Retrieve GeoJSON Feature Collection for New York state cameras.
 ny_cams = cameras.index(state='New York')
 
-# Parse the camera IDs from the results.
-ny_cams_ids = json_utils.merge_json(ny_cams, ['features', 'ids'])
+# Gather the camera IDs from the results.
+ny_cams_ids = ny_cams.id
 ```
 
 ------------------
