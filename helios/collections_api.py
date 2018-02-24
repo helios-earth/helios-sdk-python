@@ -79,8 +79,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
 
         Returns:
-            :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`Record <helios.core.records.Record>` instances.
+            :class:`AddImageResults <helios.collections_api.AddImageResults>`
 
         """
         assert isinstance(assets, (list, tuple, dict))
@@ -235,8 +234,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
     def index(self, **kwargs):
         """
-        Get a list of collections matching the provided spatial, text, or
-        metadata filters.
+        Get collections matching the provided spatial, text, or metadata filters.
 
         The maximum skip value is 4000. If this is reached, truncated results
         will be returned. You will need to refine your query to avoid this.
@@ -247,7 +245,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             **kwargs: Any keyword arguments found in the collections_index_documentation_.
 
         Returns:
-             list: GeoJSON feature collections.
+             :class:`IndexResults <helios.collections_api.IndexResults>`
 
         """
         return IndexResults(super(Collections, self).index(**kwargs))
@@ -262,8 +260,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             names (str or sequence of strs): List of image names to be removed.
 
         Returns:
-            :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`Record <helios.core.records.Record>` instances.
+            :class:`RemoveImageResults <helios.collections_api.RemoveImageResults>`
 
         """
         if not isinstance(names, (list, tuple)):
@@ -313,7 +310,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 matching result will be the first image returned.
 
         Returns:
-            dict: Collection attributes.
+            :class:`ShowResults <helios.collections_api.ShowResults>`
 
         """
         params_str = self._parse_query_inputs(dict(limit=limit, marker=marker))
@@ -342,8 +339,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`ImageRecord <helios.core.records.ImageRecord>`.
+            :class:`ShowImageResults <helios.collections_api.ShowImageResults>`
 
         """
         return ShowImageResults(
@@ -401,6 +397,7 @@ class AddImageResults(RecordCollection):
 
     @property
     def ok(self):
+        """API success responses for added images."""
         return [x['ok'] for x in self.content]
 
 
@@ -418,34 +415,42 @@ class IndexResults(ContentCollection):
 
     @property
     def bucket(self):
+        """All 'bucket' fields for every result."""
         return [x['bucket'] for x in self.content]
 
     @property
     def created_at(self):
+        """All 'city' fields for every result."""
         return [x['created_at'] for x in self.content]
 
     @property
     def description(self):
+        """All 'created_at' fields for every result."""
         return [x['description'] for x in self.content]
 
     @property
     def id(self):
+        """All '_id' fields for every result."""
         return [x['_id'] for x in self.content]
 
     @property
     def name(self):
+        """All 'name' fields for every result."""
         return [x['name'] for x in self.content]
 
     @property
     def tags(self):
+        """All 'tags' fields for every result."""
         return [x['tags'] for x in self.content]
 
     @property
     def updated_at(self):
+        """All 'updated_at' fields for every result."""
         return [x['updated_at'] for x in self.content]
 
     @property
     def user_id(self):
+        """All 'user_id' fields for every result."""
         return [x['user_id'] for x in self.content]
 
 
@@ -457,6 +462,7 @@ class RemoveImageResults(RecordCollection):
 
     @property
     def ok(self):
+        """API success responses for removed images."""
         return [x['ok'] for x in self.content]
 
 
@@ -468,15 +474,30 @@ class ShowImageResults(RecordCollection):
 
     @property
     def output_file(self):
+        """Full paths to all images."""
         return [x.output_file for x in self._raw if x.ok]
 
     @property
     def name(self):
+        """Names of all images."""
         return [x.name for x in self._raw if x.ok]
 
 
 class ShowResults(object):
-    """Show results for the Collections API."""
+    """Show results for the Collections API.
+
+    Attributes:
+        id: '_id' field from result attributes.
+        bucket: 'bucket' field from result attributes.
+        created_at: 'created_at' field from result attributes.
+        description: 'description' field from result attributes.
+        images: 'images' field from result attributes.
+        name: 'name' field from result attributes.
+        tags: 'tags field from result attributes.
+        updated_at: 'updated_at' field from result attributes.
+        user_id: 'user_id' field from result attributes.
+
+    """
 
     def __init__(self, geojson):
         self.raw = geojson

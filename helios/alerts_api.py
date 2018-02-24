@@ -47,7 +47,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
     def index(self, **kwargs):
         """
-        Get a list of alerts matching the provided spatial, text, or
+        Get alerts matching the provided spatial, text, or
         metadata filters.
 
         The maximum skip value is 4000. If this is reached, truncated results
@@ -59,7 +59,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             **kwargs: Any keyword arguments found in the alerts_index_documentation_.
 
         Returns:
-             list: GeoJSON feature collections.
+             :class:`IndexResults <helios.alerts_api.IndexResults>`
 
         """
         return IndexResults(super(Alerts, self).index(**kwargs))
@@ -72,8 +72,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             alert_ids (str or sequence of strs): Helios alert ID(s).
 
         Returns:
-            :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`Record <helios.core.records.Record>` instances.
+            :class:`ShowResults <helios.alerts_api.ShowResults>`
 
         """
         return ShowResults(super(Alerts, self).show(alert_ids))
@@ -93,66 +92,82 @@ class IndexResults(ContentCollection):
 
     @property
     def area_description(self):
+        """All 'areaDesc' fields for every feature."""
         return [x['properties']['areaDesc'] for x in self.content]
 
     @property
     def bbox(self):
+        """All 'bbox' fields for every feature."""
         return [x['bbox'] for x in self.content]
 
     @property
     def category(self):
+        """All 'category' fields for every feature."""
         return [x['properties']['category'] for x in self.content]
 
     @property
     def certainty(self):
+        """All 'certainty' fields for every feature."""
         return [x['properties']['certainty'] for x in self.content]
 
     @property
     def country(self):
+        """All 'country' fields for every feature."""
         return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
+        """All 'description' fields for every feature."""
         return [x['properties']['description'] for x in self.content]
 
     @property
     def effective(self):
+        """All 'effective' fields for every feature."""
         return [x['properties']['effective'] for x in self.content]
 
     @property
     def event(self):
+        """All 'event' fields for every feature."""
         return [x['properties']['event'] for x in self.content]
 
     @property
     def expires(self):
+        """All 'expires' fields for every feature."""
         return [x['properties']['expires'] for x in self.content]
 
     @property
     def headline(self):
+        """All 'headline' fields for every feature."""
         return [x['properties']['headline'] for x in self.content]
 
     @property
     def id(self):
+        """All 'id' fields for every feature."""
         return [x['id'] for x in self.content]
 
     @property
     def origin(self):
+        """All 'origin' fields for every feature."""
         return [x['properties']['origin'] for x in self.content]
 
     @property
     def severity(self):
+        """All 'severity' fields for every feature."""
         return [x['properties']['severity'] for x in self.content]
 
     @property
     def states(self):
+        """All 'states' fields for every feature."""
         return [x['properties']['states'] for x in self.content]
 
     @property
     def status(self):
+        """All 'status' fields for every feature."""
         return [x['properties']['status'] for x in self.content]
 
     @property
     def urgency(self):
+        """All 'urgency' fields for every feature."""
         return [x['properties']['urgency'] for x in self.content]
 
 
@@ -164,64 +179,80 @@ class ShowResults(RecordCollection):
 
     @property
     def area_description(self):
+        """All 'area_description' fields for every feature."""
         return [x['properties']['areaDesc'] for x in self.content]
 
     @property
     def bbox(self):
+        """All 'bbox' fields for every feature."""
         return [x['bbox'] for x in self.content]
 
     @property
     def category(self):
+        """All 'category' fields for every feature."""
         return [x['properties']['category'] for x in self.content]
 
     @property
     def certainty(self):
+        """All 'certainty' fields for every feature."""
         return [x['properties']['certainty'] for x in self.content]
 
     @property
     def country(self):
+        """All 'country' fields for every feature."""
         return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
+        """All 'description' fields for every feature."""
         return [x['properties']['description'] for x in self.content]
 
     @property
     def effective(self):
+        """All 'effective' fields for every feature."""
         return [x['properties']['effective'] for x in self.content]
 
     @property
     def event(self):
+        """All 'event' fields for every feature."""
         return [x['properties']['event'] for x in self.content]
 
     @property
     def expires(self):
+        """All 'expires' fields for every feature."""
         return [x['properties']['expires'] for x in self.content]
 
     @property
     def headline(self):
+        """All 'headline' fields for every feature."""
         return [x['properties']['headline'] for x in self.content]
 
     @property
     def id(self):
+        """All 'id' fields for every feature."""
         return [x['id'] for x in self.content]
 
     @property
     def origin(self):
+        """All 'origin' fields for every feature."""
         return [x['properties']['origin'] for x in self.content]
 
     @property
     def severity(self):
+        """All 'severity' fields for every feature."""
         return [x['properties']['severity'] for x in self.content]
 
     @property
     def states(self):
+        """All 'states' fields for every feature."""
         return [x['properties']['states'] for x in self.content]
 
     @property
     def status(self):
+        """All 'status' fields for every feature."""
         return [x['properties']['status'] for x in self.content]
 
     @property
     def urgency(self):
+        """All 'urgency' fields for every feature."""
         return [x['properties']['urgency'] for x in self.content]

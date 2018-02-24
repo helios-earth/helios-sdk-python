@@ -105,7 +105,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
     def index(self, **kwargs):
         """
-        Get a list of cameras matching the provided spatial, text, or
+        Get cameras matching the provided spatial, text, or
         metadata filters.
 
         The maximum skip value is 4000. If this is reached, truncated results
@@ -117,7 +117,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             **kwargs: Any keyword arguments found in the cameras_index_documentation_.
 
         Returns:
-             list: GeoJSON feature collections.
+             :class:`IndexResults <helios.cameras_api.IndexResults>`
 
         """
         return IndexResults(super(Cameras, self).index(**kwargs))
@@ -130,8 +130,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             camera_ids (str or sequence of strs): Helios camera ID(s).
 
         Returns:
-            :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`Record <helios.core.records.Record>` instances.
+            :class:`ShowResults <helios.cameras_api.ShowResults>`
 
         """
         return ShowResults(super(Cameras, self).show(camera_ids))
@@ -154,9 +153,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`ImageRecord <helios.core.records.ImageRecord>`
-            instances.
+            :class:`ShowImageResults <helios.cameras_api.ShowImageResults>`
 
         """
         return ShowImageResults(super(Cameras, self).show_image(
@@ -177,30 +174,37 @@ class IndexResults(ContentCollection):
 
     @property
     def city(self):
+        """All 'city' fields for every feature."""
         return [x['properties']['city'] for x in self.content]
 
     @property
     def country(self):
+        """All 'country' fields for every feature."""
         return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
+        """All 'description' fields for every feature."""
         return [x['properties']['description'] for x in self.content]
 
     @property
     def id(self):
+        """All 'id' fields for every feature."""
         return [x['id'] for x in self.content]
 
     @property
     def region(self):
+        """All 'region' fields for every feature."""
         return [x['properties']['region'] for x in self.content]
 
     @property
     def state(self):
+        """All 'state' fields for every feature."""
         return [x['properties']['state'] for x in self.content]
 
     @property
     def video(self):
+        """All 'video' fields for every feature."""
         return [x['properties']['video'] for x in self.content]
 
 
@@ -212,10 +216,12 @@ class ShowImageResults(RecordCollection):
 
     @property
     def output_file(self):
+        """Full paths to all images."""
         return [x.output_file for x in self._raw if x.ok]
 
     @property
     def name(self):
+        """Names of all images."""
         return [x.name for x in self._raw if x.ok]
 
 
@@ -227,32 +233,40 @@ class ShowResults(RecordCollection):
 
     @property
     def city(self):
+        """All 'city' fields for every feature."""
         return [x['properties']['city'] for x in self.content]
 
     @property
     def country(self):
+        """All 'country' fields for every feature."""
         return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
+        """All 'description' fields for every feature."""
         return [x['properties']['description'] for x in self.content]
 
     @property
     def direction(self):
+        """All 'direction' fields for every feature."""
         return [x['properties']['direction'] for x in self.content]
 
     @property
     def id(self):
+        """All 'id' fields for every feature."""
         return [x['id'] for x in self.content]
 
     @property
     def region(self):
+        """All 'region' fields for every feature."""
         return [x['properties']['region'] for x in self.content]
 
     @property
     def state(self):
+        """All 'state' fields for every feature."""
         return [x['properties']['state'] for x in self.content]
 
     @property
     def video(self):
+        """All 'video' fields for every feature."""
         return [x['properties']['video'] for x in self.content]

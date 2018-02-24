@@ -4,28 +4,28 @@ Core APIs
 Alerts
 ------
 
-.. autoclass:: helios.alerts_api.Alerts
+.. automodule:: helios.alerts_api
     :members:
     :inherited-members:
     
 Cameras
 -------
 
-.. autoclass:: helios.cameras_api.Cameras
+.. automodule:: helios.cameras_api
     :members:
     :inherited-members:
     
 Collections
 -----------
 
-.. autoclass:: helios.collections_api.Collections
+.. automodule:: helios.collections_api
     :members:
     :inherited-members:
     
 Observations
 ------------
 
-.. autoclass:: helios.observations_api.Observations
+.. automodule:: helios.observations_api
     :members:
     :inherited-members:
 
@@ -34,14 +34,6 @@ Session
 
 .. automodule:: helios.core.session
     :members:
-
-Data Records
-============
-
-.. automodule:: helios.core.records
-    :members:
-    :inherited-members:
-    :special-members: __getattr__
 
 Utilities
 =========

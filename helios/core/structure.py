@@ -79,10 +79,17 @@ class RecordCollection(ContentCollection):
 
     @property
     def message(self):
+        """
+        All messages that were passed to the worker.
+
+        Messages include all the input parameters.
+
+        """
         return [x.message for x in self._raw if x.ok]
 
     @property
     def query(self):
+        """All API queries that occurred."""
         return [x.query for x in self._raw if x.ok]
 
 

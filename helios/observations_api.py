@@ -44,7 +44,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
     def index(self, **kwargs):
         """
-        Get a list of observations matching the provided spatial, text, or
+        Get observations matching the provided spatial, text, or
         metadata filters.
 
         The maximum skip value is 4000. If this is reached, truncated results
@@ -80,7 +80,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 observations_index_documentation_.
 
         Returns:
-             list: GeoJSON feature collections.
+             :class:`IndexResults <helios.observations_api.IndexResults>`
 
         """
         return IndexResults(super(Observations, self).index(**kwargs))
@@ -98,9 +98,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`ImageRecord <helios.core.records.ImageRecord>`
-            instances.
+            :class:`PreviewResults <helios.observations_api.PreviewResults>`
 
         """
         if not isinstance(observation_ids, (list, tuple)):
@@ -164,8 +162,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             observation_ids (str or sequence of strs): Helios observation ID(s).
 
         Returns:
-            :class:`DataContainer <helios.core.records.DataContainer>`:
-            Container of :class:`Record <helios.core.records.Record>` instances.
+            :class:`ShowResults <helios.observations_api.ShowResults>`
 
         """
         return ShowResults(super(Observations, self).show(observation_ids))
@@ -185,38 +182,47 @@ class IndexResults(ContentCollection):
 
     @property
     def city(self):
+        """All 'city' fields for every feature."""
         return [x['properties']['city'] for x in self.content]
 
     @property
     def country(self):
+        """All 'country' fields for every feature."""
         return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
+        """All 'description' fields for every feature."""
         return [x['properties']['description'] for x in self.content]
 
     @property
     def id(self):
+        """All 'id' fields for every feature."""
         return [x['id'] for x in self.content]
 
     @property
     def prev_id(self):
+        """All 'prev_id' fields for every feature."""
         return [x['properties']['prev_id'] for x in self.content]
 
     @property
     def region(self):
+        """All 'region' fields for every feature."""
         return [x['properties']['region'] for x in self.content]
 
     @property
     def sensors(self):
+        """All 'sensors' fields for every feature."""
         return [x['properties']['sensors'] for x in self.content]
 
     @property
     def state(self):
+        """All 'state' fields for every feature."""
         return [x['properties']['state'] for x in self.content]
 
     @property
     def time(self):
+        """All 'time' fields for every feature."""
         return [x['properties']['time'] for x in self.content]
 
 
@@ -228,10 +234,12 @@ class PreviewResults(RecordCollection):
 
     @property
     def output_file(self):
+        """Full paths to all images."""
         return [x.output_file for x in self._raw if x.ok]
 
     @property
     def name(self):
+        """Names of all images."""
         return [x.name for x in self._raw if x.ok]
 
 
@@ -243,36 +251,45 @@ class ShowResults(RecordCollection):
 
     @property
     def city(self):
+        """All 'city' fields for every feature."""
         return [x['properties']['city'] for x in self.content]
 
     @property
     def country(self):
+        """All 'country' fields for every feature."""
         return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
+        """All 'description' fields for every feature."""
         return [x['properties']['description'] for x in self.content]
 
     @property
     def id(self):
+        """All 'id' fields for every feature."""
         return [x['id'] for x in self.content]
 
     @property
     def prev_id(self):
+        """All 'prev_id' fields for every feature."""
         return [x['properties']['prev_id'] for x in self.content]
 
     @property
     def region(self):
+        """All 'region' fields for every feature."""
         return [x['properties']['region'] for x in self.content]
 
     @property
     def sensors(self):
+        """All 'sensors' fields for every feature."""
         return [x['properties']['sensors'] for x in self.content]
 
     @property
     def state(self):
+        """All 'state' fields for every feature."""
         return [x['properties']['state'] for x in self.content]
 
     @property
     def time(self):
+        """All 'time' fields for every feature."""
         return [x['properties']['time'] for x in self.content]
