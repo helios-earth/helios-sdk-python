@@ -233,8 +233,13 @@ class PreviewResults(RecordCollection):
         super(PreviewResults, self).__init__(records)
 
     @property
+    def image_data(self):
+        """Image data if return_image_data was True."""
+        return self.content
+
+    @property
     def output_file(self):
-        """Full paths to all images."""
+        """Full paths to all written images."""
         return [x.output_file for x in self._raw if x.ok]
 
     @property
