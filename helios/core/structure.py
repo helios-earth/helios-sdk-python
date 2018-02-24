@@ -9,8 +9,13 @@ class ContentCollection(object):
     """
     Abstract base class for feature/data results, i.e. content.
 
-    This is a general purpose iterable for results data from the SDK.  Specific
-    functionality will be defined in child classes.
+    This is a general purpose iterable for content data from the SDK.
+    Specific functionality will be defined in child classes.
+
+    Content is a general term for return data from the various API calls
+    implemented within the SDK.  For example, index queries return
+    GeoJSON feature collections.  Therefore, content will be a list of
+    all the returned features within the GeoJSON feature collection.
 
     """
 
@@ -67,6 +72,9 @@ class RecordCollection(ContentCollection):
     is the same as a ContentCollection, but the _raw attribute will give access
     to the underlying Records.
 
+    All Record instances contain a 'content' attribute.  This attribute will
+    be combined in _build.
+
     """
 
     def __init__(self, records):
@@ -77,18 +85,18 @@ class RecordCollection(ContentCollection):
 
     @property
     def _failed(self):
-        """Return records for queries that failed."""
+        """Records for queries that failed."""
         return [x for x in self._raw if not x.ok]
 
     @property
     def _succeeded(self):
-        """Return records for queries that succeeded."""
+        """Records for queries that succeeded."""
         return [x for x in self._raw if x.ok]
 
     @property
     def _message(self):
         """
-        All messages that were passed to the worker.
+        Messages that were passed to the worker.
 
         Messages include all the input parameters.
 
@@ -97,7 +105,7 @@ class RecordCollection(ContentCollection):
 
     @property
     def _query(self):
-        """All API queries that occurred."""
+        """API query strings that occurred."""
         return [x.query for x in self._raw if x.ok]
 
 
