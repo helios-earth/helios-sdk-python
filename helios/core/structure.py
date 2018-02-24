@@ -71,14 +71,22 @@ class RecordCollection(ContentCollection):
 
     def __init__(self, records):
         super(RecordCollection, self).__init__(records)
-        self.failed = [x for x in records if not x.ok]
-        self.succeeded = [x for x in records if x.ok]
 
     def _build(self):
         self.content = [x.content for x in self._raw if x.ok]
 
     @property
-    def message(self):
+    def _failed(self):
+        """Return records for queries that failed."""
+        return [x for x in self._raw if not x.ok]
+
+    @property
+    def _succeeded(self):
+        """Return records for queries that succeeded."""
+        return [x for x in self._raw if x.ok]
+
+    @property
+    def _message(self):
         """
         All messages that were passed to the worker.
 
@@ -88,7 +96,7 @@ class RecordCollection(ContentCollection):
         return [x.message for x in self._raw if x.ok]
 
     @property
-    def query(self):
+    def _query(self):
         """All API queries that occurred."""
         return [x.query for x in self._raw if x.ok]
 
