@@ -174,37 +174,37 @@ class IndexResults(ContentCollection):
 
     @property
     def city(self):
-        """All 'city' fields for every feature."""
+        """'city' values for every feature."""
         return [x['properties']['city'] for x in self.content]
 
     @property
     def country(self):
-        """All 'country' fields for every feature."""
+        """'country' values for every feature."""
         return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
-        """All 'description' fields for every feature."""
+        """'description' values for every feature."""
         return [x['properties']['description'] for x in self.content]
 
     @property
     def id(self):
-        """All 'id' fields for every feature."""
+        """'id' values for every feature."""
         return [x['id'] for x in self.content]
 
     @property
     def region(self):
-        """All 'region' fields for every feature."""
+        """'region' values for every feature."""
         return [x['properties']['region'] for x in self.content]
 
     @property
     def state(self):
-        """All 'state' fields for every feature."""
+        """'state' values for every feature."""
         return [x['properties']['state'] for x in self.content]
 
     @property
     def video(self):
-        """All 'video' fields for every feature."""
+        """'video' values for every feature."""
         return [x['properties']['video'] for x in self.content]
 
 
@@ -238,40 +238,40 @@ class ShowResults(RecordCollection):
 
     @property
     def city(self):
-        """All 'city' fields for every feature."""
+        """'city' values for every feature."""
         return [x['properties']['city'] for x in self.content]
 
     @property
     def country(self):
-        """All 'country' fields for every feature."""
+        """'country' values for every feature."""
         return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
-        """All 'description' fields for every feature."""
+        """'description' values for every feature."""
         return [x['properties']['description'] for x in self.content]
 
     @property
     def direction(self):
-        """All 'direction' fields for every feature."""
+        """'direction' values for every feature."""
         return [x['properties']['direction'] for x in self.content]
 
     @property
     def id(self):
-        """All 'id' fields for every feature."""
+        """'id' values for every feature."""
         return [x['id'] for x in self.content]
 
     @property
     def region(self):
-        """All 'region' fields for every feature."""
+        """'region' values for every feature."""
         return [x['properties']['region'] for x in self.content]
 
     @property
     def state(self):
-        """All 'state' fields for every feature."""
+        """'state' values for every feature."""
         return [x['properties']['state'] for x in self.content]
 
     @property
     def video(self):
-        """All 'video' fields for every feature."""
+        """'video' values for every feature."""
         return [x['properties']['video'] for x in self.content]

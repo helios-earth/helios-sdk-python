@@ -92,82 +92,82 @@ class IndexResults(ContentCollection):
 
     @property
     def area_description(self):
-        """All 'areaDesc' fields for every feature."""
+        """'areaDesc' values for every feature."""
         return [x['properties']['areaDesc'] for x in self.content]
 
     @property
     def bbox(self):
-        """All 'bbox' fields for every feature."""
+        """'bbox' values for every feature."""
         return [x['bbox'] for x in self.content]
 
     @property
     def category(self):
-        """All 'category' fields for every feature."""
+        """'category' values for every feature."""
         return [x['properties']['category'] for x in self.content]
 
     @property
     def certainty(self):
-        """All 'certainty' fields for every feature."""
+        """'certainty' values for every feature."""
         return [x['properties']['certainty'] for x in self.content]
 
     @property
     def country(self):
-        """All 'country' fields for every feature."""
+        """'country' values for every feature."""
         return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
-        """All 'description' fields for every feature."""
+        """'description' values for every feature."""
         return [x['properties']['description'] for x in self.content]
 
     @property
     def effective(self):
-        """All 'effective' fields for every feature."""
+        """'effective' values for every feature."""
         return [x['properties']['effective'] for x in self.content]
 
     @property
     def event(self):
-        """All 'event' fields for every feature."""
+        """'event' values for every feature."""
         return [x['properties']['event'] for x in self.content]
 
     @property
     def expires(self):
-        """All 'expires' fields for every feature."""
+        """'expires' values for every feature."""
         return [x['properties']['expires'] for x in self.content]
 
     @property
     def headline(self):
-        """All 'headline' fields for every feature."""
+        """'headline' values for every feature."""
         return [x['properties']['headline'] for x in self.content]
 
     @property
     def id(self):
-        """All 'id' fields for every feature."""
+        """'id' values for every feature."""
         return [x['id'] for x in self.content]
 
     @property
     def origin(self):
-        """All 'origin' fields for every feature."""
+        """'origin' values for every feature."""
         return [x['properties']['origin'] for x in self.content]
 
     @property
     def severity(self):
-        """All 'severity' fields for every feature."""
+        """'severity' values for every feature."""
         return [x['properties']['severity'] for x in self.content]
 
     @property
     def states(self):
-        """All 'states' fields for every feature."""
+        """'states' values for every feature."""
         return [x['properties']['states'] for x in self.content]
 
     @property
     def status(self):
-        """All 'status' fields for every feature."""
+        """'status' values for every feature."""
         return [x['properties']['status'] for x in self.content]
 
     @property
     def urgency(self):
-        """All 'urgency' fields for every feature."""
+        """'urgency' values for every feature."""
         return [x['properties']['urgency'] for x in self.content]
 
 
@@ -179,80 +179,80 @@ class ShowResults(RecordCollection):
 
     @property
     def area_description(self):
-        """All 'area_description' fields for every feature."""
+        """'area_description' values for every feature."""
         return [x['properties']['areaDesc'] for x in self.content]
 
     @property
     def bbox(self):
-        """All 'bbox' fields for every feature."""
+        """'bbox' values for every feature."""
         return [x['bbox'] for x in self.content]
 
     @property
     def category(self):
-        """All 'category' fields for every feature."""
+        """'category' values for every feature."""
         return [x['properties']['category'] for x in self.content]
 
     @property
     def certainty(self):
-        """All 'certainty' fields for every feature."""
+        """'certainty' values for every feature."""
         return [x['properties']['certainty'] for x in self.content]
 
     @property
     def country(self):
-        """All 'country' fields for every feature."""
+        """'country' values for every feature."""
         return [x['properties']['country'] for x in self.content]
 
     @property
     def description(self):
-        """All 'description' fields for every feature."""
+        """'description' values for every feature."""
         return [x['properties']['description'] for x in self.content]
 
     @property
     def effective(self):
-        """All 'effective' fields for every feature."""
+        """'effective' values for every feature."""
         return [x['properties']['effective'] for x in self.content]
 
     @property
     def event(self):
-        """All 'event' fields for every feature."""
+        """'event' values for every feature."""
         return [x['properties']['event'] for x in self.content]
 
     @property
     def expires(self):
-        """All 'expires' fields for every feature."""
+        """'expires' values for every feature."""
         return [x['properties']['expires'] for x in self.content]
 
     @property
     def headline(self):
-        """All 'headline' fields for every feature."""
+        """'headline' values for every feature."""
         return [x['properties']['headline'] for x in self.content]
 
     @property
     def id(self):
-        """All 'id' fields for every feature."""
+        """'id' values for every feature."""
         return [x['id'] for x in self.content]
 
     @property
     def origin(self):
-        """All 'origin' fields for every feature."""
+        """'origin' values for every feature."""
         return [x['properties']['origin'] for x in self.content]
 
     @property
     def severity(self):
-        """All 'severity' fields for every feature."""
+        """'severity' values for every feature."""
         return [x['properties']['severity'] for x in self.content]
 
     @property
     def states(self):
-        """All 'states' fields for every feature."""
+        """'states' values for every feature."""
         return [x['properties']['states'] for x in self.content]
 
     @property
     def status(self):
-        """All 'status' fields for every feature."""
+        """'status' values for every feature."""
         return [x['properties']['status'] for x in self.content]
 
     @property
     def urgency(self):
-        """All 'urgency' fields for every feature."""
+        """'urgency' values for every feature."""
         return [x['properties']['urgency'] for x in self.content]

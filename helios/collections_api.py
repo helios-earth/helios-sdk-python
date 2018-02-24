@@ -415,42 +415,42 @@ class IndexResults(ContentCollection):
 
     @property
     def bucket(self):
-        """All 'bucket' fields for every result."""
+        """'bucket' values for every result."""
         return [x['bucket'] for x in self.content]
 
     @property
     def created_at(self):
-        """All 'city' fields for every result."""
+        """'city' values for every result."""
         return [x['created_at'] for x in self.content]
 
     @property
     def description(self):
-        """All 'created_at' fields for every result."""
+        """'created_at' values for every result."""
         return [x['description'] for x in self.content]
 
     @property
     def id(self):
-        """All '_id' fields for every result."""
+        """'_id' values for every result."""
         return [x['_id'] for x in self.content]
 
     @property
     def name(self):
-        """All 'name' fields for every result."""
+        """'name' values for every result."""
         return [x['name'] for x in self.content]
 
     @property
     def tags(self):
-        """All 'tags' fields for every result."""
+        """'tags' values for every result."""
         return [x['tags'] for x in self.content]
 
     @property
     def updated_at(self):
-        """All 'updated_at' fields for every result."""
+        """'updated_at' values for every result."""
         return [x['updated_at'] for x in self.content]
 
     @property
     def user_id(self):
-        """All 'user_id' fields for every result."""
+        """'user_id' values for every result."""
         return [x['user_id'] for x in self.content]
 
 
@@ -492,15 +492,15 @@ class ShowResults(object):
     """Show results for the Collections API.
 
     Attributes:
-        id: '_id' field from result attributes.
-        bucket: 'bucket' field from result attributes.
-        created_at: 'created_at' field from result attributes.
-        description: 'description' field from result attributes.
-        images: 'images' field from result attributes.
-        name: 'name' field from result attributes.
-        tags: 'tags field from result attributes.
-        updated_at: 'updated_at' field from result attributes.
-        user_id: 'user_id' field from result attributes.
+        id: '_id' value from result attributes.
+        bucket: 'bucket' value from result attributes.
+        created_at: 'created_at' value from result attributes.
+        description: 'description' value from result attributes.
+        images: 'images' value from result attributes.
+        name: 'name' value from result attributes.
+        tags: 'tags value from result attributes.
+        updated_at: 'updated_at' value from result attributes.
+        user_id: 'user_id' value from result attributes.
 
     """
 
