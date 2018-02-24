@@ -50,7 +50,7 @@ class ContentCollection(object):
         if self._idx >= self.__len__():
             self._idx = 0
             raise StopIteration
-        temp = self.__getitem__[self._idx]
+        temp = self.__getitem__(self._idx)
         self._idx += 1
         return temp
 
