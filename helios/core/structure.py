@@ -30,8 +30,10 @@ class ContentCollection(object):
 
         _build must be implemented in children.
 
-        For GeoJSON all 'feature' sections will be merged and for Collections
-        index results, 'results' will be merged.
+        For example, all GeoJSON 'feature' sections can be merged and for
+        Collections index results, 'results' can be merged.  The 'features'
+        and 'results' data are the important content that will be iterated
+        over.  Customized access to this data can be defined in child classes.
 
         """
         self.content = []
