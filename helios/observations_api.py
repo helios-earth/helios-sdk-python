@@ -176,61 +176,99 @@ class IndexResults(ContentCollection):
 
     def _build(self):
         """Combine all GeoJSON features into the content attribute."""
+        feature_tuple = namedtuple('Feature', ['city', 'country', 'description',
+                                               'id', 'json', 'prev_id', 'region',
+                                               'sensors', 'state', 'time'])
         self.content = []
-        for x in self._raw:
-            self.content.extend(x['features'])
+        for feature_collection in self._raw:
+            for feature in feature_collection['features']:
+                # Use dict.get built-in to guarantee all values will be initialized.
+                city = feature['properties'].get('city')
+                country = feature['properties'].get('country')
+                description = feature['properties'].get('description')
+                id_ = feature.get('id')
+                prev_id = feature['properties'].get('prev_id')
+                region = feature['properties'].get('region')
+                sensors = feature['properties'].get('sensors')
+                state = feature['properties'].get('state')
+                time = feature['properties'].get('time')
+                self.content.append(feature_tuple(city=city,
+                                                  country=country,
+                                                  description=description,
+                                                  id=id_,
+                                                  json=feature,
+                                                  prev_id=prev_id,
+                                                  region=region,
+                                                  sensors=sensors,
+                                                  state=state,
+                                                  time=time))
 
     @property
     def city(self):
         """'city' values for every feature."""
-        return [x['properties']['city'] for x in self.content]
+        return [x.city for x in self.content]
 
     @property
     def country(self):
         """'country' values for every feature."""
-        return [x['properties']['country'] for x in self.content]
+        return [x.country for x in self.content]
 
     @property
     def description(self):
         """'description' values for every feature."""
-        return [x['properties']['description'] for x in self.content]
+        return [x.description for x in self.content]
 
     @property
     def id(self):
         """'id' values for every feature."""
-        return [x['id'] for x in self.content]
+        return [x.id for x in self.content]
+
+    @property
+    def json(self):
+        """Raw 'json' for every feature."""
+        return [x.json for x in self.content]
 
     @property
     def prev_id(self):
         """'prev_id' values for every feature."""
-        return [x['properties']['prev_id'] for x in self.content]
+        return [x.prev_id for x in self.content]
 
     @property
     def region(self):
         """'region' values for every feature."""
-        return [x['properties']['region'] for x in self.content]
+        return [x.region for x in self.content]
 
     @property
     def sensors(self):
         """'sensors' values for every feature."""
-        return [x['properties']['sensors'] for x in self.content]
+        return [x.sensors for x in self.content]
 
     @property
     def state(self):
         """'state' values for every feature."""
-        return [x['properties']['state'] for x in self.content]
+        return [x.state for x in self.content]
 
     @property
     def time(self):
         """'time' values for every feature."""
-        return [x['properties']['time'] for x in self.content]
+        return [x.time for x in self.content]
 
 
 class PreviewResults(RecordCollection):
     """Preview results from the Observations API."""
 
-    def __init__(self, records):
-        super(PreviewResults, self).__init__(records)
+    def __init__(self, image_records):
+        super(PreviewResults, self).__init__(image_records)
+
+    def _build(self):
+        """
+        Combine all ImageRecord instance content.
+
+        All content will be image data in this case, if return_image_data was
+        True.
+
+        """
+        self.content = [x.content for x in self._raw]
 
     @property
     def image_data(self):
@@ -254,47 +292,80 @@ class ShowResults(RecordCollection):
     def __init__(self, records):
         super(ShowResults, self).__init__(records)
 
+    def _build(self):
+        feature_tuple = namedtuple('Feature', ['city', 'country', 'description',
+                                               'id', 'json', 'prev_id', 'region',
+                                               'sensors', 'state', 'time'])
+        self.content = []
+        for record in self._raw:
+            feature = record.content
+            # Use dict.get built-in to guarantee all values will be initialized.
+            city = feature['properties'].get('city')
+            country = feature['properties'].get('country')
+            description = feature['properties'].get('description')
+            id_ = feature.get('id')
+            prev_id = feature['properties'].get('prev_id')
+            region = feature['properties'].get('region')
+            sensors = feature['properties'].get('sensors')
+            state = feature['properties'].get('state')
+            time = feature['properties'].get('time')
+            self.content.append(feature_tuple(city=city,
+                                              country=country,
+                                              description=description,
+                                              id=id_,
+                                              json=feature,
+                                              prev_id=prev_id,
+                                              region=region,
+                                              sensors=sensors,
+                                              state=state,
+                                              time=time))
+
     @property
     def city(self):
         """'city' values for every feature."""
-        return [x['properties']['city'] for x in self.content]
+        return [x.city for x in self.content]
 
     @property
     def country(self):
         """'country' values for every feature."""
-        return [x['properties']['country'] for x in self.content]
+        return [x.country for x in self.content]
 
     @property
     def description(self):
         """'description' values for every feature."""
-        return [x['properties']['description'] for x in self.content]
+        return [x.description for x in self.content]
 
     @property
     def id(self):
         """'id' values for every feature."""
-        return [x['id'] for x in self.content]
+        return [x.id for x in self.content]
+
+    @property
+    def json(self):
+        """Raw 'json' for every feature."""
+        return [x.json for x in self.content]
 
     @property
     def prev_id(self):
         """'prev_id' values for every feature."""
-        return [x['properties']['prev_id'] for x in self.content]
+        return [x.prev_id for x in self.content]
 
     @property
     def region(self):
         """'region' values for every feature."""
-        return [x['properties']['region'] for x in self.content]
+        return [x.region for x in self.content]
 
     @property
     def sensors(self):
         """'sensors' values for every feature."""
-        return [x['properties']['sensors'] for x in self.content]
+        return [x.sensors for x in self.content]
 
     @property
     def state(self):
         """'state' values for every feature."""
-        return [x['properties']['state'] for x in self.content]
+        return [x.state for x in self.content]
 
     @property
     def time(self):
         """'time' values for every feature."""
-        return [x['properties']['time'] for x in self.content]
+        return [x.time for x in self.content]

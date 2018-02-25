@@ -82,16 +82,13 @@ class RecordCollection(ContentCollection):
     def __init__(self, records):
         super(RecordCollection, self).__init__(records)
 
-    def _build(self):
-        self.content = [x.content for x in self._raw if x.ok]
-
     @property
-    def _failed(self):
+    def failed(self):
         """Records for queries that failed."""
         return [x for x in self._raw if not x.ok]
 
     @property
-    def _succeeded(self):
+    def succeeded(self):
         """Records for queries that succeeded."""
         return [x for x in self._raw if x.ok]
 

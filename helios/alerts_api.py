@@ -6,6 +6,7 @@ documentation.  Some may have additional functionality for convenience.
 
 """
 import logging
+from collections import namedtuple
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import ContentCollection, RecordCollection
@@ -86,19 +87,59 @@ class IndexResults(ContentCollection):
 
     def _build(self):
         """Combine GeoJSON features into the content attribute."""
+        feature_tuple = namedtuple('Feature', ['area_description', 'bbox', 'category',
+                                               'certainty', 'country', 'description',
+                                               'effective', 'event', 'expires',
+                                               'headline', 'id', 'json', 'origin',
+                                               'severity', 'states', 'status',
+                                               'urgency'])
         self.content = []
-        for x in self._raw:
-            self.content.extend(x['features'])
+        for feature_collection in self._raw:
+            for feature in feature_collection['features']:
+                # Use dict.get built-in to guarantee all values will be initialized.
+                area_description = feature['properties'].get('areaDesc')
+                bbox = feature.get('bbox')
+                category = feature['properties'].get('category')
+                certainty = feature['properties'].get('certainty')
+                country = feature['properties'].get('country')
+                description = feature['properties'].get('description')
+                effective = feature['properties'].get('effective')
+                event = feature['properties'].get('event')
+                expires = feature['properties'].get('expires')
+                headline = feature['properties'].get('headline')
+                id_ = feature.get('id')
+                origin = feature['properties'].get('origin')
+                severity = feature['properties'].get('severity')
+                states = feature['properties'].get('states')
+                status = feature['properties'].get('status')
+                urgency = feature['properties'].get('urgency')
+                self.content.append(feature_tuple(area_description=area_description,
+                                                  bbox=bbox,
+                                                  category=category,
+                                                  certainty=certainty,
+                                                  country=country,
+                                                  description=description,
+                                                  effective=effective,
+                                                  event=event,
+                                                  expires=expires,
+                                                  headline=headline,
+                                                  id=id_,
+                                                  json=feature,
+                                                  origin=origin,
+                                                  severity=severity,
+                                                  states=states,
+                                                  status=status,
+                                                  urgency=urgency))
 
     @property
     def area_description(self):
         """'areaDesc' values for every feature."""
-        return [x['properties']['areaDesc'] for x in self.content]
+        return [x.area_description for x in self.content]
 
     @property
     def bbox(self):
         """'bbox' values for every feature."""
-        return [x['bbox'] for x in self.content]
+        return [x.bbox for x in self.content]
 
     @property
     def category(self):
@@ -108,67 +149,72 @@ class IndexResults(ContentCollection):
     @property
     def certainty(self):
         """'certainty' values for every feature."""
-        return [x['properties']['certainty'] for x in self.content]
+        return [x.certainty for x in self.content]
 
     @property
     def country(self):
         """'country' values for every feature."""
-        return [x['properties']['country'] for x in self.content]
+        return [x.country for x in self.content]
 
     @property
     def description(self):
         """'description' values for every feature."""
-        return [x['properties']['description'] for x in self.content]
+        return [x.description for x in self.content]
 
     @property
     def effective(self):
         """'effective' values for every feature."""
-        return [x['properties']['effective'] for x in self.content]
+        return [x.effective for x in self.content]
 
     @property
     def event(self):
         """'event' values for every feature."""
-        return [x['properties']['event'] for x in self.content]
+        return [x.event for x in self.content]
 
     @property
     def expires(self):
         """'expires' values for every feature."""
-        return [x['properties']['expires'] for x in self.content]
+        return [x.expires for x in self.content]
 
     @property
     def headline(self):
         """'headline' values for every feature."""
-        return [x['properties']['headline'] for x in self.content]
+        return [x.headline for x in self.content]
 
     @property
     def id(self):
         """'id' values for every feature."""
-        return [x['id'] for x in self.content]
+        return [x.id for x in self.content]
+
+    @property
+    def json(self):
+        """Raw 'json' for every feature."""
+        return [x.json for x in self.content]
 
     @property
     def origin(self):
         """'origin' values for every feature."""
-        return [x['properties']['origin'] for x in self.content]
+        return [x.origin for x in self.content]
 
     @property
     def severity(self):
         """'severity' values for every feature."""
-        return [x['properties']['severity'] for x in self.content]
+        return [x.severity for x in self.content]
 
     @property
     def states(self):
         """'states' values for every feature."""
-        return [x['properties']['states'] for x in self.content]
+        return [x.states for x in self.content]
 
     @property
     def status(self):
         """'status' values for every feature."""
-        return [x['properties']['status'] for x in self.content]
+        return [x.status for x in self.content]
 
     @property
     def urgency(self):
         """'urgency' values for every feature."""
-        return [x['properties']['urgency'] for x in self.content]
+        return [x.urgency for x in self.content]
 
 
 class ShowResults(RecordCollection):
@@ -177,82 +223,133 @@ class ShowResults(RecordCollection):
     def __init__(self, records):
         super(ShowResults, self).__init__(records)
 
+    def _build(self):
+        """Combine GeoJSON featues from the content of each Record instance."""
+        feature_tuple = namedtuple('Feature', ['area_description', 'bbox', 'category',
+                                               'certainty', 'country', 'description',
+                                               'effective', 'event', 'expires',
+                                               'headline', 'id', 'json', 'origin',
+                                               'severity', 'states', 'status',
+                                               'urgency'])
+        self.content = []
+        for record in self._raw:
+            feature = record.content
+            # Use dict.get built-in to guarantee all values will be initialized.
+            area_description = feature['properties'].get('areaDesc')
+            bbox = feature.get('bbox')
+            category = feature['properties'].get('category')
+            certainty = feature['properties'].get('certainty')
+            country = feature['properties'].get('country')
+            description = feature['properties'].get('description')
+            effective = feature['properties'].get('effective')
+            event = feature['properties'].get('event')
+            expires = feature['properties'].get('expires')
+            headline = feature['properties'].get('headline')
+            id_ = feature.get('id')
+            origin = feature['properties'].get('origin')
+            severity = feature['properties'].get('severity')
+            states = feature['properties'].get('states')
+            status = feature['properties'].get('status')
+            urgency = feature['properties'].get('urgency')
+            self.content.append(feature_tuple(area_description=area_description,
+                                              bbox=bbox,
+                                              category=category,
+                                              certainty=certainty,
+                                              country=country,
+                                              description=description,
+                                              effective=effective,
+                                              event=event,
+                                              expires=expires,
+                                              headline=headline,
+                                              id=id_,
+                                              json=feature,
+                                              origin=origin,
+                                              severity=severity,
+                                              states=states,
+                                              status=status,
+                                              urgency=urgency))
+
     @property
     def area_description(self):
         """'area_description' values for every feature."""
-        return [x['properties']['areaDesc'] for x in self.content]
+        return [x.area_description for x in self.content]
 
     @property
     def bbox(self):
         """'bbox' values for every feature."""
-        return [x['bbox'] for x in self.content]
+        return [x.bbox for x in self.content]
 
     @property
     def category(self):
         """'category' values for every feature."""
-        return [x['properties']['category'] for x in self.content]
+        return [x.category for x in self.content]
 
     @property
     def certainty(self):
         """'certainty' values for every feature."""
-        return [x['properties']['certainty'] for x in self.content]
+        return [x.certainty for x in self.content]
 
     @property
     def country(self):
         """'country' values for every feature."""
-        return [x['properties']['country'] for x in self.content]
+        return [x.country for x in self.content]
 
     @property
     def description(self):
         """'description' values for every feature."""
-        return [x['properties']['description'] for x in self.content]
+        return [x.description for x in self.content]
 
     @property
     def effective(self):
         """'effective' values for every feature."""
-        return [x['properties']['effective'] for x in self.content]
+        return [x.effective for x in self.content]
 
     @property
     def event(self):
         """'event' values for every feature."""
-        return [x['properties']['event'] for x in self.content]
+        return [x.event for x in self.content]
 
     @property
     def expires(self):
         """'expires' values for every feature."""
-        return [x['properties']['expires'] for x in self.content]
+        return [x.expires for x in self.content]
 
     @property
     def headline(self):
         """'headline' values for every feature."""
-        return [x['properties']['headline'] for x in self.content]
+        return [x.headline for x in self.content]
 
     @property
     def id(self):
         """'id' values for every feature."""
-        return [x['id'] for x in self.content]
+        return [x.id for x in self.content]
+
+    @property
+    def json(self):
+        """Raw 'json' for every feature."""
+        return [x.json for x in self.content]
 
     @property
     def origin(self):
         """'origin' values for every feature."""
-        return [x['properties']['origin'] for x in self.content]
+        return [x.origin for x in self.content]
 
     @property
     def severity(self):
         """'severity' values for every feature."""
-        return [x['properties']['severity'] for x in self.content]
+        return [x.severity for x in self.content]
 
     @property
     def states(self):
         """'states' values for every feature."""
-        return [x['properties']['states'] for x in self.content]
+        return [x.states for x in self.content]
 
     @property
     def status(self):
         """'status' values for every feature."""
-        return [x['properties']['status'] for x in self.content]
+        return [x.status for x in self.content]
 
     @property
     def urgency(self):
         """'urgency' values for every feature."""
-        return [x['properties']['urgency'] for x in self.content]
+        return [x.urgency for x in self.content]

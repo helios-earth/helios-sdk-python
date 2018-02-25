@@ -313,6 +313,10 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             :class:`ShowResults <helios.collections_api.ShowResults>`
 
         """
+        if not isinstance(collection_id, str):
+            raise TypeError('Expected collection_id to be a str but found {} '
+                            'instead'.format(type(collection_id)))
+
         params_str = self._parse_query_inputs(dict(limit=limit, marker=marker))
         query_str = '{}/{}/{}?{}'.format(self._base_api_url,
                                          self._core_api,
@@ -395,10 +399,21 @@ class AddImageResults(RecordCollection):
     def __init__(self, records):
         super(AddImageResults, self).__init__(records)
 
+    def _build(self):
+        """
+        Combine all Record instance content.
+
+        All content will be image data in this case, if return_image_data was
+        True.
+
+        """
+        Data = namedtuple('Data', 'ok')
+        self.content = [Data(x.content.get('ok')) for x in self._raw]
+
     @property
     def ok(self):
         """API success responses for added images."""
-        return [x['ok'] for x in self.content]
+        return [x.ok for x in self.content]
 
 
 class IndexResults(ContentCollection):
@@ -413,45 +428,75 @@ class IndexResults(ContentCollection):
         for x in self._raw:
             self.content.extend(x['results'])
 
+        result_tuple = namedtuple('Result', ['bucket', 'created_at', 'description',
+                                             'id', 'json', 'name', 'tags',
+                                             'updated_at', 'user_id'])
+        self.content = []
+        for result_collection in self._raw:
+            for result in result_collection['results']:
+                # Use dict.get built-in to guarantee all values will be initialized.
+                bucket = result.get('bucket')
+                created_at = result.get('created_at')
+                description = result.get('description')
+                id_ = result.get('_id')
+                name = result.get('name')
+                tags = result.get('tags')
+                updated_at = result.get('updated_at')
+                user_id = result.get('user_id')
+                self.content.append(result_tuple(bucket=bucket,
+                                                 created_at=created_at,
+                                                 description=description,
+                                                 id=id_,
+                                                 json=result,
+                                                 name=name,
+                                                 tags=tags,
+                                                 updated_at=updated_at,
+                                                 user_id=user_id))
+
     @property
     def bucket(self):
         """'bucket' values for every result."""
-        return [x['bucket'] for x in self.content]
+        return [x.bucket for x in self.content]
 
     @property
     def created_at(self):
         """'city' values for every result."""
-        return [x['created_at'] for x in self.content]
+        return [x.created_at for x in self.content]
 
     @property
     def description(self):
         """'created_at' values for every result."""
-        return [x['description'] for x in self.content]
+        return [x.description for x in self.content]
 
     @property
     def id(self):
         """'_id' values for every result."""
-        return [x['_id'] for x in self.content]
+        return [x.id for x in self.content]
+
+    @property
+    def json(self):
+        """Raw 'json' for every feature."""
+        return [x.json for x in self.content]
 
     @property
     def name(self):
         """'name' values for every result."""
-        return [x['name'] for x in self.content]
+        return [x.name for x in self.content]
 
     @property
     def tags(self):
         """'tags' values for every result."""
-        return [x['tags'] for x in self.content]
+        return [x.tags for x in self.content]
 
     @property
     def updated_at(self):
         """'updated_at' values for every result."""
-        return [x['updated_at'] for x in self.content]
+        return [x.updated_at for x in self.content]
 
     @property
     def user_id(self):
         """'user_id' values for every result."""
-        return [x['user_id'] for x in self.content]
+        return [x.user_id for x in self.content]
 
 
 class RemoveImageResults(RecordCollection):
@@ -460,17 +505,38 @@ class RemoveImageResults(RecordCollection):
     def __init__(self, records):
         super(RemoveImageResults, self).__init__(records)
 
+    def _build(self):
+        """
+        Combine all Record instance content.
+
+        All content will be image data in this case, if return_image_data was
+        True.
+
+        """
+        Data = namedtuple('Data', 'ok')
+        self.content = [Data(x.content.get('ok')) for x in self._raw]
+
     @property
     def ok(self):
         """API success responses for removed images."""
-        return [x['ok'] for x in self.content]
+        return [x.ok for x in self.content]
 
 
 class ShowImageResults(RecordCollection):
     """Show_image results for the Collections API."""
 
-    def __init__(self, records):
-        super(ShowImageResults, self).__init__(records)
+    def __init__(self, image_records):
+        super(ShowImageResults, self).__init__(image_records)
+
+    def _build(self):
+        """
+        Combine all ImageRecord instance content.
+
+        All content will be image data in this case, if return_image_data was
+        True.
+
+        """
+        self.content = [x.content for x in self._raw]
 
     @property
     def image_data(self):
@@ -489,7 +555,8 @@ class ShowImageResults(RecordCollection):
 
 
 class ShowResults(object):
-    """Show results for the Collections API.
+    """
+    Show results for the Collections API.
 
     Attributes:
         id: '_id' value from result attributes.
@@ -497,6 +564,7 @@ class ShowResults(object):
         created_at: 'created_at' value from result attributes.
         description: 'description' value from result attributes.
         images: 'images' value from result attributes.
+        json: Raw JSON response.
         name: 'name' value from result attributes.
         tags: 'tags value from result attributes.
         updated_at: 'updated_at' value from result attributes.
@@ -504,14 +572,14 @@ class ShowResults(object):
 
     """
 
-    def __init__(self, geojson):
-        self.raw = geojson
-        self.id = geojson['_id']
-        self.bucket = geojson['bucket']
-        self.created_at = geojson['created_at']
-        self.description = geojson['description']
-        self.images = geojson['images']
-        self.name = geojson['name']
-        self.tags = geojson['tags']
-        self.updated_at = geojson['updated_at']
-        self.user_id = geojson['user_id']
+    def __init__(self, json_response):
+        self.bucket = json_response.get('bucket')
+        self.created_at = json_response.get('created_at')
+        self.description = json_response.get('description')
+        self.id = json_response.get('_id')
+        self.images = json_response.get('images')
+        self.json = json_response
+        self.name = json_response.get('name')
+        self.tags = json_response.get('tags')
+        self.updated_at = json_response.get('updated_at')
+        self.user_id = json_response.get('user_id')
