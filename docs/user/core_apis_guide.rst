@@ -36,6 +36,10 @@ Find alerts
     # Gather the camera IDs from the results.
     ny_alert_ids = ny_alert_results.id
 
+
+- ``ny_alert_results`` is an instance of :class:`IndexResult <helios.alerts_api.IndexResults>`.
+
+
 Find camera times and download images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -61,3 +65,7 @@ Find camera times and download images
 
     # Get a list of image data. (return_image_dat was True)
     img_data = show_image_results.image_data
+
+
+- ``md_cam_results`` is an instance of :class:`IndexResult <helios.cameras_api.IndexResults>`.
+- ``show_image_results`` is an instance of :class:`ShowImageResults <helios.cameras_api.ShowImageResults>`.
