@@ -28,7 +28,8 @@ class ContentCollection(object):
         """
         Combine content/data into a list.
 
-        _build must be implemented in children.
+        _build must be implemented in children for the purpose of creating
+        the data that will be the iterable.
 
         For example, all GeoJSON 'feature' sections can be merged and for
         Collections index results, 'results' can be merged.  The 'features'

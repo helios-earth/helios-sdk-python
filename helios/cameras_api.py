@@ -162,7 +162,23 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
 
 class IndexResults(ContentCollection):
-    """Index results for the Cameras API."""
+    """
+    Index results for the Cameras API.
+
+    IndexResults is an iterable for GeoJSON features.  This allows the
+    user to iterate and select based on Feature attributes for each element.
+
+    Element Attributes:
+        - city: 'city' value for the feature.
+        - country: 'country' value for the feature.
+        - description: 'description' value for the feature.
+        - id: 'id' value for the feature.
+        - json: Raw 'json' for the feature.
+        - region: 'region' value for the feature.
+        - state: 'state' value for the feature.
+        - video: 'video' value for the feature.
+
+    """
 
     def __init__(self, geojson):
         super(IndexResults, self).__init__(geojson)
@@ -171,11 +187,9 @@ class IndexResults(ContentCollection):
         """
         Combine GeoJSON features into the content attribute.
 
-        Each feature will be used to create a Feature object.  The feature
-        object will contain easy access to some of the GeoJSON attributes.
-
-        This also allows the user to iterate and select based on Feature
-        attributes. e.g. [x for x in index_results if x.video]
+        Each feature within the feature collections will be used to create a
+        Feature object.  The feature object will contain easy access to some of
+        the GeoJSON attributes.
 
         """
         feature_tuple = namedtuple('Feature', ['city', 'country', 'description',
@@ -243,7 +257,13 @@ class IndexResults(ContentCollection):
 
 
 class ShowImageResults(RecordCollection):
-    """Show_image results for the Cameras API."""
+    """
+    Show_image results for the Cameras API.
+
+    ShowImageResults is an iterable for the fetched image content. Each element
+    of the iterable will be an ndarray if return_image_data was True.
+
+    """
 
     def __init__(self, image_records):
         super(ShowImageResults, self).__init__(image_records)
@@ -275,7 +295,24 @@ class ShowImageResults(RecordCollection):
 
 
 class ShowResults(RecordCollection):
-    """Show results for the Cameras API."""
+    """
+    Show results for the Cameras API.
+
+    ShowResults is an iterable for GeoJSON features.  This allows the
+    user to iterate and select based on Feature attributes for each element.
+
+    Element Attributes:
+        - city: 'city' value for the feature.
+        - country: 'country' value for the feature.
+        - description: 'description' value for the feature.
+        - direction: 'direction' value for the feature.
+        - id: 'id' value for the feature.
+        - json: Raw 'json' for the feature.
+        - region: 'region' value for the feature.
+        - state: 'state' value for the feature.
+        - video: 'video' value for the feature.
+
+    """
 
     def __init__(self, records):
         super(ShowResults, self).__init__(records)

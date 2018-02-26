@@ -394,7 +394,13 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
 
 class AddImageResults(RecordCollection):
-    """Add_image results for Collections API."""
+    """
+    Add_image results for Collections API.
+
+    Element Attributes:
+        - ok: JSON success response.
+
+    """
 
     def __init__(self, records):
         super(AddImageResults, self).__init__(records)
@@ -417,13 +423,37 @@ class AddImageResults(RecordCollection):
 
 
 class IndexResults(ContentCollection):
-    """Index results for the Collections API."""
+    """
+    Index results for the Collections API.
+
+    IndexResults is an iterable for the results JSON response.  This allows
+    the user to iterate and select based on result attributes.
+
+    Element Attributes:
+        - bucket: 'bucket' value for the result.
+        - created_at: 'city' value for the result.
+        - description: 'created_at' value for the result.
+        - id: '_id' value for the result.
+        - json: Raw JSON result.
+        - name: 'name' value for the result.
+        - tags: 'tags' value for the result.
+        - updated_at: 'updated_at' value for the result.
+        - user_id: 'user_id' value for the result.
+
+    """
 
     def __init__(self, geojson):
         super(IndexResults, self).__init__(geojson)
 
     def _build(self):
-        """Combine all results into the content attribute."""
+        """
+        Combine all results into the content attribute.
+
+        Each result within the result collections will be used to create a
+        Result object.  The Result object will contain easy access to some of
+        the attributes.
+
+        """
         self.content = []
         for x in self._raw:
             self.content.extend(x['results'])
@@ -500,7 +530,13 @@ class IndexResults(ContentCollection):
 
 
 class RemoveImageResults(RecordCollection):
-    """Remove_image results for the Collections API."""
+    """
+    Remove_image results for the Collections API.
+
+    Element Attributes:
+        - ok: JSON success response.
+
+    """
 
     def __init__(self, records):
         super(RemoveImageResults, self).__init__(records)
@@ -523,7 +559,13 @@ class RemoveImageResults(RecordCollection):
 
 
 class ShowImageResults(RecordCollection):
-    """Show_image results for the Collections API."""
+    """
+    Show_image results for the Collections API.
+
+    ShowImageResults is an iterable for the fetched image content. Each element
+    of the iterable will be an ndarray if return_image_data was True.
+
+    """
 
     def __init__(self, image_records):
         super(ShowImageResults, self).__init__(image_records)
@@ -559,16 +601,16 @@ class ShowResults(object):
     Show results for the Collections API.
 
     Attributes:
-        id: '_id' value from result attributes.
-        bucket: 'bucket' value from result attributes.
-        created_at: 'created_at' value from result attributes.
-        description: 'description' value from result attributes.
-        images: 'images' value from result attributes.
-        json: Raw JSON response.
-        name: 'name' value from result attributes.
-        tags: 'tags value from result attributes.
-        updated_at: 'updated_at' value from result attributes.
-        user_id: 'user_id' value from result attributes.
+        id: '_id' value for the result.
+        bucket: 'bucket' value for the result.
+        created_at: 'created_at' value for the result.
+        description: 'description' value for the result.
+        images: 'images' value for the result.
+        json: Raw JSON result.
+        name: 'name' value for the result.
+        tags: 'tags' value for the result.
+        updated_at: 'updated_at' value for the result.
+        user_id: 'user_id' value for the result.
 
     """
 
