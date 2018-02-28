@@ -6,7 +6,6 @@ documentation.  Some may have additional functionality for convenience.
 
 """
 import logging
-from collections import namedtuple
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import ContentCollection, RecordCollection
@@ -63,7 +62,14 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
              :class:`IndexResults <helios.alerts_api.IndexResults>`
 
         """
-        return IndexResults(super(Alerts, self).index(**kwargs))
+        results = super(Alerts, self).index(**kwargs)
+
+        content = []
+        for feature_collection in results:
+            for feature in feature_collection['features']:
+                content.append(AlertsFeature(feature))
+
+        return IndexResults(content, raw_data=results)
 
     def show(self, alert_ids):
         """
@@ -76,343 +82,171 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             :class:`ShowResults <helios.alerts_api.ShowResults>`
 
         """
-        return ShowResults(super(Alerts, self).show(alert_ids))
+        results = super(Alerts, self).show(alert_ids)
+
+        content = []
+        for record in results:
+            if record.ok:
+                content.append(AlertsFeature(record.content))
+
+        return ShowResults(content, results)
 
 
-class IndexResults(ContentCollection):
+class AlertsFeature(object):
+    """
+    Alerts GeoJSON feature.
+
+    Attributes:
+        area_description: 'areaDesc' value for the feature.
+        bbox: 'bbox' value for the feature.
+        category: 'category' value for the feature.
+        certainty: 'certainty' value for the feature.
+        country: 'country' value for the feature.
+        description: 'description' value for the feature.
+        effective: 'effective' value for the feature.
+        event: 'event' value for the feature.
+        expires: 'expires' value for the feature.
+        headline: 'headline' value for the feature.
+        id: 'id' value for the feature.
+        json: Raw 'json' for the feature.
+        origin: 'origin' value for the feature.
+        severity: 'severity' value for the feature.
+        states: 'states' value for the feature.
+        status: 'status' value for the feature.
+        urgency: 'urgency' value for the feature.
+
+    """
+
+    def __init__(self, feature):
+        self.json = feature
+
+        # Use dict.get built-in to guarantee all values will be initialized.
+        self.area_description = feature['properties'].get('areaDesc')
+        self.bbox = feature.get('bbox')
+        self.category = feature['properties'].get('category')
+        self.certainty = feature['properties'].get('certainty')
+        self.country = feature['properties'].get('country')
+        self.description = feature['properties'].get('description')
+        self.effective = feature['properties'].get('effective')
+        self.event = feature['properties'].get('event')
+        self.expires = feature['properties'].get('expires')
+        self.headline = feature['properties'].get('headline')
+        self.id = feature.get('id')
+        self.origin = feature['properties'].get('origin')
+        self.severity = feature['properties'].get('severity')
+        self.states = feature['properties'].get('states')
+        self.status = feature['properties'].get('status')
+        self.urgency = feature['properties'].get('urgency')
+
+
+class AlertsFeaturePropertiesMixin(object):
+    @property
+    def area_description(self):
+        """'areaDesc' values for every feature."""
+        return [x.area_description for x in self._content]
+
+    @property
+    def bbox(self):
+        """'bbox' values for every feature."""
+        return [x.bbox for x in self._content]
+
+    @property
+    def category(self):
+        """'category' values for every feature."""
+        return [x['properties']['category'] for x in self._content]
+
+    @property
+    def certainty(self):
+        """'certainty' values for every feature."""
+        return [x.certainty for x in self._content]
+
+    @property
+    def country(self):
+        """'country' values for every feature."""
+        return [x.country for x in self._content]
+
+    @property
+    def description(self):
+        """'description' values for every feature."""
+        return [x.description for x in self._content]
+
+    @property
+    def effective(self):
+        """'effective' values for every feature."""
+        return [x.effective for x in self._content]
+
+    @property
+    def event(self):
+        """'event' values for every feature."""
+        return [x.event for x in self._content]
+
+    @property
+    def expires(self):
+        """'expires' values for every feature."""
+        return [x.expires for x in self._content]
+
+    @property
+    def headline(self):
+        """'headline' values for every feature."""
+        return [x.headline for x in self._content]
+
+    @property
+    def id(self):
+        """'id' values for every feature."""
+        return [x.id for x in self._content]
+
+    @property
+    def json(self):
+        """Raw 'json' for every feature."""
+        return [x.json for x in self._content]
+
+    @property
+    def origin(self):
+        """'origin' values for every feature."""
+        return [x.origin for x in self._content]
+
+    @property
+    def severity(self):
+        """'severity' values for every feature."""
+        return [x.severity for x in self._content]
+
+    @property
+    def states(self):
+        """'states' values for every feature."""
+        return [x.states for x in self._content]
+
+    @property
+    def status(self):
+        """'status' values for every feature."""
+        return [x.status for x in self._content]
+
+    @property
+    def urgency(self):
+        """'urgency' values for every feature."""
+        return [x.urgency for x in self._content]
+
+
+class IndexResults(AlertsFeaturePropertiesMixin, ContentCollection):
     """
     Index results for the Alerts API.
 
     IndexResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes in each element.
 
-    Element Attributes:
-        - area_description: 'areaDesc' value for the feature.
-        - bbox: 'bbox' value for the feature.
-        - category: 'category' value for the feature.
-        - certainty: 'certainty' value for the feature.
-        - country: 'country' value for the feature.
-        - description: 'description' value for the feature.
-        - effective: 'effective' value for the feature.
-        - event: 'event' value for the feature.
-        - expires: 'expires' value for the feature.
-        - headline: 'headline' value for the feature.
-        - id: 'id' value for the feature.
-        - json: Raw 'json' for the feature.
-        - origin: 'origin' value for the feature.
-        - severity: 'severity' value for the feature.
-        - states: 'states' value for the feature.
-        - status: 'status' value for the feature.
-        - urgency: 'urgency' value for the feature.
-
     """
 
-    def __init__(self, geojson):
-        super(IndexResults, self).__init__(geojson)
-
-    def _build(self):
-        """
-        Combine GeoJSON features into the content attribute.
-
-        Each feature within the feature collections will be used to create a
-        Feature object.  The feature object will contain easy access to some of
-        the GeoJSON attributes.
-
-        """
-        feature_tuple = namedtuple('Feature', ['area_description', 'bbox', 'category',
-                                               'certainty', 'country', 'description',
-                                               'effective', 'event', 'expires',
-                                               'headline', 'id', 'json', 'origin',
-                                               'severity', 'states', 'status',
-                                               'urgency'])
-        self.content = []
-        for feature_collection in self._raw:
-            for feature in feature_collection['features']:
-                # Use dict.get built-in to guarantee all values will be initialized.
-                area_description = feature['properties'].get('areaDesc')
-                bbox = feature.get('bbox')
-                category = feature['properties'].get('category')
-                certainty = feature['properties'].get('certainty')
-                country = feature['properties'].get('country')
-                description = feature['properties'].get('description')
-                effective = feature['properties'].get('effective')
-                event = feature['properties'].get('event')
-                expires = feature['properties'].get('expires')
-                headline = feature['properties'].get('headline')
-                id_ = feature.get('id')
-                origin = feature['properties'].get('origin')
-                severity = feature['properties'].get('severity')
-                states = feature['properties'].get('states')
-                status = feature['properties'].get('status')
-                urgency = feature['properties'].get('urgency')
-                self.content.append(feature_tuple(area_description=area_description,
-                                                  bbox=bbox,
-                                                  category=category,
-                                                  certainty=certainty,
-                                                  country=country,
-                                                  description=description,
-                                                  effective=effective,
-                                                  event=event,
-                                                  expires=expires,
-                                                  headline=headline,
-                                                  id=id_,
-                                                  json=feature,
-                                                  origin=origin,
-                                                  severity=severity,
-                                                  states=states,
-                                                  status=status,
-                                                  urgency=urgency))
-
-    @property
-    def area_description(self):
-        """'areaDesc' values for every feature."""
-        return [x.area_description for x in self.content]
-
-    @property
-    def bbox(self):
-        """'bbox' values for every feature."""
-        return [x.bbox for x in self.content]
-
-    @property
-    def category(self):
-        """'category' values for every feature."""
-        return [x['properties']['category'] for x in self.content]
-
-    @property
-    def certainty(self):
-        """'certainty' values for every feature."""
-        return [x.certainty for x in self.content]
-
-    @property
-    def country(self):
-        """'country' values for every feature."""
-        return [x.country for x in self.content]
-
-    @property
-    def description(self):
-        """'description' values for every feature."""
-        return [x.description for x in self.content]
-
-    @property
-    def effective(self):
-        """'effective' values for every feature."""
-        return [x.effective for x in self.content]
-
-    @property
-    def event(self):
-        """'event' values for every feature."""
-        return [x.event for x in self.content]
-
-    @property
-    def expires(self):
-        """'expires' values for every feature."""
-        return [x.expires for x in self.content]
-
-    @property
-    def headline(self):
-        """'headline' values for every feature."""
-        return [x.headline for x in self.content]
-
-    @property
-    def id(self):
-        """'id' values for every feature."""
-        return [x.id for x in self.content]
-
-    @property
-    def json(self):
-        """Raw 'json' for every feature."""
-        return [x.json for x in self.content]
-
-    @property
-    def origin(self):
-        """'origin' values for every feature."""
-        return [x.origin for x in self.content]
-
-    @property
-    def severity(self):
-        """'severity' values for every feature."""
-        return [x.severity for x in self.content]
-
-    @property
-    def states(self):
-        """'states' values for every feature."""
-        return [x.states for x in self.content]
-
-    @property
-    def status(self):
-        """'status' values for every feature."""
-        return [x.status for x in self.content]
-
-    @property
-    def urgency(self):
-        """'urgency' values for every feature."""
-        return [x.urgency for x in self.content]
+    def __init__(self, content, raw_data=None):
+        super(IndexResults, self).__init__(content, raw_data=raw_data)
 
 
-class ShowResults(RecordCollection):
+class ShowResults(AlertsFeaturePropertiesMixin, RecordCollection):
     """
     Show results for the Alerts API.
 
     ShowResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes in each element.
 
-    Element Attributes:
-        - area_description: 'areaDesc' value for the feature.
-        - bbox: 'bbox' value for the feature.
-        - category: 'category' value for the feature.
-        - certainty: 'certainty' value for the feature.
-        - country: 'country' value for the feature.
-        - description: 'description' value for the feature.
-        - effective: 'effective' value for the feature.
-        - event: 'event' value for the feature.
-        - expires: 'expires' value for the feature.
-        - headline: 'headline' value for the feature.
-        - id: 'id' value for the feature.
-        - json: Raw 'json' for the feature.
-        - origin: 'origin' value for the feature.
-        - severity: 'severity' value for the feature.
-        - states: 'states' value for the feature.
-        - status: 'status' value for the feature.
-        - urgency: 'urgency' value for the feature.
-
     """
 
-    def __init__(self, records):
-        super(ShowResults, self).__init__(records)
-
-    def _build(self):
-        """
-        Combine GeoJSON featues from the content of each Record instance.
-
-        Each GeoJSON feature will be used to create a Feature object. The feature
-        object will contain easy access to some of the GeoJSON attributes.
-
-        """
-        feature_tuple = namedtuple('Feature', ['area_description', 'bbox', 'category',
-                                               'certainty', 'country', 'description',
-                                               'effective', 'event', 'expires',
-                                               'headline', 'id', 'json', 'origin',
-                                               'severity', 'states', 'status',
-                                               'urgency'])
-        self.content = []
-        for record in self._raw:
-            feature = record.content
-            # Use dict.get built-in to guarantee all values will be initialized.
-            area_description = feature['properties'].get('areaDesc')
-            bbox = feature.get('bbox')
-            category = feature['properties'].get('category')
-            certainty = feature['properties'].get('certainty')
-            country = feature['properties'].get('country')
-            description = feature['properties'].get('description')
-            effective = feature['properties'].get('effective')
-            event = feature['properties'].get('event')
-            expires = feature['properties'].get('expires')
-            headline = feature['properties'].get('headline')
-            id_ = feature.get('id')
-            origin = feature['properties'].get('origin')
-            severity = feature['properties'].get('severity')
-            states = feature['properties'].get('states')
-            status = feature['properties'].get('status')
-            urgency = feature['properties'].get('urgency')
-            self.content.append(feature_tuple(area_description=area_description,
-                                              bbox=bbox,
-                                              category=category,
-                                              certainty=certainty,
-                                              country=country,
-                                              description=description,
-                                              effective=effective,
-                                              event=event,
-                                              expires=expires,
-                                              headline=headline,
-                                              id=id_,
-                                              json=feature,
-                                              origin=origin,
-                                              severity=severity,
-                                              states=states,
-                                              status=status,
-                                              urgency=urgency))
-
-    @property
-    def area_description(self):
-        """'area_description' values for every feature."""
-        return [x.area_description for x in self.content]
-
-    @property
-    def bbox(self):
-        """'bbox' values for every feature."""
-        return [x.bbox for x in self.content]
-
-    @property
-    def category(self):
-        """'category' values for every feature."""
-        return [x.category for x in self.content]
-
-    @property
-    def certainty(self):
-        """'certainty' values for every feature."""
-        return [x.certainty for x in self.content]
-
-    @property
-    def country(self):
-        """'country' values for every feature."""
-        return [x.country for x in self.content]
-
-    @property
-    def description(self):
-        """'description' values for every feature."""
-        return [x.description for x in self.content]
-
-    @property
-    def effective(self):
-        """'effective' values for every feature."""
-        return [x.effective for x in self.content]
-
-    @property
-    def event(self):
-        """'event' values for every feature."""
-        return [x.event for x in self.content]
-
-    @property
-    def expires(self):
-        """'expires' values for every feature."""
-        return [x.expires for x in self.content]
-
-    @property
-    def headline(self):
-        """'headline' values for every feature."""
-        return [x.headline for x in self.content]
-
-    @property
-    def id(self):
-        """'id' values for every feature."""
-        return [x.id for x in self.content]
-
-    @property
-    def json(self):
-        """Raw 'json' for every feature."""
-        return [x.json for x in self.content]
-
-    @property
-    def origin(self):
-        """'origin' values for every feature."""
-        return [x.origin for x in self.content]
-
-    @property
-    def severity(self):
-        """'severity' values for every feature."""
-        return [x.severity for x in self.content]
-
-    @property
-    def states(self):
-        """'states' values for every feature."""
-        return [x.states for x in self.content]
-
-    @property
-    def status(self):
-        """'status' values for every feature."""
-        return [x.status for x in self.content]
-
-    @property
-    def urgency(self):
-        """'urgency' values for every feature."""
-        return [x.urgency for x in self.content]
+    def __init__(self, content, records):
+        super(ShowResults, self).__init__(content, records)

@@ -17,42 +17,28 @@ class ContentCollection(object):
     GeoJSON feature collections.  Therefore, content will be a list of
     all the returned features within the GeoJSON feature collection.
 
+    Attributes:
+        content (sequence): Content that will be the elements in the iterator.
+        raw_data (sequence): Raw data for debugging.
+
     """
 
-    def __init__(self, data):
-        self._raw = data
-        self._build()
-
-    @abc.abstractmethod
-    def _build(self):
-        """
-        Combine content/data into a list.
-
-        _build must be implemented in children for the purpose of creating
-        the data that will be the iterable.
-
-        For example, all GeoJSON 'feature' sections can be merged and for
-        Collections index results, 'results' can be merged.  The 'features'
-        and 'results' data are the important content that will be iterated
-        over.  Customized access to this data can be defined in child classes.
-
-        """
-        self.content = []
-        for _ in self._raw:
-            self.content.append([])
+    def __init__(self, content, raw_data=None):
+        self._content = content
+        self._raw = raw_data
 
     def __delitem__(self, index):
-        del self.content[index]
+        del self._content[index]
 
     def __getitem__(self, item):
-        return self.content[item]
+        return self._content[item]
 
     def __iter__(self):
         self._idx = 0
         return self
 
     def __len__(self):
-        return len(self.content)
+        return len(self._content)
 
     def __next__(self):
         if self._idx >= self.__len__():
@@ -75,13 +61,14 @@ class RecordCollection(ContentCollection):
     is the same as a ContentCollection, but the _raw attribute will give access
     to the underlying Records.
 
-    All Record instances contain a 'content' attribute.  This attribute will
-    be combined in _build.
+    Attributes:
+        content (sequence): Content that will be the elements in the iterator.
+        records (sequence of Records): Raw record data for debugging purposes.
 
     """
 
-    def __init__(self, records):
-        super(RecordCollection, self).__init__(records)
+    def __init__(self, content, records):
+        super(RecordCollection, self).__init__(content, raw_data=records)
 
     @property
     def failed(self):

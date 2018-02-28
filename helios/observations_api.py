@@ -83,7 +83,14 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
              :class:`IndexResults <helios.observations_api.IndexResults>`
 
         """
-        return IndexResults(super(Observations, self).index(**kwargs))
+        results = super(Observations, self).index(**kwargs)
+
+        content = []
+        for feature_collection in results:
+            for feature in feature_collection['features']:
+                content.append(ObservationsFeature(feature))
+
+        return IndexResults(content, raw_data=results)
 
     @logging_utils.log_entrance_exit
     def preview(self, observation_ids, out_dir=None, return_image_data=False):
@@ -117,7 +124,12 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__preview_worker, messages)
 
-        return PreviewResults(results)
+        content = []
+        for record in results:
+            if record.ok:
+                content.append(record.content)
+
+        return PreviewResults(content, results)
 
     def __preview_worker(self, msg):
         """msg must contain observation_id and check_for_duds"""
@@ -165,118 +177,112 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             :class:`ShowResults <helios.observations_api.ShowResults>`
 
         """
-        return ShowResults(super(Observations, self).show(observation_ids))
+        results = super(Observations, self).show(observation_ids)
+
+        content = []
+        for record in results:
+            if record.ok:
+                content.append(ObservationsFeature(record.content))
+
+        return ShowResults(content, results)
 
 
-class IndexResults(ContentCollection):
+class ObservationsFeature(object):
+    """
+    Observations GeoJSON feature.
+
+    Attributes:
+        city: 'city' value for the feature.
+        country: 'country' value for the feature.
+        description: 'description' value for the feature.
+        id: 'id' value for the feature.
+        json: Raw JSON feature.
+        prev_id: 'prev_id' value for the feature.
+        region: 'region' value for the feature.
+        sensors: 'sensors' value for the feature.
+        state: 'state' value for the feature.
+        time: 'time' value for the feature.
+
+    """
+
+    def __init__(self, feature):
+        self.json = feature
+
+        # Use dict.get built-in to guarantee all values will be initialized.
+        self.city = feature['properties'].get('city')
+        self.country = feature['properties'].get('country')
+        self.description = feature['properties'].get('description')
+        self.id = feature.get('id')
+        self.prev_id = feature['properties'].get('prev_id')
+        self.region = feature['properties'].get('region')
+        self.sensors = feature['properties'].get('sensors')
+        self.state = feature['properties'].get('state')
+        self.time = feature['properties'].get('time')
+
+
+class ObservationsFeaturePropertiesMixin(object):
+    @property
+    def city(self):
+        """'city' values for every feature."""
+        return [x.city for x in self._content]
+
+    @property
+    def country(self):
+        """'country' values for every feature."""
+        return [x.country for x in self._content]
+
+    @property
+    def description(self):
+        """'description' values for every feature."""
+        return [x.description for x in self._content]
+
+    @property
+    def id(self):
+        """'id' values for every feature."""
+        return [x.id for x in self._content]
+
+    @property
+    def json(self):
+        """Raw 'json' for every feature."""
+        return [x.json for x in self._content]
+
+    @property
+    def prev_id(self):
+        """'prev_id' values for every feature."""
+        return [x.prev_id for x in self._content]
+
+    @property
+    def region(self):
+        """'region' values for every feature."""
+        return [x.region for x in self._content]
+
+    @property
+    def sensors(self):
+        """'sensors' values for every feature."""
+        return [x.sensors for x in self._content]
+
+    @property
+    def state(self):
+        """'state' values for every feature."""
+        return [x.state for x in self._content]
+
+    @property
+    def time(self):
+        """'time' values for every feature."""
+        return [x.time for x in self._content]
+
+
+class IndexResults(ObservationsFeaturePropertiesMixin, ContentCollection):
     """
     Index results for the Observations API.
 
     IndexResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes.
 
-    Element Attributes:
-        - city: 'city' value for the feature.
-        - country: 'country' value for the feature.
-        - description: 'description' value for the feature.
-        - id: 'id' value for the feature.
-        - json: Raw JSON feature.
-        - prev_id: 'prev_id' value for the feature.
-        - region: 'region' value for the feature.
-        - sensors: 'sensors' value for the feature.
-        - state: 'state' value for the feature.
-        - time: 'time' value for the feature.
-
     """
 
-    def __init__(self, geojson):
-        super(IndexResults, self).__init__(geojson)
-
-    def _build(self):
-        """
-        Combine all GeoJSON features into the content attribute.
-
-        Each feature within the feature collections will be used to create a
-        Feature object.  The feature object will contain easy access to some of
-        the GeoJSON attributes.
-
-        """
-        feature_tuple = namedtuple('Feature', ['city', 'country', 'description',
-                                               'id', 'json', 'prev_id', 'region',
-                                               'sensors', 'state', 'time'])
-        self.content = []
-        for feature_collection in self._raw:
-            for feature in feature_collection['features']:
-                # Use dict.get built-in to guarantee all values will be initialized.
-                city = feature['properties'].get('city')
-                country = feature['properties'].get('country')
-                description = feature['properties'].get('description')
-                id_ = feature.get('id')
-                prev_id = feature['properties'].get('prev_id')
-                region = feature['properties'].get('region')
-                sensors = feature['properties'].get('sensors')
-                state = feature['properties'].get('state')
-                time = feature['properties'].get('time')
-                self.content.append(feature_tuple(city=city,
-                                                  country=country,
-                                                  description=description,
-                                                  id=id_,
-                                                  json=feature,
-                                                  prev_id=prev_id,
-                                                  region=region,
-                                                  sensors=sensors,
-                                                  state=state,
-                                                  time=time))
-
-    @property
-    def city(self):
-        """'city' values for every feature."""
-        return [x.city for x in self.content]
-
-    @property
-    def country(self):
-        """'country' values for every feature."""
-        return [x.country for x in self.content]
-
-    @property
-    def description(self):
-        """'description' values for every feature."""
-        return [x.description for x in self.content]
-
-    @property
-    def id(self):
-        """'id' values for every feature."""
-        return [x.id for x in self.content]
-
-    @property
-    def json(self):
-        """Raw 'json' for every feature."""
-        return [x.json for x in self.content]
-
-    @property
-    def prev_id(self):
-        """'prev_id' values for every feature."""
-        return [x.prev_id for x in self.content]
-
-    @property
-    def region(self):
-        """'region' values for every feature."""
-        return [x.region for x in self.content]
-
-    @property
-    def sensors(self):
-        """'sensors' values for every feature."""
-        return [x.sensors for x in self.content]
-
-    @property
-    def state(self):
-        """'state' values for every feature."""
-        return [x.state for x in self.content]
-
-    @property
-    def time(self):
-        """'time' values for every feature."""
-        return [x.time for x in self.content]
+    def __init__(self, content, raw_data=None):
+        super(IndexResults, self).__init__(content, raw_data=raw_data)
 
 
 class PreviewResults(RecordCollection):
@@ -288,23 +294,13 @@ class PreviewResults(RecordCollection):
 
     """
 
-    def __init__(self, image_records):
-        super(PreviewResults, self).__init__(image_records)
-
-    def _build(self):
-        """
-        Combine all ImageRecord instance content.
-
-        All content will be image data in this case, if return_image_data was
-        True.
-
-        """
-        self.content = [x.content for x in self._raw]
+    def __init__(self, content, records):
+        super(PreviewResults, self).__init__(content, records)
 
     @property
     def image_data(self):
         """Image data if return_image_data was True."""
-        return self.content
+        return self._content
 
     @property
     def output_file(self):
@@ -317,112 +313,14 @@ class PreviewResults(RecordCollection):
         return [x.name for x in self._raw if x.ok]
 
 
-class ShowResults(RecordCollection):
+class ShowResults(ObservationsFeaturePropertiesMixin, RecordCollection):
     """
     Show results from the Observations API.
 
     ShowResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes.
 
-    Element Attributes:
-        - city: 'city' value for the feature.
-        - country: 'country' value for the feature.
-        - description: 'description' value for the feature.
-        - id: 'id' value for the feature.
-        - json: Raw JSON feature.
-        - prev_id: 'prev_id' value for the feature.
-        - region: 'region' value for the feature.
-        - sensors: 'sensors' value for the feature.
-        - state: 'state' value for the feature.
-        - time: 'time' value for the feature.
-
     """
 
-    def __init__(self, records):
-        super(ShowResults, self).__init__(records)
-
-    def _build(self):
-        """
-        Combine all GeoJSON features into the content attribute.
-
-        Each feature within the feature collections will be used to create a
-        Feature object.  The feature object will contain easy access to some of
-        the GeoJSON attributes.
-
-        """
-        feature_tuple = namedtuple('Feature', ['city', 'country', 'description',
-                                               'id', 'json', 'prev_id', 'region',
-                                               'sensors', 'state', 'time'])
-        self.content = []
-        for record in self._raw:
-            feature = record.content
-            # Use dict.get built-in to guarantee all values will be initialized.
-            city = feature['properties'].get('city')
-            country = feature['properties'].get('country')
-            description = feature['properties'].get('description')
-            id_ = feature.get('id')
-            prev_id = feature['properties'].get('prev_id')
-            region = feature['properties'].get('region')
-            sensors = feature['properties'].get('sensors')
-            state = feature['properties'].get('state')
-            time = feature['properties'].get('time')
-            self.content.append(feature_tuple(city=city,
-                                              country=country,
-                                              description=description,
-                                              id=id_,
-                                              json=feature,
-                                              prev_id=prev_id,
-                                              region=region,
-                                              sensors=sensors,
-                                              state=state,
-                                              time=time))
-
-    @property
-    def city(self):
-        """'city' values for every feature."""
-        return [x.city for x in self.content]
-
-    @property
-    def country(self):
-        """'country' values for every feature."""
-        return [x.country for x in self.content]
-
-    @property
-    def description(self):
-        """'description' values for every feature."""
-        return [x.description for x in self.content]
-
-    @property
-    def id(self):
-        """'id' values for every feature."""
-        return [x.id for x in self.content]
-
-    @property
-    def json(self):
-        """Raw 'json' for every feature."""
-        return [x.json for x in self.content]
-
-    @property
-    def prev_id(self):
-        """'prev_id' values for every feature."""
-        return [x.prev_id for x in self.content]
-
-    @property
-    def region(self):
-        """'region' values for every feature."""
-        return [x.region for x in self.content]
-
-    @property
-    def sensors(self):
-        """'sensors' values for every feature."""
-        return [x.sensors for x in self.content]
-
-    @property
-    def state(self):
-        """'state' values for every feature."""
-        return [x.state for x in self.content]
-
-    @property
-    def time(self):
-        """'time' values for every feature."""
-        return [x.time for x in self.content]
+    def __init__(self, content, records):
+        super(ShowResults, self).__init__(content, records)

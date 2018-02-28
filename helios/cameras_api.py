@@ -6,7 +6,6 @@ documentation.  Some may have additional functionality for convenience.
 
 """
 import logging
-from collections import namedtuple
 
 from dateutil.parser import parse
 
@@ -121,7 +120,14 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
              :class:`IndexResults <helios.cameras_api.IndexResults>`
 
         """
-        return IndexResults(super(Cameras, self).index(**kwargs))
+        results = super(Cameras, self).index(**kwargs)
+
+        content = []
+        for feature_collection in results:
+            for feature in feature_collection['features']:
+                content.append(CamerasFeature(feature))
+
+        return IndexResults(content, raw_data=results)
 
     def show(self, camera_ids):
         """
@@ -134,7 +140,14 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             :class:`ShowResults <helios.cameras_api.ShowResults>`
 
         """
-        return ShowResults(super(Cameras, self).show(camera_ids))
+        results = super(Cameras, self).show(camera_ids)
+
+        content = []
+        for record in results:
+            if record.ok:
+                content.append(CamerasFeature(record.content))
+
+        return ShowResults(content, results)
 
     def show_image(self, camera_id, times, out_dir=None, return_image_data=False):
         """
@@ -157,103 +170,108 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             :class:`ShowImageResults <helios.cameras_api.ShowImageResults>`
 
         """
-        return ShowImageResults(super(Cameras, self).show_image(
-            camera_id, times, out_dir=out_dir, return_image_data=return_image_data))
+        results = super(Cameras, self).show_image(camera_id,
+                                                  times,
+                                                  out_dir=out_dir,
+                                                  return_image_data=return_image_data)
+
+        content = []
+        for record in results:
+            if record.ok:
+                content.append(record.content)
+
+        return ShowImageResults(content, results)
 
 
-class IndexResults(ContentCollection):
+class CamerasFeature(object):
+    """
+    Cameras GeoJSON feature.
+
+    Attributes:
+        city: 'city' value for the feature.
+        country: 'country' value for the feature.
+        description: 'description' value for the feature.
+        direction: 'direction' value for the feature.
+        id: 'id' value for the feature.
+        json: Raw 'json' for the feature.
+        region: 'region' value for the feature.
+        state: 'state' value for the feature.
+        video: 'video' value for the feature.
+
+    """
+
+    def __init__(self, feature):
+        self.json = feature
+
+        # Use dict.get built-in to guarantee all values will be initialized.
+        self.city = feature['properties'].get('city')
+        self.country = feature['properties'].get('country')
+        self.description = feature['properties'].get('description')
+        self.direction = feature['properties'].get('direction')
+        self.id = feature.get('id')
+        self.region = feature['properties'].get('region')
+        self.state = feature['properties'].get('state')
+        self.video = feature['properties'].get('video')
+
+
+class CamerasFeaturePropertiesMixin(object):
+    @property
+    def city(self):
+        """'city' values for every feature."""
+        return [x.city for x in self._content]
+
+    @property
+    def country(self):
+        """'country' values for every feature."""
+        return [x.country for x in self._content]
+
+    @property
+    def description(self):
+        """'description' values for every feature."""
+        return [x.description for x in self._content]
+
+    @property
+    def direction(self):
+        """'direction' values for every feature."""
+        return [x.direction for x in self._content]
+
+    @property
+    def id(self):
+        """'id' values for every feature."""
+        return [x.id for x in self._content]
+
+    @property
+    def json(self):
+        """Raw 'json' for every feature."""
+        return [x.json for x in self._content]
+
+    @property
+    def region(self):
+        """'region' values for every feature."""
+        return [x.region for x in self._content]
+
+    @property
+    def state(self):
+        """'state' values for every feature."""
+        return [x.state for x in self._content]
+
+    @property
+    def video(self):
+        """'video' values for every feature."""
+        return [x.video for x in self._content]
+
+
+class IndexResults(CamerasFeaturePropertiesMixin, ContentCollection):
     """
     Index results for the Cameras API.
 
     IndexResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes for each element.
 
-    Element Attributes:
-        - city: 'city' value for the feature.
-        - country: 'country' value for the feature.
-        - description: 'description' value for the feature.
-        - id: 'id' value for the feature.
-        - json: Raw 'json' for the feature.
-        - region: 'region' value for the feature.
-        - state: 'state' value for the feature.
-        - video: 'video' value for the feature.
-
     """
 
-    def __init__(self, geojson):
-        super(IndexResults, self).__init__(geojson)
-
-    def _build(self):
-        """
-        Combine GeoJSON features into the content attribute.
-
-        Each feature within the feature collections will be used to create a
-        Feature object.  The feature object will contain easy access to some of
-        the GeoJSON attributes.
-
-        """
-        feature_tuple = namedtuple('Feature', ['city', 'country', 'description',
-                                               'id', 'json', 'region', 'state',
-                                               'video'])
-        self.content = []
-        for feature_collection in self._raw:
-            for feature in feature_collection['features']:
-                # Use dict.get built-in to guarantee all values will be initialized.
-                city = feature['properties'].get('city')
-                country = feature['properties'].get('country')
-                description = feature['properties'].get('description')
-                id_ = feature.get('id')
-                region = feature['properties'].get('region')
-                state = feature['properties'].get('state')
-                video = feature['properties'].get('video')
-                self.content.append(feature_tuple(city=city,
-                                                  country=country,
-                                                  description=description,
-                                                  id=id_,
-                                                  json=feature,
-                                                  region=region,
-                                                  state=state,
-                                                  video=video))
-
-    @property
-    def city(self):
-        """'city' values for every feature."""
-        return [x.city for x in self.content]
-
-    @property
-    def country(self):
-        """'country' values for every feature."""
-        return [x.country for x in self.content]
-
-    @property
-    def description(self):
-        """'description' values for every feature."""
-        return [x.description for x in self.content]
-
-    @property
-    def id(self):
-        """'id' values for every feature."""
-        return [x.id for x in self.content]
-
-    @property
-    def json(self):
-        """Raw 'json' for every feature."""
-        return [x.json for x in self.content]
-
-    @property
-    def region(self):
-        """'region' values for every feature."""
-        return [x.region for x in self.content]
-
-    @property
-    def state(self):
-        """'state' values for every feature."""
-        return [x.state for x in self.content]
-
-    @property
-    def video(self):
-        """'video' values for every feature."""
-        return [x.video for x in self.content]
+    def __init__(self, content, raw_data=None):
+        super(IndexResults, self).__init__(content, raw_data=raw_data)
 
 
 class ShowImageResults(RecordCollection):
@@ -265,23 +283,13 @@ class ShowImageResults(RecordCollection):
 
     """
 
-    def __init__(self, image_records):
-        super(ShowImageResults, self).__init__(image_records)
-
-    def _build(self):
-        """
-        Combine all ImageRecord instance content.
-
-        All content will be image data in this case, if return_image_data was
-        True.
-
-        """
-        self.content = [x.content for x in self._raw]
+    def __init__(self, content, records):
+        super(ShowImageResults, self).__init__(content, records)
 
     @property
     def image_data(self):
         """Image data if return_image_data was True."""
-        return self.content
+        return self._content
 
     @property
     def output_file(self):
@@ -294,97 +302,14 @@ class ShowImageResults(RecordCollection):
         return [x.name for x in self._raw if x.ok]
 
 
-class ShowResults(RecordCollection):
+class ShowResults(CamerasFeaturePropertiesMixin, RecordCollection):
     """
     Show results for the Cameras API.
 
     ShowResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes for each element.
 
-    Element Attributes:
-        - city: 'city' value for the feature.
-        - country: 'country' value for the feature.
-        - description: 'description' value for the feature.
-        - direction: 'direction' value for the feature.
-        - id: 'id' value for the feature.
-        - json: Raw 'json' for the feature.
-        - region: 'region' value for the feature.
-        - state: 'state' value for the feature.
-        - video: 'video' value for the feature.
-
     """
 
-    def __init__(self, records):
-        super(ShowResults, self).__init__(records)
-
-    def _build(self):
-        """Combine GeoJSON content from within each record."""
-        feature_tuple = namedtuple('Feature', ['city', 'country', 'description',
-                                               'direction', 'id', 'json', 'region',
-                                               'state', 'video'])
-        self.content = []
-        for record in self._raw:
-            feature = record.content
-            # Use dict.get built-in to guarantee all values will be initialized.
-            city = feature['properties'].get('city')
-            country = feature['properties'].get('country')
-            description = feature['properties'].get('description')
-            direction = feature['properties'].get('direction')
-            id_ = feature.get('id')
-            region = feature['properties'].get('region')
-            state = feature['properties'].get('state')
-            video = feature['properties'].get('video')
-            self.content.append(feature_tuple(city=city,
-                                              country=country,
-                                              description=description,
-                                              direction=direction,
-                                              id=id_,
-                                              json=feature,
-                                              region=region,
-                                              state=state,
-                                              video=video))
-
-    @property
-    def city(self):
-        """'city' values for every feature."""
-        return [x.city for x in self.content]
-
-    @property
-    def country(self):
-        """'country' values for every feature."""
-        return [x.country for x in self.content]
-
-    @property
-    def description(self):
-        """'description' values for every feature."""
-        return [x.description for x in self.content]
-
-    @property
-    def direction(self):
-        """'direction' values for every feature."""
-        return [x.direction for x in self.content]
-
-    @property
-    def id(self):
-        """'id' values for every feature."""
-        return [x.id for x in self.content]
-
-    @property
-    def json(self):
-        """Raw 'json' for every feature."""
-        return [x.json for x in self.content]
-
-    @property
-    def region(self):
-        """'region' values for every feature."""
-        return [x.region for x in self.content]
-
-    @property
-    def state(self):
-        """'state' values for every feature."""
-        return [x.state for x in self.content]
-
-    @property
-    def video(self):
-        """'video' values for every feature."""
-        return [x.video for x in self.content]
+    def __init__(self, content, records):
+        super(ShowResults, self).__init__(content, records)
