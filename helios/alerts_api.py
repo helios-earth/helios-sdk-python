@@ -8,7 +8,7 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
-from helios.core.structure import ContentCollection, RecordCollection
+from helios.core.structure import RecordCollection
 
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
@@ -65,11 +65,12 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
         results = super(Alerts, self).index(**kwargs)
 
         content = []
-        for feature_collection in results:
-            for feature in feature_collection['features']:
-                content.append(AlertsFeature(feature))
+        for record in results:
+            if record.ok:
+                for feature in record.content['features']:
+                    content.append(AlertsFeature(feature))
 
-        return IndexResults(content, raw_data=results)
+        return IndexResults(content, results)
 
     def show(self, alert_ids):
         """
@@ -226,7 +227,7 @@ class AlertsFeaturePropertiesMixin(object):
         return [x.urgency for x in self._content]
 
 
-class IndexResults(AlertsFeaturePropertiesMixin, ContentCollection):
+class IndexResults(AlertsFeaturePropertiesMixin, RecordCollection):
     """
     Index results for the Alerts API.
 
@@ -235,8 +236,8 @@ class IndexResults(AlertsFeaturePropertiesMixin, ContentCollection):
 
     """
 
-    def __init__(self, content, raw_data=None):
-        super(IndexResults, self).__init__(content, raw_data=raw_data)
+    def __init__(self, content, records):
+        super(IndexResults, self).__init__(content, records)
 
 
 class ShowResults(AlertsFeaturePropertiesMixin, RecordCollection):

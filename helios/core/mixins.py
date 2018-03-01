@@ -114,60 +114,48 @@ class IndexMixin(object):
     @logging_utils.log_entrance_exit
     def index(self, **kwargs):
         max_skip = 4000
-        limit = kwargs.get('limit', 100)
-        skip = kwargs.get('skip', 0)
+        limit = kwargs.pop('limit', 100)
+        skip = kwargs.pop('skip', 0)
 
-        # Establish all queries.
-        params_str = self._parse_query_inputs(kwargs)
-        queries = []
+        # Raise right away if skip is too high.
+        if skip > max_skip:
+            raise ValueError('skip must be less than the maximum skip value '
+                             'of {}. A value of {} was tried.'.format(max_skip, skip))
+
+        # Create the messages up to the maximum skip.
+        Message = namedtuple('Message', ['kwargs', 'limit', 'skip'])
+
+        messages = []
         for i in range(skip, max_skip, limit):
             if i + limit > max_skip:
                 temp_limit = max_skip - i
             else:
                 temp_limit = limit
+            messages.append(Message(kwargs=kwargs, limit=temp_limit, skip=i))
 
-            query_str = '{}/{}?{}&limit={}&skip={}'.format(self._base_api_url,
-                                                           self._core_api,
-                                                           params_str,
-                                                           temp_limit,
-                                                           i)
-
-            queries.append(query_str)
-
-        # Do first query to find total number of results to expect.
-        initial_resp = self._request_manager.get(queries.pop(0)).json()
+        # Process first message to get the total number of features to expect.
+        initial_resp = self.__index_worker(messages.pop(0))
 
         try:
-            total = initial_resp['properties']['total']
+            total = initial_resp.content['properties']['total']
         except KeyError:
-            total = initial_resp['total']
+            total = initial_resp.content['total']
+
+        # If only one query was necessary, return immediately.
+        if total < limit:
+            return [initial_resp]
 
         # Warn the user when truncation occurs. (max_skip is hit)
         if total > max_skip:
-            # Log truncation warning
             self._logger.warning('Maximum skip level. Truncated results for: %s',
                                  kwargs)
 
-        # Get number of results in initial query.
-        try:
-            n_features = len(initial_resp['features'])
-        except KeyError:
-            n_features = len(initial_resp['results'])
-
-        # If only one query was necessary, return immediately.
-        if n_features < limit:
-            return [initial_resp]
-
         # Determine number of iterations that will be needed.
         n_queries_needed = int(ceil((total - skip) / float(limit))) - 1
-        queries = queries[0:n_queries_needed]
+        messages = messages[0:n_queries_needed]
 
         # Log number of queries required.
         self._logger.info('%s index queries required for: %s', n_queries_needed, kwargs)
-
-        # Create messages for worker.
-        Message = namedtuple('Message', 'query')
-        messages = [Message(x) for x in queries]
 
         # Process messages using the worker function.
         results = self._process_messages(self.__index_worker, messages)
@@ -178,11 +166,23 @@ class IndexMixin(object):
         return results
 
     def __index_worker(self, msg):
-        """msg must contain query"""
-        # Perform query
-        resp = self._request_manager.get(msg.query)
+        """msg must contain kwargs (search criteria), limit, and skip"""
 
-        return resp.json()
+        params_str = self._parse_query_inputs(msg.kwargs)
+
+        query_str = '{}/{}?{}&limit={}&skip={}'.format(self._base_api_url,
+                                                       self._core_api,
+                                                       params_str,
+                                                       msg.limit,
+                                                       msg.skip)
+
+        # Perform query
+        try:
+            resp = self._request_manager.get(query_str)
+        except requests.exceptions.RequestException as e:
+            return Record(message=msg, query=query_str, error=e)
+
+        return Record(message=msg, query=query_str, content=resp.json())
 
 
 class ShowMixin(object):

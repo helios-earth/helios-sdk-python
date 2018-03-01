@@ -86,11 +86,12 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         results = super(Observations, self).index(**kwargs)
 
         content = []
-        for feature_collection in results:
-            for feature in feature_collection['features']:
-                content.append(ObservationsFeature(feature))
+        for record in results:
+            if record.ok:
+                for feature in record.content['features']:
+                    content.append(ObservationsFeature(feature))
 
-        return IndexResults(content, raw_data=results)
+        return IndexResults(content, results)
 
     @logging_utils.log_entrance_exit
     def preview(self, observation_ids, out_dir=None, return_image_data=False):
@@ -272,7 +273,7 @@ class ObservationsFeaturePropertiesMixin(object):
         return [x.time for x in self._content]
 
 
-class IndexResults(ObservationsFeaturePropertiesMixin, ContentCollection):
+class IndexResults(ObservationsFeaturePropertiesMixin, RecordCollection):
     """
     Index results for the Observations API.
 
@@ -281,8 +282,8 @@ class IndexResults(ObservationsFeaturePropertiesMixin, ContentCollection):
 
     """
 
-    def __init__(self, content, raw_data=None):
-        super(IndexResults, self).__init__(content, raw_data=raw_data)
+    def __init__(self, content, records):
+        super(IndexResults, self).__init__(content, records)
 
 
 class PreviewResults(RecordCollection):

@@ -13,7 +13,6 @@ from collections import namedtuple
 import requests
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
-from helios.core.structure import ContentCollection
 from helios.core.structure import Record, RecordCollection
 from helios.utilities import logging_utils
 
@@ -251,11 +250,12 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         results = super(Collections, self).index(**kwargs)
 
         content = []
-        for feature_collection in results:
-            for feature in feature_collection['results']:
-                content.append(CollectionsFeature(feature))
+        for record in results:
+            if record.ok:
+                for feature in record.content['results']:
+                    content.append(CollectionsFeature(feature))
 
-        return IndexResults(content, raw_data=results)
+        return IndexResults(content, results)
 
     @logging_utils.log_entrance_exit
     def remove_image(self, collection_id, names):
@@ -493,7 +493,7 @@ class AddImageResults(RecordCollection):
         super(AddImageResults, self).__init__(content, records)
 
 
-class IndexResults(CollectionsFeaturePropertiesMixin, ContentCollection):
+class IndexResults(CollectionsFeaturePropertiesMixin, RecordCollection):
     """
     Index results for the Collections API.
 
@@ -502,8 +502,8 @@ class IndexResults(CollectionsFeaturePropertiesMixin, ContentCollection):
 
     """
 
-    def __init__(self, content, raw_data=None):
-        super(IndexResults, self).__init__(content, raw_data=raw_data)
+    def __init__(self, content, records):
+        super(IndexResults, self).__init__(content, records)
 
 
 class RemoveImageResults(RecordCollection):

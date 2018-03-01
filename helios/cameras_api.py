@@ -10,7 +10,7 @@ import logging
 from dateutil.parser import parse
 
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
-from helios.core.structure import ContentCollection, RecordCollection
+from helios.core.structure import RecordCollection
 from helios.utilities import logging_utils
 
 
@@ -123,11 +123,12 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         results = super(Cameras, self).index(**kwargs)
 
         content = []
-        for feature_collection in results:
-            for feature in feature_collection['features']:
-                content.append(CamerasFeature(feature))
+        for record in results:
+            if record.ok:
+                for feature in record.content['features']:
+                    content.append(CamerasFeature(feature))
 
-        return IndexResults(content, raw_data=results)
+        return IndexResults(content, results)
 
     def show(self, camera_ids):
         """
@@ -261,7 +262,7 @@ class CamerasFeaturePropertiesMixin(object):
         return [x.video for x in self._content]
 
 
-class IndexResults(CamerasFeaturePropertiesMixin, ContentCollection):
+class IndexResults(CamerasFeaturePropertiesMixin, RecordCollection):
     """
     Index results for the Cameras API.
 
@@ -270,8 +271,8 @@ class IndexResults(CamerasFeaturePropertiesMixin, ContentCollection):
 
     """
 
-    def __init__(self, content, raw_data=None):
-        super(IndexResults, self).__init__(content, raw_data=raw_data)
+    def __init__(self, content, records):
+        super(IndexResults, self).__init__(content, records)
 
 
 class ShowImageResults(RecordCollection):
