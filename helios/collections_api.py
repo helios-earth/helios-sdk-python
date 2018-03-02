@@ -408,19 +408,20 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
 
 class CollectionsFeature(object):
-    """Collections json result.
+    """
+    Individual Collection JSON result.
 
     Attributes:
-        bucket: 'bucket' value for the result.
-        created_at: 'city' value for the result.
-        description: 'created_at' value for the result.
-        id: '_id' value for the result.
-        images: 'images' value for the result.
-        json: Raw JSON result.
-        name: 'name' value for the result.
-        tags: 'tags' value for the result.
-        updated_at: 'updated_at' value for the result.
-        user_id: 'user_id' value for the result.
+        bucket (str): 'bucket' value for the result.
+        created_at (str): 'city' value for the result.
+        description (str): 'created_at' value for the result.
+        id (str): '_id' value for the result.
+        images (sequence of strs): 'images' value for the result.
+        json (dict): Raw JSON result.
+        name (str): 'name' value for the result.
+        tags (sequence of strs): 'tags' value for the result.
+        updated_at (str): 'updated_at' value for the result.
+        user_id (str): 'user_id' value for the result.
 
     """
 
@@ -500,6 +501,9 @@ class IndexResults(CollectionsFeaturePropertiesMixin, RecordCollection):
     IndexResults is an iterable for the results JSON response.  This allows
     the user to iterate and select based on result attributes.
 
+    All features within IndexResults are instances of
+    :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`
+
     """
 
     def __init__(self, content, records):
@@ -542,7 +546,13 @@ class ShowImageResults(RecordCollection):
 
 
 class ShowResults(CollectionsFeature):
-    """Show results for the Collections API."""
+    """
+    Show results for the Collections API.
+
+    The features within ShowResults is an instances of
+    :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`
+
+    """
 
     def __init__(self, feature):
         super(ShowResults, self).__init__(feature)

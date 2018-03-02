@@ -95,26 +95,26 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
 class AlertsFeature(object):
     """
-    Alerts GeoJSON feature.
+    Individual Alert GeoJSON feature.
 
     Attributes:
-        area_description: 'areaDesc' value for the feature.
-        bbox: 'bbox' value for the feature.
-        category: 'category' value for the feature.
-        certainty: 'certainty' value for the feature.
-        country: 'country' value for the feature.
-        description: 'description' value for the feature.
-        effective: 'effective' value for the feature.
-        event: 'event' value for the feature.
-        expires: 'expires' value for the feature.
-        headline: 'headline' value for the feature.
-        id: 'id' value for the feature.
-        json: Raw 'json' for the feature.
-        origin: 'origin' value for the feature.
-        severity: 'severity' value for the feature.
-        states: 'states' value for the feature.
-        status: 'status' value for the feature.
-        urgency: 'urgency' value for the feature.
+        area_description (str): 'areaDesc' value for the feature.
+        bbox (sequence of floats): 'bbox' value for the feature.
+        category (str): 'category' value for the feature.
+        certainty (str): 'certainty' value for the feature.
+        country (str): 'country' value for the feature.
+        description (str): 'description' value for the feature.
+        effective (str): 'effective' value for the feature.
+        event (str): 'event' value for the feature.
+        expires (str): 'expires' value for the feature.
+        headline (str): 'headline' value for the feature.
+        id (str): 'id' value for the feature.
+        json (dict): Raw 'json' for the feature.
+        origin (str): 'origin' value for the feature.
+        severity (str): 'severity' value for the feature.
+        states (sequence of strs): 'states' value for the feature.
+        status (str): 'status' value for the feature.
+        urgency (str): 'urgency' value for the feature.
 
     """
 
@@ -234,6 +234,9 @@ class IndexResults(AlertsFeaturePropertiesMixin, RecordCollection):
     IndexResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes in each element.
 
+    All features within IndexResults are instances of
+    :class:`AlertsFeature <helios.alerts_api.AlertsFeature>`
+
     """
 
     def __init__(self, content, records):
@@ -246,6 +249,9 @@ class ShowResults(AlertsFeaturePropertiesMixin, RecordCollection):
 
     ShowResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes in each element.
+
+    All features within ShowResults are instances of
+    :class:`AlertsFeature <helios.alerts_api.AlertsFeature>`
 
     """
 

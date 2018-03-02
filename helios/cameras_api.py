@@ -186,18 +186,18 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
 class CamerasFeature(object):
     """
-    Cameras GeoJSON feature.
+    Individual Camera GeoJSON feature.
 
     Attributes:
-        city: 'city' value for the feature.
-        country: 'country' value for the feature.
-        description: 'description' value for the feature.
-        direction: 'direction' value for the feature.
-        id: 'id' value for the feature.
-        json: Raw 'json' for the feature.
-        region: 'region' value for the feature.
-        state: 'state' value for the feature.
-        video: 'video' value for the feature.
+        city (str): 'city' value for the feature.
+        country (str): 'country' value for the feature.
+        description (str): 'description' value for the feature.
+        direction (str): 'direction' value for the feature.
+        id (str): 'id' value for the feature.
+        json (dict): Raw 'json' for the feature.
+        region (str): 'region' value for the feature.
+        state (str): 'state' value for the feature.
+        video (bool): 'video' value for the feature.
 
     """
 
@@ -269,6 +269,9 @@ class IndexResults(CamerasFeaturePropertiesMixin, RecordCollection):
     IndexResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes for each element.
 
+    All features within IndexResults are instances of
+    :class:`CamerasFeature <helios.cameras_api.CamerasFeature>`
+
     """
 
     def __init__(self, content, records):
@@ -309,6 +312,9 @@ class ShowResults(CamerasFeaturePropertiesMixin, RecordCollection):
 
     ShowResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes for each element.
+
+    All features within ShowResults are instances of
+    :class:`CamerasFeature <helios.cameras_api.CamerasFeature>`
 
     """
 

@@ -189,19 +189,19 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
 class ObservationsFeature(object):
     """
-    Observations GeoJSON feature.
+    Individual Observation GeoJSON feature.
 
     Attributes:
-        city: 'city' value for the feature.
-        country: 'country' value for the feature.
-        description: 'description' value for the feature.
-        id: 'id' value for the feature.
-        json: Raw JSON feature.
-        prev_id: 'prev_id' value for the feature.
-        region: 'region' value for the feature.
-        sensors: 'sensors' value for the feature.
-        state: 'state' value for the feature.
-        time: 'time' value for the feature.
+        city (str): 'city' value for the feature.
+        country (str): 'country' value for the feature.
+        description (str): 'description' value for the feature.
+        id (str): 'id' value for the feature.
+        json (dict): Raw JSON feature.
+        prev_id (str): 'prev_id' value for the feature.
+        region (str): 'region' value for the feature.
+        sensors (dict): 'sensors' value for the feature.
+        state (str): 'state' value for the feature.
+        time (str): 'time' value for the feature.
 
     """
 
@@ -279,6 +279,9 @@ class IndexResults(ObservationsFeaturePropertiesMixin, RecordCollection):
     IndexResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes.
 
+    All features within IndexResults are instances of
+    :class:`ObservationsFeature <helios.observations_api.ObservationsFeature>`
+
     """
 
     def __init__(self, content, records):
@@ -319,6 +322,9 @@ class ShowResults(ObservationsFeaturePropertiesMixin, RecordCollection):
 
     ShowResults is an iterable for GeoJSON features.  This allows the
     user to iterate and select based on Feature attributes.
+
+    All features within ShowResults are instances of
+    :class:`ObservationsFeature <helios.observations_api.ObservationsFeature>`
 
     """
 
