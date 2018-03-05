@@ -24,7 +24,13 @@ cameras = helios.Cameras()
 ny_cams = cameras.index(state='New York')
 
 # Gather the camera IDs from the results.
+
+# Combines all id attributes from featues in iterable.
 ny_cams_ids = ny_cams.id
+
+# Alternatively, you can iterate and extract individual fields.
+ny_cams_ids_2 = [x.id for x in ny_cams]
+
 ```
 
 ------------------
