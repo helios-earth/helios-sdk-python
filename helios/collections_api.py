@@ -182,6 +182,50 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         return resp['collection_id']
 
     @logging_utils.log_entrance_exit
+    def delete(self, collection_id):
+        """
+        Delete an empty collection.
+
+        If the collection is not empty, delete will fail.  Use the
+        :meth:`empty <helios.collections_api.Collections.empty>` method to
+        remove all imagery before calling this method.
+
+        Args:
+            collection_id (str): Collection to delete.
+
+        Returns:
+            dict: JSON response
+
+        """
+        query_str = '{}/{}/{}'.format(self._base_api_url,
+                                      self._core_api,
+                                      collection_id)
+
+        resp = self._request_manager.delete(query_str)
+
+        return resp.json()
+
+    @logging_utils.log_entrance_exit
+    def empty(self, collection_id):
+        """
+        Bulk remove (up to 1000) images from a collection.
+
+        Args:
+            collection_id (str): Collection to empty.
+
+        Returns:
+            dict: JSON response.
+
+        """
+        query_str = '{}/{}/{}/images'.format(self._base_api_url,
+                                             self._core_api,
+                                             collection_id)
+
+        resp = self._request_manager.delete(query_str)
+
+        return resp.json()
+
+    @logging_utils.log_entrance_exit
     def images(self, collection_id, camera=None, old_flag=False):
         """
         Get all image names in a given collection.
