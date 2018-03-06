@@ -61,15 +61,26 @@ class SDKCore(object):
         raise AttributeError('Access to _base_api_url is restricted.')
 
     @staticmethod
-    def _parse_query_inputs(input_dict):
+    def _parse_query_inputs(parameters):
+        """
+        Create query string from a dictionary of parameters.
+
+        Args:
+            parameters (dict):  Key/values to combine into a query string.
+
+        Returns:
+            str: Query string.
+        """
+        parameters_temp = parameters.copy()
+
         # Check for unique case: sensors
-        if 'sensors' in input_dict:
-            query_str = input_dict.pop('sensors') + '&'
-        else:
+        try:
+            query_str = parameters_temp.pop('sensors') + '&'
+        except KeyError:
             query_str = ''
 
         # Parse input_dict into a str
-        for key, val in input_dict.items():
+        for key, val in parameters_temp.items():
             if val is None:
                 continue
 
