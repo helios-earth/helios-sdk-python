@@ -93,7 +93,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__add_image_worker, messages)
 
-        return AddImageResults([x.content['ok'] for x in results], results)
+        return AddImageResults([x.content for x in results], results)
 
     def __add_image_worker(self, msg):
         """msg must contain collection_id and data"""
@@ -324,7 +324,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__remove_image_worker, messages)
 
-        return RemoveImageResults([x.content['ok'] for x in results], results)
+        return RemoveImageResults([x.content for x in results], results)
 
     def __remove_image_worker(self, msg):
         """msg must contain collection_id and img_name"""
