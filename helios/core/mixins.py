@@ -73,11 +73,11 @@ class SDKCore(object):
         """
         parameters_temp = parameters.copy()
 
+        query_str = ''
+
         # Check for unique case: sensors
-        try:
-            query_str = parameters_temp.pop('sensors') + '&'
-        except KeyError:
-            query_str = ''
+        if 'sensors' in parameters_temp:
+            query_str += parameters_temp.pop('sensors') + '&'
 
         # Parse input_dict into a str
         for key, val in parameters_temp.items():
@@ -125,8 +125,21 @@ class IndexMixin(object):
     @logging_utils.log_entrance_exit
     def index(self, **kwargs):
         max_skip = 4000
-        limit = kwargs.pop('limit', 100)
-        skip = kwargs.pop('skip', 0)
+
+        # Handle a generic 'q' input.  Any data in kwargs will override 'q'.
+        if 'q' in kwargs:
+            for criterion in kwargs['q'].split('&'):
+                if 'sensors' in criterion:
+                    if 'sensors' not in kwargs:
+                        kwargs['sensors'] = criterion
+                else:
+                    temp = criterion.split('=')
+                    if temp[0] not in kwargs:
+                        kwargs[temp[0]] = temp[1]
+            del kwargs['q']
+
+        limit = int(kwargs.pop('limit', 100))
+        skip = int(kwargs.pop('skip', 0))
 
         # Raise right away if skip is too high.
         if skip > max_skip:
