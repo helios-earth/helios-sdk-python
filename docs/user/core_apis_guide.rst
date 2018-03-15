@@ -37,7 +37,7 @@ Find alerts
     ny_alert_ids = ny_alert_results.id
 
 
-- ``ny_alert_results`` is an instance of :class:`IndexResult <helios.alerts_api.IndexResults>`.
+- ``ny_alert_results`` is an instance of :class:`IndexResults <helios.alerts_api.IndexResults>`.
 
 
 Find camera times and download images
@@ -67,5 +67,47 @@ Find camera times and download images
     img_data = show_image_results.image_data
 
 
-- ``md_cam_results`` is an instance of :class:`IndexResult <helios.cameras_api.IndexResults>`.
+- ``md_cam_results`` is an instance of :class:`IndexResults <helios.cameras_api.IndexResults>`.
 - ``show_image_results`` is an instance of :class:`ShowImageResults <helios.cameras_api.ShowImageResults>`.
+
+Find observations and work with collections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    import helios
+    import requests
+    from helios.utilities import parsing_utils
+
+    observations = helios.Observations()
+    collections = helios.Collections()
+
+    # Find Observations
+    index_results = OC.index(state='georgia',
+                             sensors='sensors[visibility]=0',
+                             time_min='2018-02-10T18:00Z',
+                             time_max='2018-02-10T18:15Z')
+
+    # Get id for each observation feature.
+    ids = [x.id for x in index_results]
+
+    # Convenience properties also exist for combining attributes from all features.
+    ids_1 = index_results.id
+
+    # Create new collection.
+    new_id = CC.create('Temp Collection', 'example collection', ['test', 'temp'])
+
+    # Add Observations to collection.
+    payload = [{'observation_id': x} for x in ids]
+    add_result = CC.add_image(new_id, payload)
+
+    # Check for http failures.
+    if len(add_result.failed) > 0:
+        print('Failures occurred!')
+
+    # Simple data analysis - find all unique cameras for the added observation images.
+    ims = CC.images(new_id)
+    cams = set([parsing_utils.parse_camera(x) for x in ims])
+
+- ``index_results`` is an instance of :class:`IndexResults <helios.observations_api.IndexResults>`.
+- ``add_result`` is an instance of :class:`AddImageResults <helios.collections_api.AddImageResults>`.
