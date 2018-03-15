@@ -11,9 +11,9 @@ from collections import namedtuple
 from io import BytesIO
 
 import numpy as np
+import pandas as pd
 import requests
 from PIL import Image
-
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import ImageRecord, RecordCollection
 from helios.utilities import logging_utils, parsing_utils
@@ -286,6 +286,55 @@ class IndexResults(ObservationsFeaturePropertiesMixin, RecordCollection):
 
     def __init__(self, content, records):
         super(IndexResults, self).__init__(content, records)
+
+    def get_sensor_data(self, output_dir=None, prefix=None):
+        """
+        Extract important data from the sensors block for each feature.
+
+        The time, value, previous value, obsrevation ID, and previous observation
+        ID will be extracted from each feature and combined into Pandas DataFrames.
+        Optionally, data can be written to separate CSV files for each sensor.
+
+        Args:
+            output_dir (str, optional): Output directory to write files to. If
+                None, then no files will be written. Defaults to None.
+            prefix (str, optional): Prefix to append to filenames. If None, no
+                prefix will be appended. Defaults to None.
+
+        Returns:
+            dict: Pandas DataFrame objects for each sensor.
+
+        """
+        data = {}
+        for feature in self._content:
+            for sensor, sensor_data in feature.sensors.items():
+                if sensor not in data:
+                    data[sensor] = []
+                    data[sensor].append((sensor,
+                                         feature.time,
+                                         sensor_data.get('data'),
+                                         sensor_data.get('prev'),
+                                         feature.id,
+                                         feature.prev_id))
+
+        # Establish data frames for each sensor.
+        header = ['Sensor', 'Time', 'Data', 'Previous', 'ID', 'Previous_ID']
+        output_data = {name: pd.DataFrame(value, columns=header) for name, value in
+                       data.items()}
+
+        # If output_dir is specified, write to file.
+        if output_dir is not None:
+            if prefix is None:
+                prefix = ''
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+
+            for sensor_name, df in output_data.items():
+                output_file = os.path.join(output_dir,
+                                           prefix + '_' + sensor_name + '.csv')
+                df.to_csv(output_file, na_rep=None)
+
+        return output_data
 
 
 class PreviewResults(RecordCollection):
