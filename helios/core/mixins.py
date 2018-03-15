@@ -126,18 +126,6 @@ class IndexMixin(object):
     def index(self, **kwargs):
         max_skip = 4000
 
-        # Handle a generic 'q' input.  Any data in kwargs will override 'q'.
-        if 'q' in kwargs:
-            for criterion in kwargs['q'].split('&'):
-                if 'sensors' in criterion:
-                    if 'sensors' not in kwargs:
-                        kwargs['sensors'] = criterion
-                else:
-                    temp = criterion.split('=')
-                    if temp[0] not in kwargs:
-                        kwargs[temp[0]] = temp[1]
-            del kwargs['q']
-
         limit = int(kwargs.pop('limit', 100))
         skip = int(kwargs.pop('skip', 0))
 
