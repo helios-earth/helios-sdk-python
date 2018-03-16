@@ -311,8 +311,8 @@ class ObservationsFeatureCollection(RecordCollection):
 
         # Establish data frames for each sensor.
         header = ['Sensor', 'Time', 'Data', 'Previous', 'ID', 'Previous_ID']
-        output_data = {name: pd.DataFrame(value, columns=header) for name, value in
-                       data.items()}
+        output_data = {name: pd.DataFrame(value, columns=header).sort_values(by=['Time'])
+                       for name, value in data.items()}
 
         # If output_dir is specified, write to file.
         if output_dir is not None:
@@ -326,7 +326,7 @@ class ObservationsFeatureCollection(RecordCollection):
             for sensor_name, df in output_data.items():
                 output_file = os.path.join(output_dir,
                                            prefix + sensor_name + '.csv')
-                df.to_csv(output_file, na_rep=None)
+                df.to_csv(output_file, na_rep=None, index=False)
 
         return output_data
 
