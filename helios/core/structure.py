@@ -1,10 +1,6 @@
 """Base data structures for the SDK."""
-import abc
-
-import six
 
 
-@six.add_metaclass(abc.ABCMeta)
 class ContentCollection(object):
     """
     Abstract base class for feature/data results, i.e. content.
@@ -51,7 +47,6 @@ class ContentCollection(object):
     next = __next__  # For Python 2
 
 
-@six.add_metaclass(abc.ABCMeta)
 class RecordCollection(ContentCollection):
     """
     Abstract base class for batch jobs dealing with Records.

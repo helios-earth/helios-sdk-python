@@ -484,7 +484,9 @@ class CollectionsFeature(object):
         self.user_id = feature.get('user_id')
 
 
-class CollectionsFeaturePropertiesMixin(object):
+class PropertiesMixin(object):
+    """Common properties for IndexResults and ShowResults."""
+
     @property
     def bucket(self):
         """'bucket' values for every result."""
@@ -538,7 +540,7 @@ class AddImageResults(RecordCollection):
         super(AddImageResults, self).__init__(content, records)
 
 
-class IndexResults(CollectionsFeaturePropertiesMixin, RecordCollection):
+class IndexResults(PropertiesMixin, RecordCollection):
     """
     Index results for the Collections API.
 

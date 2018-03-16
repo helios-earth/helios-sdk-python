@@ -221,7 +221,9 @@ class ObservationsFeature(object):
         self.time = feature['properties'].get('time')
 
 
-class ObservationsFeaturePropertiesMixin(object):
+class PropertiesMixin(object):
+    """Common properties for IndexResults and ShowResults."""
+
     @property
     def city(self):
         """'city' values for every feature."""
@@ -271,6 +273,10 @@ class ObservationsFeaturePropertiesMixin(object):
     def time(self):
         """'time' values for every feature."""
         return [x.time for x in self._content]
+
+
+class FeatureProcessingMixin(object):
+    """Mixin for methods involving the data contained in the features."""
 
     def sensors_to_dataframes(self, output_dir=None, prefix=None):
         """
@@ -327,7 +333,7 @@ class ObservationsFeaturePropertiesMixin(object):
         return output_data
 
 
-class IndexResults(ObservationsFeaturePropertiesMixin, RecordCollection):
+class IndexResults(PropertiesMixin, FeatureProcessingMixin, RecordCollection):
     """
     Index results for the Observations API.
 
@@ -371,7 +377,7 @@ class PreviewResults(RecordCollection):
         return [x.name for x in self._raw if x.ok]
 
 
-class ShowResults(ObservationsFeaturePropertiesMixin, RecordCollection):
+class ShowResults(PropertiesMixin, FeatureProcessingMixin, RecordCollection):
     """
     Show results from the Observations API.
 

@@ -215,7 +215,9 @@ class CamerasFeature(object):
         self.video = feature['properties'].get('video')
 
 
-class CamerasFeaturePropertiesMixin(object):
+class PropertiesMixin(object):
+    """Common properties for IndexResults and ShowResults."""
+
     @property
     def city(self):
         """'city' values for every feature."""
@@ -262,7 +264,7 @@ class CamerasFeaturePropertiesMixin(object):
         return [x.video for x in self._content]
 
 
-class IndexResults(CamerasFeaturePropertiesMixin, RecordCollection):
+class IndexResults(PropertiesMixin, RecordCollection):
     """
     Index results for the Cameras API.
 
@@ -306,7 +308,7 @@ class ShowImageResults(RecordCollection):
         return [x.name for x in self._raw if x.ok]
 
 
-class ShowResults(CamerasFeaturePropertiesMixin, RecordCollection):
+class ShowResults(PropertiesMixin, RecordCollection):
     """
     Show results for the Cameras API.
 
