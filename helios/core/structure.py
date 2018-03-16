@@ -3,7 +3,7 @@
 
 class ContentCollection(object):
     """
-    Abstract base class for feature/data results, i.e. content.
+    Base class for feature/data results, i.e. content.
 
     This is a general purpose iterable for content data from the SDK.
     Specific functionality will be defined in child classes.
@@ -49,7 +49,7 @@ class ContentCollection(object):
 
 class RecordCollection(ContentCollection):
     """
-    Abstract base class for batch jobs dealing with Records.
+    Base class for batch jobs dealing with Records.
 
     This class is a variation of the FeatureCollection class to work with
     Records. The content attribute will be extracted from each record.  Usage
