@@ -8,7 +8,6 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from dateutil.parser import parse
-
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
 from helios.core.structure import RecordCollection
 from helios.utilities import logging_utils
@@ -215,8 +214,11 @@ class CamerasFeature(object):
         self.video = feature['properties'].get('video')
 
 
-class PropertiesMixin(object):
-    """Common properties for IndexResults and ShowResults."""
+class CamerasFeatureCollection(RecordCollection):
+    """Derived class for Cameras feature collections."""
+
+    def __init__(self, content, records):
+        super(CamerasFeatureCollection, self).__init__(content, records)
 
     @property
     def city(self):
@@ -264,7 +266,7 @@ class PropertiesMixin(object):
         return [x.video for x in self._content]
 
 
-class IndexResults(PropertiesMixin, RecordCollection):
+class IndexResults(CamerasFeatureCollection):
     """
     Index results for the Cameras API.
 
@@ -308,7 +310,7 @@ class ShowImageResults(RecordCollection):
         return [x.name for x in self._raw if x.ok]
 
 
-class ShowResults(PropertiesMixin, RecordCollection):
+class ShowResults(CamerasFeatureCollection):
     """
     Show results for the Cameras API.
 

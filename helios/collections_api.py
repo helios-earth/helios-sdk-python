@@ -11,7 +11,6 @@ import logging
 from collections import namedtuple
 
 import requests
-
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
 from helios.core.structure import Record, RecordCollection
 from helios.utilities import logging_utils
@@ -484,8 +483,11 @@ class CollectionsFeature(object):
         self.user_id = feature.get('user_id')
 
 
-class PropertiesMixin(object):
-    """Common properties for IndexResults and ShowResults."""
+class CollectionsFeatureCollection(RecordCollection):
+    """Derived class for Collections feature collections."""
+
+    def __init__(self, content, records):
+        super(CollectionsFeatureCollection, self).__init__(content, records)
 
     @property
     def bucket(self):
@@ -540,7 +542,7 @@ class AddImageResults(RecordCollection):
         super(AddImageResults, self).__init__(content, records)
 
 
-class IndexResults(PropertiesMixin, RecordCollection):
+class IndexResults(CollectionsFeatureCollection):
     """
     Index results for the Collections API.
 

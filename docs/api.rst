@@ -7,7 +7,7 @@ Alerts
 .. automodule:: helios.alerts_api
     :members:
     :inherited-members:
-    :exclude-members: PropertiesMixin
+    :exclude-members: AlertsFeatureCollection
     
 Cameras
 -------
@@ -15,7 +15,7 @@ Cameras
 .. automodule:: helios.cameras_api
     :members:
     :inherited-members:
-    :exclude-members: PropertiesMixin
+    :exclude-members: CamerasFeatureCollection
     
 Collections
 -----------
@@ -23,7 +23,7 @@ Collections
 .. automodule:: helios.collections_api
     :members:
     :inherited-members:
-    :exclude-members: PropertiesMixin
+    :exclude-members: CollectionsFeatureCollection
     
 Observations
 ------------
@@ -31,7 +31,7 @@ Observations
 .. automodule:: helios.observations_api
     :members:
     :inherited-members:
-    :exclude-members: PropertiesMixin, FeatureProcessingMixin
+    :exclude-members: ObservationsFeatureCollection
 
 Session
 =======

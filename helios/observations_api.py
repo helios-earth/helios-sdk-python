@@ -14,7 +14,6 @@ import numpy as np
 import pandas as pd
 import requests
 from PIL import Image
-
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import ImageRecord, RecordCollection
 from helios.utilities import logging_utils, parsing_utils
@@ -221,8 +220,11 @@ class ObservationsFeature(object):
         self.time = feature['properties'].get('time')
 
 
-class PropertiesMixin(object):
-    """Common properties for IndexResults and ShowResults."""
+class ObservationsFeatureCollection(RecordCollection):
+    """Derived class for Observations feature collections."""
+
+    def __init__(self, content, records):
+        super(ObservationsFeatureCollection, self).__init__(content, records)
 
     @property
     def city(self):
@@ -273,10 +275,6 @@ class PropertiesMixin(object):
     def time(self):
         """'time' values for every feature."""
         return [x.time for x in self._content]
-
-
-class FeatureProcessingMixin(object):
-    """Mixin for methods involving the data contained in the features."""
 
     def sensors_to_dataframes(self, output_dir=None, prefix=None):
         """
@@ -333,7 +331,7 @@ class FeatureProcessingMixin(object):
         return output_data
 
 
-class IndexResults(PropertiesMixin, FeatureProcessingMixin, RecordCollection):
+class IndexResults(ObservationsFeatureCollection):
     """
     Index results for the Observations API.
 
@@ -377,7 +375,7 @@ class PreviewResults(RecordCollection):
         return [x.name for x in self._raw if x.ok]
 
 
-class ShowResults(PropertiesMixin, FeatureProcessingMixin, RecordCollection):
+class ShowResults(ObservationsFeatureCollection):
     """
     Show results from the Observations API.
 

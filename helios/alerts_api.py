@@ -140,8 +140,11 @@ class AlertsFeature(object):
         self.urgency = feature['properties'].get('urgency')
 
 
-class PropertiesMixin(object):
-    """Common properties for IndexResults and ShowResults."""
+class AlertsFeatureCollection(RecordCollection):
+    """Derived class for Alerts feature collections."""
+
+    def __init__(self, content, records):
+        super(AlertsFeatureCollection, self).__init__(content, records)
 
     @property
     def area_description(self):
@@ -229,7 +232,7 @@ class PropertiesMixin(object):
         return [x.urgency for x in self._content]
 
 
-class IndexResults(PropertiesMixin, RecordCollection):
+class IndexResults(AlertsFeatureCollection):
     """
     Index results for the Alerts API.
 
@@ -245,7 +248,7 @@ class IndexResults(PropertiesMixin, RecordCollection):
         super(IndexResults, self).__init__(content, records)
 
 
-class ShowResults(PropertiesMixin, RecordCollection):
+class ShowResults(AlertsFeatureCollection):
     """
     Show results for the Alerts API.
 
