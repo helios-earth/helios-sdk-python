@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import requests
 from PIL import Image
+
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import ImageRecord, RecordCollection
 from helios.utilities import logging_utils, parsing_utils
@@ -287,19 +288,22 @@ class IndexResults(ObservationsFeaturePropertiesMixin, RecordCollection):
     def __init__(self, content, records):
         super(IndexResults, self).__init__(content, records)
 
-    def get_sensor_data(self, output_dir=None, prefix=None):
+    def sensors_to_dataframes(self, output_dir=None, prefix=None):
         """
-        Extract important data from the sensors block for each feature.
+        Combine sensor blocks and other useful feature information for
+        observations into Pandas DataFrame objects.
 
-        The time, value, previous value, obsrevation ID, and previous observation
-        ID will be extracted from each feature and combined into Pandas DataFrames.
-        Optionally, data can be written to separate CSV files for each sensor.
+        DataFrames will contain the time, value, previous value,
+        observation ID, and previous observation ID from each feature.
+
+        Optionally, DataFrames can be written to CSV files. These will follow
+        the format of {prefix}_{sensor_name}.csv.
 
         Args:
             output_dir (str, optional): Output directory to write files to. If
                 None, then no files will be written. Defaults to None.
             prefix (str, optional): Prefix to append to filenames. If None, no
-                prefix will be appended. Defaults to None.
+                prefix will be prepended. Defaults to None.
 
         Returns:
             dict: Pandas DataFrame objects for each sensor.
@@ -310,12 +314,12 @@ class IndexResults(ObservationsFeaturePropertiesMixin, RecordCollection):
             for sensor, sensor_data in feature.sensors.items():
                 if sensor not in data:
                     data[sensor] = []
-                    data[sensor].append((sensor,
-                                         feature.time,
-                                         sensor_data.get('data'),
-                                         sensor_data.get('prev'),
-                                         feature.id,
-                                         feature.prev_id))
+                data[sensor].append((sensor,
+                                     feature.time,
+                                     sensor_data.get('data'),
+                                     sensor_data.get('prev'),
+                                     feature.id,
+                                     feature.prev_id))
 
         # Establish data frames for each sensor.
         header = ['Sensor', 'Time', 'Data', 'Previous', 'ID', 'Previous_ID']
@@ -326,12 +330,14 @@ class IndexResults(ObservationsFeaturePropertiesMixin, RecordCollection):
         if output_dir is not None:
             if prefix is None:
                 prefix = ''
+            else:
+                prefix += '_'
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
             for sensor_name, df in output_data.items():
                 output_file = os.path.join(output_dir,
-                                           prefix + '_' + sensor_name + '.csv')
+                                           prefix + sensor_name + '.csv')
                 df.to_csv(output_file, na_rep=None)
 
         return output_data
