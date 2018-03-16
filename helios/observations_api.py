@@ -304,8 +304,8 @@ class ObservationsFeatureCollection(RecordCollection):
                     data[sensor] = []
                 data[sensor].append((sensor,
                                      feature.time,
-                                     sensor_data.get('data'),
-                                     sensor_data.get('prev'),
+                                     sensor_data.get('data', -1),
+                                     sensor_data.get('prev', -1),
                                      feature.id,
                                      feature.prev_id))
 
