@@ -272,22 +272,6 @@ class ObservationsFeaturePropertiesMixin(object):
         """'time' values for every feature."""
         return [x.time for x in self._content]
 
-
-class IndexResults(ObservationsFeaturePropertiesMixin, RecordCollection):
-    """
-    Index results for the Observations API.
-
-    IndexResults is an iterable for GeoJSON features.  This allows the
-    user to iterate and select based on Feature attributes.
-
-    All features within IndexResults are instances of
-    :class:`ObservationsFeature <helios.observations_api.ObservationsFeature>`
-
-    """
-
-    def __init__(self, content, records):
-        super(IndexResults, self).__init__(content, records)
-
     def sensors_to_dataframes(self, output_dir=None, prefix=None):
         """
         Combine sensor blocks and other useful feature information for
@@ -341,6 +325,22 @@ class IndexResults(ObservationsFeaturePropertiesMixin, RecordCollection):
                 df.to_csv(output_file, na_rep=None)
 
         return output_data
+
+
+class IndexResults(ObservationsFeaturePropertiesMixin, RecordCollection):
+    """
+    Index results for the Observations API.
+
+    IndexResults is an iterable for GeoJSON features.  This allows the
+    user to iterate and select based on Feature attributes.
+
+    All features within IndexResults are instances of
+    :class:`ObservationsFeature <helios.observations_api.ObservationsFeature>`
+
+    """
+
+    def __init__(self, content, records):
+        super(IndexResults, self).__init__(content, records)
 
 
 class PreviewResults(RecordCollection):
