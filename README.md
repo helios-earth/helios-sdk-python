@@ -66,8 +66,8 @@ pip install .
 All Helios API methods require valid authentication and are protected using the OAuth 2.0 "client credentials" flow.  The general process for authenticating requests involves first requesting an access token using the developer API key pair, and then requesting protected data using the access token.  [Request access](https://www.harris.com/forms/sishelioscontactus) if you would like to obtain an API key.
 
 ### Using Environment Variables
-1. Add __"helios\_access\_key\_id"__: "your ID key"
-2. Add __"helios\_secret\_access\_key"__: "your secret key"
+1. Add __"helios\_client\_id"__: "your ID key"
+2. Add __"helios\_client\_secret"__: "your secret key"
 3. Add __"helios\_api\_url"__: "API URL associated with your account credentials"
     * __"helios\_api\_url"__ is optional.
 
@@ -77,8 +77,8 @@ All Helios API methods require valid authentication and are protected using the 
 3. Copy and paste the following into the __"credentials.json"__ file and fill in your credentials:
 	```json
 	{
-		"helios_access_key_id" : "your ID key" ,
-		"helios_secret_access_key" : "your secret key",
+		"helios_client_id" : "your ID key" ,
+		"helios_client_secret" : "your secret key",
 		"helios_api_url" : "API URL (optional)"
 	}
 	```

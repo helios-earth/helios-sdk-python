@@ -13,8 +13,8 @@ if you would like to obtain an API key.
 Using Environment Variables
 ---------------------------
 
-#. Add **"helios\_access\_key\_id"**: "your ID key"
-#. Add **"helios\_secret\_access\_key"**: "your secret key"
+#. Add **"helios\_client\_id"**: "your ID key"
+#. Add **"helios\_client\_secret"**: "your secret key"
 #. Add **"helios\_api\_url"**: "API URL associated with your account credentials"
 
     - **"helios\_api\_url"** is optional.
@@ -33,8 +33,8 @@ Using an Authentication File
 .. code-block:: json
 
     { 
-        "helios_access_key_id" : "your ID key" ,
-        "helios_secret_access_key" : "your secret key",
+        "helios_client_id" : "your ID key" ,
+        "helios_client_secret" : "your secret key",
         "helios_api_url" : "API URL"
     }
 

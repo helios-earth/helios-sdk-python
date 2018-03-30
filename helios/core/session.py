@@ -16,13 +16,13 @@ class Session(object):
     """Manages API tokens for authentication.
 
     Authentication credentials can be specified using the env input parameter,
-    environment variables, or a credentials.json file in your {home}/.helios
+    environment variables, or a credentials.json file in your ~/.helios
     directory.  See the official documentation for more authentication
     information.
 
     Required keys:
-        - helios_access_key_id: Client ID from API key pair.
-        - helios_secret_access_key: Client Secret ID from API key pair.
+        - helios_client_id: Client ID from API key pair.
+        - helios_client_secret: Client Secret ID from API key pair.
     Optional keys:
         - helios_api_url: Optional, URL for API endpoint.
 
@@ -58,8 +58,8 @@ class Session(object):
         """Initialize Helios Session.
 
         Args:
-            env (dict): Dictionary containing 'helios_access_key_id',
-                'helios_secret_access_key', and optionally 'helios_api_url'.
+            env (dict): Dictionary containing 'helios_client_id',
+                'helios_client_secret', and optionally 'helios_api_url'.
                 This will override any information in credentials.json and
                 environment variables.
 
@@ -78,7 +78,7 @@ class Session(object):
             self._logger.info('Using custom env for session.')
             data = env
         # Read credentials from environment.
-        elif 'helios_access_key_id' in os.environ and 'helios_secret_access_key' in os.environ:
+        elif 'helios_client_id' in os.environ and 'helios_client_secret' in os.environ:
             self._logger.info('Using environment variables for session.')
             data = os.environ.copy()
         # Read credentials from file.
@@ -92,8 +92,8 @@ class Session(object):
                             'credentials file.')
 
         # Extract relevant authentication information from data.
-        self._key_id = data['helios_access_key_id']
-        self._key_secret = data['helios_secret_access_key']
+        self._key_id = data['helios_client_id']
+        self._key_secret = data['helios_client_secret']
         try:
             self.api_url = data['helios_api_url']
         except KeyError:
