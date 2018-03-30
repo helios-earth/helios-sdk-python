@@ -16,14 +16,15 @@ class Session(object):
     """Manages API tokens for authentication.
 
     Authentication credentials can be specified using the env input parameter,
-    environment variables, or a .helios_auth file in your home directory.  See
-    the official documentation for more authentication information.
+    environment variables, or a credentials.json file in your {home}/.helios
+    directory.  See the official documentation for more authentication
+    information.
 
     Required keys:
-        - HELIOS_KEY_ID: Client ID from API key pair.
-        - HELIOS_KEY_SECRET: Client Secret ID from API key pair.
+        - helios_access_key_id: Client ID from API key pair.
+        - helios_secret_access_key: Client Secret ID from API key pair.
     Optional keys:
-        - HELIOS_API_URL: Optional, URL for API endpoint.
+        - helios_api_url: Optional, URL for API endpoint.
 
     A session can be established and reused for multiple core API instances.
 
@@ -48,17 +49,19 @@ class Session(object):
 
     token_expiration_threshold = 60  # minutes
 
-    _auth_file = os.path.join(os.path.expanduser('~'), '.helios_auth')
+    _base_dir = os.path.join(os.path.expanduser('~'), '.helios')
+    _token_dir = os.path.join(_base_dir, '.tokens')
+    _credentials_file = os.path.join(_base_dir, 'credentials.json')
     _default_api_url = r'https://api.helios.earth/v1/'
 
     def __init__(self, env=None):
         """Initialize Helios Session.
 
         Args:
-            env (dict): Dictionary containing HELIOS_KEY_ID,
-                HELIOS_KEY_SECRET, and optionally, 'HELIOS_API_URL'. This will
-                override any information in .helios_auth and environment
-                variables.
+            env (dict): Dictionary containing 'helios_access_key_id',
+                'helios_secret_access_key', and optionally 'helios_api_url'.
+                This will override any information in credentials.json and
+                environment variables.
 
         """
         # Initialize logger
@@ -67,33 +70,37 @@ class Session(object):
         # The token will be established with a call to the start_session method.
         self.token = None
 
-        # Try to load essential authentication data from environment or file.
-        if env:
+        # Verify essential directories exist.
+        self._verify_directories()
+
+        # Use custom credentials.
+        if env is not None:
             self._logger.info('Using custom env for session.')
             data = env
-        elif 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
+        # Read credentials from environment.
+        elif 'helios_access_key_id' in os.environ and 'helios_secret_access_key' in os.environ:
             self._logger.info('Using environment variables for session.')
             data = os.environ.copy()
+        # Read credentials from file.
+        elif os.path.exists(self._credentials_file):
+            self._logger.info('Using credentials file for session.')
+            with open(self._credentials_file, 'r') as auth_file:
+                data = json.load(auth_file)
         else:
-            self._logger.info('Using .helios_auth file for session.')
-            try:
-                with open(self._auth_file, 'r') as auth_file:
-                    data = json.load(auth_file)
-            except (IOError, FileNotFoundError):
-                raise Exception('No credentials could be found. Be sure to '
-                                'set environment variables or setup a '
-                                '.helios_auth file.')
+            raise Exception('No credentials could be found. Be sure to '
+                            'set environment variables or setup a '
+                            'credentials file.')
 
         # Extract relevant authentication information from data.
-        self._key_id = data['HELIOS_KEY_ID']
-        self._key_secret = data['HELIOS_KEY_SECRET']
+        self._key_id = data['helios_access_key_id']
+        self._key_secret = data['helios_secret_access_key']
         try:
-            self.api_url = data['HELIOS_API_URL']
+            self.api_url = data['helios_api_url']
         except KeyError:
             self.api_url = self._default_api_url
 
         # Create token filename based on authentication ID.
-        self._token_file = os.path.join(os.path.expanduser('~'),
+        self._token_file = os.path.join(self._token_dir,
                                         self._key_id + '.helios_token')
 
         # Finally, start the session.
@@ -143,6 +150,14 @@ class Session(object):
         """Read token from file."""
         with open(self._token_file, 'r') as token_file:
             self.token = json.load(token_file)
+
+    def _verify_directories(self):
+        """Verify essential directories."""
+        if not os.path.exists(self._base_dir):
+            os.makedirs(self._base_dir)
+
+        if not os.path.exists(self._token_dir):
+            os.makedirs(self._token_dir)
 
     def _write_token_file(self):
         """Write token to file."""

@@ -66,22 +66,23 @@ pip install .
 All Helios API methods require valid authentication and are protected using the OAuth 2.0 "client credentials" flow.  The general process for authenticating requests involves first requesting an access token using the developer API key pair, and then requesting protected data using the access token.  [Request access](https://www.harris.com/forms/sishelioscontactus) if you would like to obtain an API key.
 
 ### Using Environment Variables
-1. Add __"HELIOS\_KEY\_ID"__: "your ID key"
-2. Add __"HELIOS\_KEY\_SECRET"__: "your secret key"
-3. Add __"HELIOS\_API\_URL"__: "API URL associated with your account credentials"
-* __"HELIOS\_API\_URL"__ is optional.
+1. Add __"helios\_access\_key\_id"__: "your ID key"
+2. Add __"helios\_secret\_access\_key"__: "your secret key"
+3. Add __"helios\_api\_url"__: "API URL associated with your account credentials"
+    * __"helios\_api\_url"__ is optional.
 
 ### Using an Authentication File
-1. Create a ".helios_auth" file in your home directory.
-    * *C:\\Users\\[username]\\.helios_auth* on Windows.
-2. Copy and paste the following to the ".helios_auth" file and fill in your authentication values:
+1. Create a __".helios"__ directory in your home directory.
+2. Create a __"credentials.json"__ file in the __".helios"__ directory.
+3. Copy and paste the following into the __"credentials.json"__ file and fill in your credentials:
 	```json
 	{
-		"HELIOS_API_URL" : "API URL", 
-		"HELIOS_KEY_ID" : "your ID key" , 
-		"HELIOS_KEY_SECRET" : "your secret key"
+		"helios_access_key_id" : "your ID key" ,
+		"helios_secret_access_key" : "your secret key",
+		"helios_api_url" : "API URL (optional)"
 	}
 	```
-* __"HELIOS\_API\_URL"__ is optional.
+    * __"helios\_api\_url"__ is optional.  If you do not need a custom API URL,
+    then leave this out of your json file.
 
 For more information refer to the authentication [documentation](https://helios.earth/developers/api/authentication/).

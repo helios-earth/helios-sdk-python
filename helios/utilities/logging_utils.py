@@ -16,8 +16,8 @@ def configure_logger():
 
     """
     # Attempt to read SDK logging config file
-    config_file = os.path.join(os.path.expanduser('~'),
-                               'helios_logger_config.json')
+    config_file = os.path.join(os.path.expanduser('~'), '.helios', 'logger.json')
+
     config = None
     if os.path.exists(config_file):
         try:

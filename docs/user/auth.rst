@@ -13,27 +13,29 @@ if you would like to obtain an API key.
 Using Environment Variables
 ---------------------------
 
-#. Add **"HELIOS\_KEY\_ID"**: "your ID key"
-#. Add **"HELIOS\_KEY\_SECRET"**: "your secret key"
-#. Add **"HELIOS\_API\_URL"**: "API URL associated with your account credentials"
+#. Add **"helios\_access\_key\_id"**: "your ID key"
+#. Add **"helios\_secret\_access\_key"**: "your secret key"
+#. Add **"helios\_api\_url"**: "API URL associated with your account credentials"
 
-    - **"HELIOS\_API\_URL"** is optional.
+    - **"helios\_api\_url"** is optional.
 
 Using an Authentication File
 ----------------------------
 
-#. Create a ".helios_auth" file in your home directory.
-#. Copy and paste the following to the `.helios_auth` file and fill in 
+#. Create a **".helios"** directory in your home directory.
+#. Create a **"credentials.json"** file in your **".helios"** directory.
+#. Copy and paste the following into the **"credentials.json"** file and fill in
    your authentication values.
 
-    - **"HELIOS\_API\_URL"** is optional.
+    - **"helios\_api\_url"** is optional.  If you do not need a custom API URL,
+    then leave this out of your json file.
 
 .. code-block:: json
 
     { 
-        "HELIOS_KEY_ID" : "your ID key" , 
-        "HELIOS_KEY_SECRET" : "your secret key",
-        "HELIOS_API_URL" : "API URL"
+        "helios_access_key_id" : "your ID key" ,
+        "helios_secret_access_key" : "your secret key",
+        "helios_api_url" : "API URL"
     }
 
 For more information refer to the authentication 
