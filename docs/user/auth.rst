@@ -28,14 +28,14 @@ Using an Authentication File
    your authentication values.
 
     - **"helios\_api\_url"** is optional.  If you do not need a custom API URL,
-    then leave this out of your json file.
+    then leave this out of your json file or set to null.
 
 .. code-block:: json
 
     { 
         "helios_client_id" : "your ID key" ,
         "helios_client_secret" : "your secret key",
-        "helios_api_url" : "API URL"
+        "helios_api_url" : null
     }
 
 For more information refer to the authentication 

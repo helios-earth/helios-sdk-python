@@ -95,7 +95,10 @@ class Session(object):
         self._key_id = data['helios_client_id']
         self._key_secret = data['helios_client_secret']
         try:
-            self.api_url = data['helios_api_url']
+            if data['helios_api_url'] is not None:
+                self.api_url = data['helios_api_url']
+            else:
+                self.api_url = self._default_api_url
         except KeyError:
             self.api_url = self._default_api_url
 
