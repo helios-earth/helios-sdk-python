@@ -145,9 +145,15 @@ class IndexMixin(object):
                 temp_limit = limit
             messages.append(Message(kwargs=kwargs, limit=temp_limit, skip=i))
 
-        # Process first message to get the total number of features to expect.
+        # Process first message.
         initial_resp = self.__index_worker(messages.pop(0))
 
+        # Handle first query failing.
+        if not initial_resp.ok:
+            self._logger.error('First query failed. Unable to continue.')
+            raise initial_resp.error
+
+        # Get total number of features available.
         try:
             total = initial_resp.content['properties']['total']
         except KeyError:
