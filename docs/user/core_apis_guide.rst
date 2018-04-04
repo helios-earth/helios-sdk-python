@@ -83,10 +83,10 @@ Find observations and work with collections
     collections = helios.Collections()
 
     # Find Observations
-    index_results = OC.index(state='georgia',
-                             sensors='sensors[visibility]=0',
-                             time_min='2018-02-10T18:00Z',
-                             time_max='2018-02-10T18:15Z')
+    index_results = observations.index(state='georgia',
+                                       sensors='sensors[visibility]=0',
+                                       time_min='2018-02-10T18:00Z',
+                                       time_max='2018-02-10T18:15Z')
 
     # Get id for each observation feature.
     ids = [x.id for x in index_results]
@@ -95,18 +95,18 @@ Find observations and work with collections
     ids_1 = index_results.id
 
     # Create new collection.
-    new_id = CC.create('Temp Collection', 'example collection', ['test', 'temp'])
+    new_id = collections.create('Temp Collection', 'example collection', ['test', 'temp'])
 
     # Add Observations to collection.
     payload = [{'observation_id': x} for x in ids]
-    add_result = CC.add_image(new_id, payload)
+    add_result = collections.add_image(new_id, payload)
 
     # Check for http failures.
     if len(add_result.failed) > 0:
         print('Failures occurred!')
 
     # Simple data analysis - find all unique cameras for the added observation images.
-    ims = CC.images(new_id)
+    ims = collections.images(new_id)
     cams = set([parsing_utils.parse_camera(x) for x in ims])
 
 - ``index_results`` is an instance of :class:`IndexResults <helios.observations_api.IndexResults>`.
