@@ -75,14 +75,15 @@ All Helios API methods require valid authentication and are protected using the 
 1. Create a __".helios"__ directory in your home directory.
 2. Create a __"credentials.json"__ file in the __".helios"__ directory.
 3. Copy and paste the following into the __"credentials.json"__ file and fill in your credentials:
+    * __"helios\_api\_url"__ is optional.  If you do not need a custom API URL,
+    then leave this out of your json file or set to null.
+
 	```json
 	{
 		"helios_client_id" : "your ID key" ,
 		"helios_client_secret" : "your secret key",
-		"helios_api_url" : "API URL (optional)"
+		"helios_api_url" : null
 	}
 	```
-    * __"helios\_api\_url"__ is optional.  If you do not need a custom API URL,
-    then leave this out of your json file.
 
 For more information refer to the authentication [documentation](https://helios.earth/developers/api/authentication/).
