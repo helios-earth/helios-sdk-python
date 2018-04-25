@@ -270,19 +270,18 @@ class ShowImageMixin(object):
         parsed_url = parsing_utils.parse_url(resp.url)
         _, image_name = os.path.split(parsed_url.path)
 
-        # Read image from response.
-        img = Image.open(BytesIO(resp.content))
-
         # Write image to file.
         if msg.out_dir is not None:
             out_file = os.path.join(msg.out_dir, image_name)
-            img.save(out_file)
+            with open(out_file, 'wb') as f:
+                f.write(resp.content)
         else:
             out_file = None
 
         # Read and return image data.
         if msg.return_image_data:
-            img_data = np.array(img)
+            # Read image from response.
+            img_data = np.asarray(Image.open(BytesIO(resp.content)))
         else:
             img_data = None
 
