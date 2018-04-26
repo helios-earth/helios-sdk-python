@@ -132,7 +132,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         return PreviewResults(content, results)
 
     def __preview_worker(self, msg):
-        """msg must contain observation_id and check_for_duds"""
+        """msg must contain observation_id, out_dir, and return_image_data"""
 
         query_str = '{}/{}/{}/preview'.format(self._base_api_url,
                                               self._core_api,
