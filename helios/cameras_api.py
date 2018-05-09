@@ -205,6 +205,7 @@ class CamerasFeature(object):
 
         # Use dict.get built-in to guarantee all values will be initialized.
         self.city = feature['properties'].get('city')
+        self.coordinates = feature['geometry'].get('coordinates')
         self.country = feature['properties'].get('country')
         self.description = feature['properties'].get('description')
         self.direction = feature['properties'].get('direction')
@@ -224,6 +225,11 @@ class CamerasFeatureCollection(RecordCollection):
     def city(self):
         """'city' values for every feature."""
         return [x.city for x in self._content]
+
+    @property
+    def coordinates(self):
+        """'coordinate' values for every feature."""
+        return [x.coordinates for x in self._content]
 
     @property
     def country(self):
