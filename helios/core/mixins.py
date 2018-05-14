@@ -105,7 +105,7 @@ class SDKCore(object):
         logger.info('%s processing %s messages.', func.__name__, n_messages)
 
         # Create thread pool
-        with closing(ThreadPool(self._max_threads)) as thread_pool:
+        with closing(ThreadPool(min(self._max_threads, n_messages))) as thread_pool:
             results = thread_pool.map(func, messages)
 
         try:
