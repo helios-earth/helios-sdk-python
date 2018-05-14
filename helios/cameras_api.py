@@ -8,9 +8,12 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from dateutil.parser import parse
+
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
 from helios.core.structure import RecordCollection
 from helios.utilities import logging_utils
+
+logger = logging.getLogger(__name__)
 
 
 class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
@@ -29,7 +32,6 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         """
         super(Cameras, self).__init__(session=session)
-        self._logger = logging.getLogger(__name__)
 
     @logging_utils.log_entrance_exit
     def images(self, camera_id, start_time, end_time=None, limit=500):
@@ -97,8 +99,8 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 break
 
         if not image_times:
-            self._logger.warning('No images were found for %s in the %s to %s range.',
-                                 camera_id, start_time, end_time)
+            logger.warning('No images were found for %s in the %s to %s range.',
+                           camera_id, start_time, end_time)
 
         return image_times
 

@@ -1,4 +1,5 @@
 """Mixins and core functionality."""
+import logging
 import os
 from collections import namedtuple
 from contextlib import closing
@@ -14,6 +15,8 @@ from helios.core.request_manager import RequestManager
 from helios.core.session import Session
 from helios.core.structure import ImageRecord, Record
 from helios.utilities import logging_utils, parsing_utils
+
+logger = logging.getLogger(__name__)
 
 
 class SDKCore(object):
@@ -98,23 +101,25 @@ class SDKCore(object):
         return query_str
 
     def _process_messages(self, func, messages):
+        n_messages = len(messages)
+        logger.info('%s processing %s messages.', func.__name__, n_messages)
+
         # Create thread pool
         with closing(ThreadPool(self._max_threads)) as thread_pool:
             results = thread_pool.map(func, messages)
 
-        # Try to determine how many were successful.
         try:
-            n_messages = len(messages)
             n_successful = sum([True for x in results if x.ok])
-            log_message = '{} out of {} successful'.format(n_successful, n_messages)
-            if n_successful == 0:
-                self._logger.error(log_message)
-            elif n_successful < n_messages:
-                self._logger.warning(log_message)
-            else:
-                self._logger.info(log_message)
         except AttributeError:
             pass
+        else:
+            log_message = '{} out of {} successful'.format(n_successful, n_messages)
+            if n_successful == 0:
+                logger.error(log_message)
+            elif n_successful < n_messages:
+                logger.warning(log_message)
+            else:
+                logger.info(log_message)
 
         return results
 
@@ -150,7 +155,7 @@ class IndexMixin(object):
 
         # Handle first query failing.
         if not initial_resp.ok:
-            self._logger.error('First query failed. Unable to continue.')
+            logger.error('First query failed. Unable to continue.')
             raise initial_resp.error
 
         # Get total number of features available.
@@ -165,15 +170,15 @@ class IndexMixin(object):
 
         # Warn the user when truncation occurs. (max_skip is hit)
         if total > max_skip:
-            self._logger.warning('Maximum skip level. Truncated results for: %s',
-                                 kwargs)
+            logger.warning('Maximum skip level. Truncated results for: %s',
+                           kwargs)
 
         # Determine number of iterations that will be needed.
         n_queries_needed = int(ceil((total - skip) / float(limit))) - 1
         messages = messages[0:n_queries_needed]
 
         # Log number of queries required.
-        self._logger.info('%s index queries required for: %s', n_queries_needed, kwargs)
+        logger.info('%s index queries required for: %s', n_queries_needed, kwargs)
 
         # Process messages using the worker function.
         results = self._process_messages(self.__index_worker, messages)

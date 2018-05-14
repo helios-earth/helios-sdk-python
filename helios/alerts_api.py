@@ -10,6 +10,8 @@ import logging
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import RecordCollection
 
+logger = logging.getLogger(__name__)
+
 
 class Alerts(ShowMixin, IndexMixin, SDKCore):
     """
@@ -43,7 +45,6 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
         """
         super(Alerts, self).__init__(session=session)
-        self._logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
         """

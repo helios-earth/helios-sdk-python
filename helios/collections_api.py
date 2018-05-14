@@ -11,9 +11,12 @@ import logging
 from collections import namedtuple
 
 import requests
+
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
 from helios.core.structure import Record, RecordCollection
 from helios.utilities import logging_utils
+
+logger = logging.getLogger(__name__)
 
 
 class Collections(ShowImageMixin, IndexMixin, SDKCore):
@@ -40,7 +43,6 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         """
         super(Collections, self).__init__(session=session)
-        self._logger = logging.getLogger(__name__)
 
     @logging_utils.log_entrance_exit
     def add_image(self, collection_id, assets):

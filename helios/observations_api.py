@@ -14,9 +14,12 @@ import numpy as np
 import pandas as pd
 import requests
 from PIL import Image
+
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import ImageRecord, RecordCollection
 from helios.utilities import logging_utils, parsing_utils
+
+logger = logging.getLogger(__name__)
 
 
 class Observations(ShowMixin, IndexMixin, SDKCore):
@@ -39,7 +42,6 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         """
         super(Observations, self).__init__(session=session)
-        self._logger = logging.getLogger(__name__)
 
     def index(self, **kwargs):
         """

@@ -3,6 +3,8 @@ import logging
 
 import requests
 
+logger = logging.getLogger(__name__)
+
 
 class RequestManager(object):
     """Manages all API requests."""
@@ -12,9 +14,6 @@ class RequestManager(object):
 
     def __init__(self, auth_token, pool_maxsize=32):
         self._auth_token = auth_token
-
-        # Initialize logger
-        self._logger = logging.getLogger(__name__)
 
         # Create API session with authentication credentials
         self.api_session = requests.Session()
@@ -73,16 +72,16 @@ class RequestManager(object):
 
         # Log and raise exceptions.
         except requests.exceptions.HTTPError:
-            self._logger.exception('HTTPError')
+            logger.exception('HTTPError')
             raise
         except requests.exceptions.ConnectionError:
-            self._logger.exception('ConnectionError')
+            logger.exception('ConnectionError')
             raise
         except requests.exceptions.Timeout:
-            self._logger.exception('Timeout')
+            logger.exception('Timeout')
             raise
         except requests.exceptions.RequestException:
-            self._logger.exception('RequestException')
+            logger.exception('RequestException')
             raise
 
         return resp

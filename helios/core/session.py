@@ -12,6 +12,8 @@ try:
 except NameError:
     FileNotFoundError = IOError
 
+logger = logging.getLogger(__name__)
+
 
 class Session(object):
     """Manages API tokens for authentication.
@@ -65,9 +67,6 @@ class Session(object):
                 environment variables.
 
         """
-        # Initialize logger
-        self._logger = logging.getLogger(__name__)
-
         # The token will be established with a call to the start_session method.
         self.token = None
 
@@ -76,15 +75,15 @@ class Session(object):
 
         # Use custom credentials.
         if env is not None:
-            self._logger.info('Using custom env for session.')
+            logger.info('Using custom env for session.')
             data = env
         # Read credentials from environment.
         elif 'helios_client_id' in os.environ and 'helios_client_secret' in os.environ:
-            self._logger.info('Using environment variables for session.')
+            logger.info('Using environment variables for session.')
             data = os.environ.copy()
         # Read credentials from file.
         elif os.path.exists(self._credentials_file):
-            self._logger.info('Using credentials file for session.')
+            logger.info('Using credentials file for session.')
             with open(self._credentials_file, 'r') as auth_file:
                 data = json.load(auth_file)
         else:
@@ -100,7 +99,7 @@ class Session(object):
                           'authentication section of the documentation for ' \
                           'more information.'
                 warnings.warn(message, DeprecationWarning)
-                self._logger.warning('DeprecationWarning: ' + message)
+                logger.warning('DeprecationWarning: ' + message)
 
         # Extract relevant authentication information from data.
         self._key_id = data['helios_client_id']
@@ -128,13 +127,13 @@ class Session(object):
         data = None
         # Read credentials from environment.
         if 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
-            self._logger.info('Using environment variables for session.')
+            logger.info('Using environment variables for session.')
             data = {'helios_client_id': os.environ['HELIOS_KEY_ID'],
                     'helios_client_secret': os.environ['HELIOS_KEY_SECRET'],
                     'helios_api_url': os.environ.get('HELIOS_API_URL')}
         # Read credentials from file.
         elif os.path.exists(old_auth_file):
-            self._logger.info('Using credentials file for session.')
+            logger.info('Using credentials file for session.')
             with open(old_auth_file, 'r') as auth_file:
                 temp = json.load(auth_file)
                 data = {'helios_client_id': temp['HELIOS_KEY_ID'],
@@ -165,8 +164,8 @@ class Session(object):
                                  verify=True)
             resp.raise_for_status()
         except requests.exceptions.HTTPError:
-            self._logger.warning('Getting token over https failed. Falling '
-                                 'back to http.')
+            logger.warning('Getting token over https failed. Falling '
+                           'back to http.')
             token_url_http = 'http' + token_url.split('https')[1]
             data = {'grant_type': 'client_credentials'}
             auth = (self._key_id, self._key_secret)
@@ -215,8 +214,8 @@ class Session(object):
             if not self.verify_token():
                 self._get_token()
         except (IOError, FileNotFoundError):
-            self._logger.warning('Token file was not found. A new token will '
-                                 'be acquired.')
+            logger.warning('Token file was not found. A new token will '
+                           'be acquired.')
             self._get_token()
 
     def verify_token(self):
@@ -243,9 +242,9 @@ class Session(object):
         # Check token expiration time.
         expiration = json_resp['expires_in'] / 60.0
         if expiration < self.token_expiration_threshold:
-            self._logger.warning('Token is valid, but expires in %s minutes.',
-                                 expiration)
+            logger.warning('Token is valid, but expires in %s minutes.',
+                           expiration)
             return False
 
-        self._logger.info('Token is valid for %d minutes.', expiration)
+        logger.info('Token is valid for %d minutes.', expiration)
         return True
