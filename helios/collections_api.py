@@ -183,7 +183,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         return resp['collection_id']
 
     @logging_utils.log_entrance_exit
-    def delete(self, collection_id):
+    def destroy(self, collection_id):
         """
         Delete an empty collection.
 
