@@ -37,7 +37,7 @@ Find alerts
     ny_alert_ids = ny_alert_results.id
 
 
-- ``ny_alert_results`` is an instance of :class:`IndexResults <helios.alerts_api.IndexResults>`.
+- ``ny_alert_results`` is an instance of :class:`AlertsFeatureCollection <helios.alerts_api.AlertsFeatureCollection>`.
 
 
 Find camera times and download images
@@ -67,8 +67,8 @@ Find camera times and download images
     img_data = show_image_results.image_data
 
 
-- ``md_cam_results`` is an instance of :class:`IndexResults <helios.cameras_api.IndexResults>`.
-- ``show_image_results`` is an instance of :class:`ShowImageResults <helios.cameras_api.ShowImageResults>`.
+- ``md_cam_results`` is an instance of :class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`.
+- ``show_image_results`` is an instance of :class:`ImageCollection <helios.core.structure.ImageCollection>`.
 
 Find observations and work with collections
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -109,5 +109,5 @@ Find observations and work with collections
     ims = collections.images(new_id)
     cams = set([parsing_utils.parse_camera(x) for x in ims])
 
-- ``index_results`` is an instance of :class:`IndexResults <helios.observations_api.IndexResults>`.
-- ``add_result`` is an instance of :class:`AddImageResults <helios.collections_api.AddImageResults>`.
+- ``index_results`` is an instance of :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`.
+- ``add_result`` is an instance of :class::class:`RecordCollection <helios.core.structure.RecordCollection>`.

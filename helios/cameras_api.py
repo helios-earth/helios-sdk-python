@@ -10,7 +10,7 @@ import logging
 from dateutil.parser import parse
 
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
-from helios.core.structure import RecordCollection
+from helios.core.structure import RecordCollection, ImageCollection
 from helios.utilities import logging_utils
 
 logger = logging.getLogger(__name__)
@@ -118,7 +118,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             **kwargs: Any keyword arguments found in the cameras_index_documentation_.
 
         Returns:
-             :class:`IndexResults <helios.cameras_api.IndexResults>`
+             :class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`
 
         """
         results = super(Cameras, self).index(**kwargs)
@@ -129,7 +129,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 for feature in record.content['features']:
                     content.append(CamerasFeature(feature))
 
-        return IndexResults(content, results)
+        return CamerasFeatureCollection(content, results)
 
     def show(self, camera_ids):
         """
@@ -139,7 +139,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             camera_ids (str or sequence of strs): Helios camera ID(s).
 
         Returns:
-            :class:`ShowResults <helios.cameras_api.ShowResults>`
+            :class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`
 
         """
         results = super(Cameras, self).show(camera_ids)
@@ -149,7 +149,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             if record.ok:
                 content.append(CamerasFeature(record.content))
 
-        return ShowResults(content, results)
+        return CamerasFeatureCollection(content, results)
 
     def show_image(self, camera_id, times, out_dir=None, return_image_data=False):
         """
@@ -169,7 +169,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            :class:`ShowImageResults <helios.cameras_api.ShowImageResults>`
+            :class:`ImageCollection <helios.core.structure.ImageCollection>`
 
         """
         results = super(Cameras, self).show_image(camera_id,
@@ -182,7 +182,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             if record.ok:
                 content.append(record.content)
 
-        return ShowImageResults(content, results)
+        return ImageCollection(content, results)
 
 
 class CamerasFeature(object):
@@ -218,7 +218,13 @@ class CamerasFeature(object):
 
 
 class CamerasFeatureCollection(RecordCollection):
-    """Derived class for Cameras feature collections."""
+    """
+    Iterable for GeoJSON features obtained via the Cameras API.
+
+    All features within ShowResults are instances of
+    :class:`CamerasFeature <helios.cameras_api.CamerasFeature>`
+
+    """
 
     def __init__(self, content, records):
         super(CamerasFeatureCollection, self).__init__(content, records)
@@ -272,63 +278,3 @@ class CamerasFeatureCollection(RecordCollection):
     def video(self):
         """'video' values for every feature."""
         return [x.video for x in self._content]
-
-
-class IndexResults(CamerasFeatureCollection):
-    """
-    Index results for the Cameras API.
-
-    IndexResults is an iterable for GeoJSON features.  This allows the
-    user to iterate and select based on Feature attributes for each element.
-
-    All features within IndexResults are instances of
-    :class:`CamerasFeature <helios.cameras_api.CamerasFeature>`
-
-    """
-
-    def __init__(self, content, records):
-        super(IndexResults, self).__init__(content, records)
-
-
-class ShowImageResults(RecordCollection):
-    """
-    Show_image results for the Cameras API.
-
-    ShowImageResults is an iterable for the fetched image content. Each element
-    of the iterable will be an ndarray if return_image_data was True.
-
-    """
-
-    def __init__(self, content, records):
-        super(ShowImageResults, self).__init__(content, records)
-
-    @property
-    def image_data(self):
-        """Image data if return_image_data was True."""
-        return self._content
-
-    @property
-    def output_file(self):
-        """Full paths to all written images."""
-        return [x.output_file for x in self._raw if x.ok]
-
-    @property
-    def name(self):
-        """Names of all images."""
-        return [x.name for x in self._raw if x.ok]
-
-
-class ShowResults(CamerasFeatureCollection):
-    """
-    Show results for the Cameras API.
-
-    ShowResults is an iterable for GeoJSON features.  This allows the
-    user to iterate and select based on Feature attributes for each element.
-
-    All features within ShowResults are instances of
-    :class:`CamerasFeature <helios.cameras_api.CamerasFeature>`
-
-    """
-
-    def __init__(self, content, records):
-        super(ShowResults, self).__init__(content, records)

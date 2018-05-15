@@ -13,7 +13,7 @@ from collections import namedtuple
 import requests
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
-from helios.core.structure import Record, RecordCollection
+from helios.core.structure import ImageCollection, Record, RecordCollection
 from helios.utilities import logging_utils
 
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
 
         Returns:
-            :class:`AddImageResults <helios.collections_api.AddImageResults>`
+            :class:`RecordCollection <helios.core.structure.RecordCollection>`
 
         """
         assert isinstance(assets, (list, tuple, dict))
@@ -94,7 +94,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__add_image_worker, messages)
 
-        return AddImageResults([x.content for x in results], results)
+        return RecordCollection([x.content for x in results], results)
 
     def __add_image_worker(self, msg):
         """msg must contain collection_id and data"""
@@ -289,7 +289,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             **kwargs: Any keyword arguments found in the collections_index_documentation_.
 
         Returns:
-             :class:`IndexResults <helios.collections_api.IndexResults>`
+             :class:`CollectionsFeatureCollection <helios.collections_api.CollectionsFeatureCollection>`
 
         """
         results = super(Collections, self).index(**kwargs)
@@ -300,7 +300,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 for feature in record.content['results']:
                     content.append(CollectionsFeature(feature))
 
-        return IndexResults(content, results)
+        return CollectionsFeatureCollection(content, results)
 
     @logging_utils.log_entrance_exit
     def remove_image(self, collection_id, names):
@@ -312,7 +312,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             names (str or sequence of strs): List of image names to be removed.
 
         Returns:
-            :class:`RemoveImageResults <helios.collections_api.RemoveImageResults>`
+            :class:`RecordCollection <helios.core.structure.RecordCollection>`
 
         """
         if not isinstance(names, (list, tuple)):
@@ -325,7 +325,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         # Process messages using the worker function.
         results = self._process_messages(self.__remove_image_worker, messages)
 
-        return RemoveImageResults([x.content for x in results], results)
+        return RecordCollection([x.content for x in results], results)
 
     def __remove_image_worker(self, msg):
         """msg must contain collection_id and img_name"""
@@ -362,7 +362,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 matching result will be the first image returned.
 
         Returns:
-            :class:`ShowResults <helios.collections_api.ShowResults>`
+            :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`
 
         """
         if not isinstance(collection_id, str):
@@ -377,7 +377,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         resp = self._request_manager.get(query_str)
 
-        return ShowResults(resp.json())
+        return CollectionsFeature(resp.json())
 
     def show_image(self, collection_id,
                    image_names,
@@ -395,7 +395,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            :class:`ShowImageResults <helios.collections_api.ShowImageResults>`
+            :class:`ImageCollection <helios.core.structure.ImageCollection>`
 
         """
         results = super(Collections, self).show_image(collection_id,
@@ -408,7 +408,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             if record.ok:
                 content.append(record.content)
 
-        return ShowImageResults(content, results)
+        return ImageCollection(content, results)
 
     @logging_utils.log_entrance_exit
     def update(self, collections_id, name=None, description=None, tags=None):
@@ -486,7 +486,13 @@ class CollectionsFeature(object):
 
 
 class CollectionsFeatureCollection(RecordCollection):
-    """Derived class for Collections feature collections."""
+    """
+    Iterable for features obtained via the Collections API.
+
+    All features within CollectionsFeatureCollection are instances of
+    :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`
+
+    """
 
     def __init__(self, content, records):
         super(CollectionsFeatureCollection, self).__init__(content, records)
@@ -535,74 +541,3 @@ class CollectionsFeatureCollection(RecordCollection):
     def user_id(self):
         """'user_id' values for every result."""
         return [x.user_id for x in self._content]
-
-
-class AddImageResults(RecordCollection):
-    """Add_image results for Collections API."""
-
-    def __init__(self, content, records):
-        super(AddImageResults, self).__init__(content, records)
-
-
-class IndexResults(CollectionsFeatureCollection):
-    """
-    Index results for the Collections API.
-
-    IndexResults is an iterable for the results JSON response.  This allows
-    the user to iterate and select based on result attributes.
-
-    All features within IndexResults are instances of
-    :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`
-
-    """
-
-    def __init__(self, content, records):
-        super(IndexResults, self).__init__(content, records)
-
-
-class RemoveImageResults(RecordCollection):
-    """Remove_image results for the Collections API."""
-
-    def __init__(self, content, records):
-        super(RemoveImageResults, self).__init__(content, records)
-
-
-class ShowImageResults(RecordCollection):
-    """
-    Show_image results for the Collections API.
-
-    ShowImageResults is an iterable for the fetched image content. Each element
-    of the iterable will be an ndarray if return_image_data was True.
-
-    """
-
-    def __init__(self, content, records):
-        super(ShowImageResults, self).__init__(content, records)
-
-    @property
-    def image_data(self):
-        """Image data if return_image_data was True."""
-        return self._content
-
-    @property
-    def output_file(self):
-        """Full paths to all written images."""
-        return [x.output_file for x in self._raw if x.ok]
-
-    @property
-    def name(self):
-        """Names of all images."""
-        return [x.name for x in self._raw if x.ok]
-
-
-class ShowResults(CollectionsFeature):
-    """
-    Show results for the Collections API.
-
-    The features within ShowResults is an instances of
-    :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`
-
-    """
-
-    def __init__(self, feature):
-        super(ShowResults, self).__init__(feature)

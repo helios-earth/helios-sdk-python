@@ -60,7 +60,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             **kwargs: Any keyword arguments found in the alerts_index_documentation_.
 
         Returns:
-             :class:`IndexResults <helios.alerts_api.IndexResults>`
+             :class:`AlertsFeatureCollection <helios.alerts_api.AlertsFeatureCollection>`
 
         """
         results = super(Alerts, self).index(**kwargs)
@@ -71,7 +71,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
                 for feature in record.content['features']:
                     content.append(AlertsFeature(feature))
 
-        return IndexResults(content, results)
+        return AlertsFeatureCollection(content, results)
 
     def show(self, alert_ids):
         """
@@ -81,7 +81,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             alert_ids (str or sequence of strs): Helios alert ID(s).
 
         Returns:
-            :class:`ShowResults <helios.alerts_api.ShowResults>`
+            :class:`AlertsFeatureCollection <helios.alerts_api.AlertsFeatureCollection>`
 
         """
         results = super(Alerts, self).show(alert_ids)
@@ -91,7 +91,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             if record.ok:
                 content.append(AlertsFeature(record.content))
 
-        return ShowResults(content, results)
+        return AlertsFeatureCollection(content, results)
 
 
 class AlertsFeature(object):
@@ -142,7 +142,13 @@ class AlertsFeature(object):
 
 
 class AlertsFeatureCollection(RecordCollection):
-    """Derived class for Alerts feature collections."""
+    """
+    Iterable for GeoJSON features obtained via the Alerts API.
+
+    All features within IndexResults are instances of
+    :class:`AlertsFeature <helios.alerts_api.AlertsFeature>`
+
+    """
 
     def __init__(self, content, records):
         super(AlertsFeatureCollection, self).__init__(content, records)
@@ -231,35 +237,3 @@ class AlertsFeatureCollection(RecordCollection):
     def urgency(self):
         """'urgency' values for every feature."""
         return [x.urgency for x in self._content]
-
-
-class IndexResults(AlertsFeatureCollection):
-    """
-    Index results for the Alerts API.
-
-    IndexResults is an iterable for GeoJSON features.  This allows the
-    user to iterate and select based on Feature attributes in each element.
-
-    All features within IndexResults are instances of
-    :class:`AlertsFeature <helios.alerts_api.AlertsFeature>`
-
-    """
-
-    def __init__(self, content, records):
-        super(IndexResults, self).__init__(content, records)
-
-
-class ShowResults(AlertsFeatureCollection):
-    """
-    Show results for the Alerts API.
-
-    ShowResults is an iterable for GeoJSON features.  This allows the
-    user to iterate and select based on Feature attributes in each element.
-
-    All features within ShowResults are instances of
-    :class:`AlertsFeature <helios.alerts_api.AlertsFeature>`
-
-    """
-
-    def __init__(self, content, records):
-        super(ShowResults, self).__init__(content, records)

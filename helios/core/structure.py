@@ -145,3 +145,34 @@ class ImageRecord(Record):
                                           content=content, error=error)
         self.name = name
         self.output_file = output_file
+
+
+"""
+Cross-API Classes
+"""
+
+
+class ImageCollection(RecordCollection):
+    """
+    Iterable for the fetched image content. Each element will be an ndarray if
+    return_image_data was True.
+
+    """
+
+    def __init__(self, content, records):
+        super(ImageCollection, self).__init__(content, records)
+
+    @property
+    def image_data(self):
+        """Image data if return_image_data was True."""
+        return self._content
+
+    @property
+    def output_file(self):
+        """Full paths to all written images."""
+        return [x.output_file for x in self._raw if x.ok]
+
+    @property
+    def name(self):
+        """Names of all images."""
+        return [x.name for x in self._raw if x.ok]

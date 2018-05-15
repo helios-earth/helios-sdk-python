@@ -16,7 +16,7 @@ import requests
 from PIL import Image
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
-from helios.core.structure import ImageRecord, RecordCollection
+from helios.core.structure import ImageRecord, ImageCollection, RecordCollection
 from helios.utilities import logging_utils, parsing_utils
 
 logger = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 observations_index_documentation_.
 
         Returns:
-             :class:`IndexResults <helios.observations_api.IndexResults>`
+             :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`
 
         """
         results = super(Observations, self).index(**kwargs)
@@ -92,7 +92,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 for feature in record.content['features']:
                     content.append(ObservationsFeature(feature))
 
-        return IndexResults(content, results)
+        return ObservationsFeatureCollection(content, results)
 
     @logging_utils.log_entrance_exit
     def preview(self, observation_ids, out_dir=None, return_image_data=False):
@@ -107,7 +107,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            :class:`PreviewResults <helios.observations_api.PreviewResults>`
+            :class:`ImageCollection <helios.core.structure.ImageCollection>`
 
         """
         if not isinstance(observation_ids, (list, tuple)):
@@ -131,7 +131,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             if record.ok:
                 content.append(record.content)
 
-        return PreviewResults(content, results)
+        return ImageCollection(content, results)
 
     def __preview_worker(self, msg):
         """msg must contain observation_id, out_dir, and return_image_data"""
@@ -175,7 +175,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             observation_ids (str or sequence of strs): Helios observation ID(s).
 
         Returns:
-            :class:`ShowResults <helios.observations_api.ShowResults>`
+            :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`
 
         """
         results = super(Observations, self).show(observation_ids)
@@ -185,7 +185,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             if record.ok:
                 content.append(ObservationsFeature(record.content))
 
-        return ShowResults(content, results)
+        return ObservationsFeatureCollection(content, results)
 
 
 class ObservationsFeature(object):
@@ -222,7 +222,13 @@ class ObservationsFeature(object):
 
 
 class ObservationsFeatureCollection(RecordCollection):
-    """Derived class for Observations feature collections."""
+    """
+    Iterable for GeoJSON features obtained via the Observations API.
+
+    All features within ShowResults are instances of
+    :class:`ObservationsFeature <helios.core.structure.ObservationsFeature>`
+
+    """
 
     def __init__(self, content, records):
         super(ObservationsFeatureCollection, self).__init__(content, records)
@@ -330,63 +336,3 @@ class ObservationsFeatureCollection(RecordCollection):
                 df.to_csv(output_file, na_rep=None, index=False)
 
         return output_data
-
-
-class IndexResults(ObservationsFeatureCollection):
-    """
-    Index results for the Observations API.
-
-    IndexResults is an iterable for GeoJSON features.  This allows the
-    user to iterate and select based on Feature attributes.
-
-    All features within IndexResults are instances of
-    :class:`ObservationsFeature <helios.observations_api.ObservationsFeature>`
-
-    """
-
-    def __init__(self, content, records):
-        super(IndexResults, self).__init__(content, records)
-
-
-class PreviewResults(RecordCollection):
-    """
-    Preview results from the Observations API.
-
-    PreviewResults is an iterable for the fetched image content. Each element
-    of the iterable will be an ndarray if return_image_data was True.
-
-    """
-
-    def __init__(self, content, records):
-        super(PreviewResults, self).__init__(content, records)
-
-    @property
-    def image_data(self):
-        """Image data if return_image_data was True."""
-        return self._content
-
-    @property
-    def output_file(self):
-        """Full paths to all written images."""
-        return [x.output_file for x in self._raw if x.ok]
-
-    @property
-    def name(self):
-        """Names of all images."""
-        return [x.name for x in self._raw if x.ok]
-
-
-class ShowResults(ObservationsFeatureCollection):
-    """
-    Show results from the Observations API.
-
-    ShowResults is an iterable for GeoJSON features.  This allows the
-    user to iterate and select based on Feature attributes.
-
-    All features within ShowResults are instances of
-    :class:`ObservationsFeature <helios.observations_api.ObservationsFeature>`
-
-    """
-
-    def __init__(self, content, records):
-        super(ShowResults, self).__init__(content, records)
