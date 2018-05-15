@@ -49,8 +49,7 @@ Reusing a Session
 
 Creating a :meth:`Session <helios.core.session.Session>` instance allows
 you to use a single instance across all Core APIs.  This avoids multiple token
-verifications with the initialization of every Core API instance. Refer to
-:ref:`helios_session_instances` for more information.
+verifications with the initialization of every Core API instance.
 
     .. code-block:: python
 
@@ -61,8 +60,8 @@ verifications with the initialization of every Core API instance. Refer to
         cameras = helios.Cameras(session=sess)
 
 In the above code ``sess`` is started once and used across
-:class:`Alerts <helios.alerts.Alerts>` and
-:class:`Cameras <helios.cameras.Cameras>`.
+:class:`Alerts <helios.alerts_api.Alerts>` and
+:class:`Cameras <helios.cameras_api.Cameras>`.
 
 Using a Custom ``env``
 ----------------------

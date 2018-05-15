@@ -27,8 +27,8 @@ Using an Authentication File
 #. Copy and paste the following into the **"credentials.json"** file and fill in
    your authentication values.
 
-    - **"helios\_api\_url"** is optional.  If you do not need a custom API URL,
-    then leave this out of your json file or set to null.
+    - **"helios\_api\_url"** is optional.  If you do not need a custom API URL
+      leave this out of your json file or set to null.
 
 .. code-block:: json
 
@@ -38,5 +38,5 @@ Using an Authentication File
         "helios_api_url" : null
     }
 
-For more information refer to the authentication 
-`documentation <https://helios.earth/developers/api/authentication/>`_
+For more information refer to the Helios authentication 
+`documentation <https://helios.earth/developers/api/authentication/>`_.
