@@ -147,11 +147,6 @@ class ImageRecord(Record):
         self.output_file = output_file
 
 
-"""
-Cross-API Classes
-"""
-
-
 class ImageCollection(RecordCollection):
     """
     Iterable for the fetched image content. Each element will be an ndarray if
