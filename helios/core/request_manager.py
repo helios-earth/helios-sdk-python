@@ -42,9 +42,7 @@ class RequestManager(object):
         self.api_session.close()
         self.session.close()
 
-    def __request(self, query, use_api_cred=True, request_type='get',
-                  **kwargs):
-
+    def _request(self, query, request_type, use_api_cred=True, **kwargs):
         query = query.replace(' ', '+')
         kwargs['timeout'] = kwargs.get('timeout', self.timeout)
 
@@ -100,10 +98,10 @@ class RequestManager(object):
             Request response.
 
         """
-        return self.__request(query,
-                              use_api_cred=use_api_cred,
-                              request_type='get',
-                              **kwargs)
+        return self._request(query,
+                             'get',
+                             use_api_cred=use_api_cred,
+                             **kwargs)
 
     def post(self, query, use_api_cred=True, **kwargs):
         """
@@ -119,10 +117,10 @@ class RequestManager(object):
             Request response.
 
         """
-        return self.__request(query,
-                              use_api_cred=use_api_cred,
-                              request_type='post',
-                              **kwargs)
+        return self._request(query,
+                             'post',
+                             use_api_cred=use_api_cred,
+                             **kwargs)
 
     def head(self, query, use_api_cred=True, **kwargs):
         """
@@ -138,10 +136,10 @@ class RequestManager(object):
             Request response.
 
         """
-        return self.__request(query,
-                              use_api_cred=use_api_cred,
-                              request_type='head',
-                              **kwargs)
+        return self._request(query,
+                             'head',
+                             use_api_cred=use_api_cred,
+                             **kwargs)
 
     def delete(self, query, use_api_cred=True, **kwargs):
         """
@@ -157,10 +155,10 @@ class RequestManager(object):
             Request response.
 
         """
-        return self.__request(query,
-                              use_api_cred=use_api_cred,
-                              request_type='delete',
-                              **kwargs)
+        return self._request(query,
+                             'delete',
+                             use_api_cred=use_api_cred,
+                             **kwargs)
 
     def patch(self, query, use_api_cred=True, **kwargs):
         """
@@ -176,7 +174,7 @@ class RequestManager(object):
             Request response.
 
         """
-        return self.__request(query,
-                              use_api_cred=use_api_cred,
-                              request_type='patch',
-                              **kwargs)
+        return self._request(query,
+                             'patch',
+                             use_api_cred=use_api_cred,
+                             **kwargs)
