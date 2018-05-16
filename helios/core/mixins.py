@@ -164,21 +164,21 @@ class IndexMixin(object):
         except KeyError:
             total = initial_resp.content['total']
 
+        # Determine number of iterations that will be needed.
+        n_queries_needed = int(ceil((total - skip) / float(limit)))
+        messages = messages[0:n_queries_needed - 1]
+
+        # Log number of queries required.
+        logger.info('%s index queries required for: %s', n_queries_needed, kwargs)
+
         # If only one query was necessary, return immediately.
-        if total < limit:
+        if total <= limit:
             return [initial_resp]
 
         # Warn the user when truncation occurs. (max_skip is hit)
         if total > max_skip:
             logger.warning('Maximum skip level. Truncated results for: %s',
                            kwargs)
-
-        # Determine number of iterations that will be needed.
-        n_queries_needed = int(ceil((total - skip) / float(limit))) - 1
-        messages = messages[0:n_queries_needed]
-
-        # Log number of queries required.
-        logger.info('%s index queries required for: %s', n_queries_needed, kwargs)
 
         # Process messages using the worker function.
         results = self._process_messages(self.__index_worker, messages)
