@@ -6,12 +6,6 @@ import warnings
 
 import requests
 
-# Python 2 compatibility.
-try:
-    FileNotFoundError
-except NameError:
-    FileNotFoundError = IOError
-
 logger = logging.getLogger(__name__)
 
 
@@ -50,6 +44,7 @@ class Session(object):
 
     """
 
+    ssl_verify = True
     token_expiration_threshold = 60  # minutes
 
     _base_dir = os.path.join(os.path.expanduser('~'), '.helios')
@@ -90,14 +85,13 @@ class Session(object):
             data = self._deprecation_check()
             if data is None:
                 raise Exception('No credentials could be found. Be sure to '
-                                'set environment variables or setup a '
+                                'set environment variables or create a '
                                 'credentials file.')
             else:
-                message = 'Deprecated auth file was found.  ' \
-                          'Please migrate .helios_auth to ' \
-                          '~/.helios/credentials.json.  Refer to the ' \
-                          'authentication section of the documentation for ' \
-                          'more information.'
+                message = '''Deprecated auth file was found. Please migrate 
+                             .helios_auth to ~/.helios/credentials.json. Refer 
+                             to the authentication section of the documentation 
+                             for more information.'''
                 warnings.warn(message, DeprecationWarning)
                 logger.warning('DeprecationWarning: ' + message)
 
@@ -119,7 +113,8 @@ class Session(object):
         # Finally, start the session.
         self.start_session()
 
-    def _deprecation_check(self):
+    @staticmethod
+    def _deprecation_check():
         """Temporary method to check for old auth files."""
 
         old_auth_file = os.path.join(os.path.expanduser('~'), '.helios_auth')
@@ -127,13 +122,13 @@ class Session(object):
         data = None
         # Read credentials from environment.
         if 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
-            logger.info('Using environment variables for session.')
+            logger.warning('Using deprecated environment variables for session.')
             data = {'helios_client_id': os.environ['HELIOS_KEY_ID'],
                     'helios_client_secret': os.environ['HELIOS_KEY_SECRET'],
                     'helios_api_url': os.environ.get('HELIOS_API_URL')}
         # Read credentials from file.
         elif os.path.exists(old_auth_file):
-            logger.info('Using credentials file for session.')
+            logger.warning('Using deprecated credentials file for session.')
             with open(old_auth_file, 'r') as auth_file:
                 temp = json.load(auth_file)
                 data = {'helios_client_id': temp['HELIOS_KEY_ID'],
@@ -145,8 +140,9 @@ class Session(object):
         """Delete token file."""
         try:
             os.remove(self._token_file)
-        except (WindowsError, FileNotFoundError):
-            pass
+        except Exception:
+            logger.exception('Failed to delete token file.')
+            raise
 
     def _get_token(self):
         """
@@ -156,35 +152,42 @@ class Session(object):
         request fails over https, http will be used as a fallback.
 
         """
+        logger.info('Acquiring a new token.')
+
         token_url = self.api_url + '/oauth/token'
+        data = {'grant_type': 'client_credentials'}
+        auth = (self._key_id, self._key_secret)
         try:
-            data = {'grant_type': 'client_credentials'}
-            auth = (self._key_id, self._key_secret)
             resp = requests.post(token_url, data=data, auth=auth,
-                                 verify=True)
+                                 verify=self.ssl_verify)
             resp.raise_for_status()
         except requests.exceptions.HTTPError:
-            logger.warning('Getting token over https failed. Falling '
-                           'back to http.')
-            token_url_http = 'http' + token_url.split('https')[1]
-            data = {'grant_type': 'client_credentials'}
-            auth = (self._key_id, self._key_secret)
-            resp = requests.post(token_url_http, data=data, auth=auth,
-                                 verify=True)
+            logger.warning('Getting token over https failed. Falling back to http.',
+                           exc_info=True)
+            resp = requests.post(token_url.replace('https', 'http'), data=data,
+                                 auth=auth, verify=self.ssl_verify)
 
-        # If the token cannot be acquired, raise exception.
-        resp.raise_for_status()
+        # If the token cannot be acquired raise exception.
+        try:
+            resp.raise_for_status()
+        except requests.exceptions.RequestException:
+            logger.exception('Failed to acquire token.')
+            raise
 
         token_request = resp.json()
         self.token = {'name': 'Authorization',
                       'value': 'Bearer ' + token_request['access_token']}
 
-        self._write_token_file()
+        logger.info('Successfully acquired new token.')
 
     def _read_token_file(self):
         """Read token from file."""
-        with open(self._token_file, 'r') as token_file:
-            self.token = json.load(token_file)
+        try:
+            with open(self._token_file, 'r') as token_file:
+                self.token = json.load(token_file)
+        except Exception:
+            logger.exception('Failed to read token file.')
+            raise
 
     def _verify_directories(self):
         """Verify essential directories."""
@@ -196,8 +199,12 @@ class Session(object):
 
     def _write_token_file(self):
         """Write token to file."""
-        with open(self._token_file, 'w+') as token_file:
-            json.dump(self.token, token_file)
+        try:
+            with open(self._token_file, 'w+') as token_file:
+                json.dump(self.token, token_file)
+        except Exception:
+            logger.exception('Failed to write token file.')
+            raise
 
     def start_session(self):
         """
@@ -211,12 +218,13 @@ class Session(object):
         """
         try:
             self._read_token_file()
+        except (IOError, OSError):
+            self._get_token()
+        else:
             if not self.verify_token():
                 self._get_token()
-        except (IOError, FileNotFoundError):
-            logger.warning('Token file was not found. A new token will '
-                           'be acquired.')
-            self._get_token()
+        finally:
+            self._write_token_file()
 
     def verify_token(self):
         """
@@ -231,8 +239,14 @@ class Session(object):
         """
         resp = requests.get(self.api_url + '/session',
                             headers={self.token['name']: self.token['value']},
-                            verify=True)
-        resp.raise_for_status()
+                            verify=self.ssl_verify)
+
+        # If the token cannot be verified raise exception.
+        try:
+            resp.raise_for_status()
+        except requests.exceptions.RequestException:
+            logger.exception('Failed to verify token.')
+            raise
 
         json_resp = resp.json()
 
@@ -242,9 +256,11 @@ class Session(object):
         # Check token expiration time.
         expiration = json_resp['expires_in'] / 60.0
         if expiration < self.token_expiration_threshold:
-            logger.warning('Token is valid, but expires in %s minutes.',
-                           expiration)
+            logger.warning('Token expiration (%d) is less than the threshold (%d).',
+                           expiration,
+                           self.token_expiration_threshold)
             return False
 
         logger.info('Token is valid for %d minutes.', expiration)
+
         return True
