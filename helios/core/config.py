@@ -29,7 +29,7 @@ class Config(dict):
         super(Config, self).__init__(_DEFAULT_CONFIG)
         self._setup()
 
-    def _load_config_file(self):
+    def _read_config_file(self):
         """Loads configuration file from default location."""
         try:
             with open(self._config_file, 'r') as f:
@@ -40,12 +40,11 @@ class Config(dict):
         else:
             return config
 
-    def _write_config_file(self):
+    def _write_default_config_file(self):
         """Writes configuration JSON dict to file."""
-        print('writing')
         try:
             with open(self._config_file, 'w') as f:
-                json.dump(self, f)
+                json.dump(_DEFAULT_CONFIG, f)
         except Exception:
             logger.exception('Failed to write configuration file.')
             raise
@@ -53,9 +52,9 @@ class Config(dict):
     def _setup(self):
         """Establishes configuration values."""
         try:
-            config = self._load_config_file()
+            config = self._read_config_file()
         except Exception:
-            self._write_config_file()
+            self._write_default_config_file()
         else:
             self.update(config)
 
