@@ -11,6 +11,7 @@ import numpy as np
 import requests
 from PIL import Image
 
+from helios import CONFIG
 from helios.core.request_manager import RequestManager
 from helios.core.session import Session
 from helios.core.structure import ImageRecord, Record
@@ -25,7 +26,7 @@ class SDKCore(object):
 
     This class must be inherited by any additional Core API classes.
     """
-    _max_threads = 32
+    _max_threads = CONFIG['GENERAL']['MAX_THREADS']
 
     def __init__(self, session=None):
         """
@@ -41,6 +42,7 @@ class SDKCore(object):
                 created for you.
 
         """
+
         # Start session or use custom session.
         if session is None:
             self._session = Session()

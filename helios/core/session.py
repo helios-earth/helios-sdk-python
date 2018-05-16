@@ -6,6 +6,8 @@ import warnings
 
 import requests
 
+from helios import CONFIG
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,8 +46,8 @@ class Session(object):
 
     """
 
-    ssl_verify = True
-    token_expiration_threshold = 60  # minutes
+    ssl_verify = CONFIG['REQUESTS']['SSL_VERIFY']
+    token_expiration_threshold = CONFIG['SESSION']['TOKEN_EXPIRATION_THRESHOLD']
 
     _base_dir = os.path.join(os.path.expanduser('~'), '.helios')
     _token_dir = os.path.join(_base_dir, '.tokens')

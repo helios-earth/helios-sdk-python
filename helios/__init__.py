@@ -1,6 +1,8 @@
 """Use the Helios APIs in Python"""
 import logging
 
+# Load configuration first.
+from .core.config import CONFIG
 from . import core
 from . import utilities
 from .alerts_api import Alerts

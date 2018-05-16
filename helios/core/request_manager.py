@@ -3,14 +3,16 @@ import logging
 
 import requests
 
+from helios import CONFIG
+
 logger = logging.getLogger(__name__)
 
 
 class RequestManager(object):
     """Manages all API requests."""
-    max_retries = 3
-    timeout = 5
-    ssl_verify = True
+    max_retries = CONFIG['REQUESTS']['RETRIES']
+    timeout = CONFIG['REQUESTS']['TIMEOUT']
+    ssl_verify = CONFIG['REQUESTS']['SSL_VERIFY']
 
     def __init__(self, auth_token, pool_maxsize=32):
         self._auth_token = auth_token
