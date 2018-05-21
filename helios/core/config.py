@@ -1,19 +1,28 @@
 import json
-import logging
 import os
 
-logger = logging.getLogger(__name__)
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
 
-_DEFAULT_CONFIG = {'GENERAL': {'MAX_THREADS': 32},
-                   'REQUESTS': {'RETRIES': 3,
-                                'TIMEOUT': 5,
-                                'SSL_VERIFY': True},
-                   'SESSION': {'TOKEN_EXPIRATION_THRESHOLD': 60}}
+_CONFIG_FILE = os.path.join(os.path.expanduser('~'), '.helios', 'config.json')
+_CONFIG_DEFAULTS = {'GENERAL': {'MAX_THREADS': 32},
+                    'REQUESTS': {'RETRIES': 3,
+                                 'TIMEOUT': 5,
+                                 'SSL_VERIFY': True},
+                    'SESSION': {'TOKEN_EXPIRATION_THRESHOLD': 60}}
 
 
-class Config(dict):
+def write_default_config_file():
+    """Writes the default configuration to the default file."""
+    with open(_CONFIG_FILE, 'w') as f:
+        json.dump(_CONFIG_DEFAULTS, f)
+
+
+class Config(Mapping):
     """
-    Dictionary-like object for storing configuration parameters.
+    Mapping object for storing configuration parameters in a dict-like interface.
 
     If the config file does not exist it will be written with defaults to the
     default location.
@@ -23,40 +32,40 @@ class Config(dict):
 
     """
 
-    _config_file = os.path.join(os.path.expanduser('~'), '.helios', 'config.json')
-
     def __init__(self):
-        super(Config, self).__init__(_DEFAULT_CONFIG)
-        self._setup()
+        self.__dict__ = _CONFIG_DEFAULTS
+        self._load_config()
 
-    def _read_config_file(self):
-        """Loads configuration file from default location."""
-        try:
-            with open(self._config_file, 'r') as f:
-                config = json.load(f)
-        except Exception:
-            logger.exception('Failed to read configuration file.')
-            raise
-        else:
-            return config
+    def __getitem__(self, key):
+        return self.__dict__[key]
 
-    def _write_default_config_file(self):
-        """Writes configuration JSON dict to file."""
-        try:
-            with open(self._config_file, 'w') as f:
-                json.dump(_DEFAULT_CONFIG, f)
-        except Exception:
-            logger.exception('Failed to write configuration file.')
-            raise
+    def __iter__(self):
+        return iter(self.__dict__)
 
-    def _setup(self):
-        """Establishes configuration values."""
+    def __len__(self):
+        return len(self.__dict__)
+
+    def __repr__(self):
+        return self.__dict__.__repr__()
+
+    @staticmethod
+    def _read_config_file():
+        """Reads configuration file."""
+        with open(_CONFIG_FILE, 'r') as f:
+            config = json.load(f)
+        return config
+
+    def _load_config(self):
+        """Loads the configuration parameters."""
         try:
             config = self._read_config_file()
-        except Exception:
-            self._write_default_config_file()
+        except (IOError, OSError):
+            if not os.path.exists(_CONFIG_FILE):
+                write_default_config_file()
+            else:
+                raise
         else:
-            self.update(config)
+            self.__dict__.update(config)
 
 
 CONFIG = Config()
