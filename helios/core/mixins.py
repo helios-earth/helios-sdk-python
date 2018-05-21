@@ -26,7 +26,7 @@ class SDKCore(object):
 
     This class must be inherited by any additional Core API classes.
     """
-    _max_threads = CONFIG['GENERAL']['MAX_THREADS']
+    _max_threads = CONFIG['general']['max_threads']
 
     def __init__(self, session=None):
         """

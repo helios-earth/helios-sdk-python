@@ -7,11 +7,11 @@ except ImportError:
     from collections import Mapping
 
 _CONFIG_FILE = os.path.join(os.path.expanduser('~'), '.helios', 'config.json')
-_CONFIG_DEFAULTS = {'GENERAL': {'MAX_THREADS': 32},
-                    'REQUESTS': {'RETRIES': 3,
-                                 'TIMEOUT': 5,
-                                 'SSL_VERIFY': True},
-                    'SESSION': {'TOKEN_EXPIRATION_THRESHOLD': 60}}
+_CONFIG_DEFAULTS = {'general': {'max_threads': 32},
+                    'requests': {'retries': 3,
+                                 'timeout': 5,
+                                 'ssl_verify': True},
+                    'session': {'token_expiration_threshold': 60}}
 
 
 def write_default_config_file():

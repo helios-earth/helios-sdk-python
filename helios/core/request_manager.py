@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 
 class RequestManager(object):
     """Manages all API requests."""
-    max_retries = CONFIG['REQUESTS']['RETRIES']
-    timeout = CONFIG['REQUESTS']['TIMEOUT']
-    ssl_verify = CONFIG['REQUESTS']['SSL_VERIFY']
+    max_retries = CONFIG['requests']['retries']
+    timeout = CONFIG['requests']['timeout']
+    ssl_verify = CONFIG['requests']['ssl_verify']
 
     def __init__(self, auth_token, pool_maxsize=32):
         self._auth_token = auth_token

@@ -46,8 +46,8 @@ class Session(object):
 
     """
 
-    ssl_verify = CONFIG['REQUESTS']['SSL_VERIFY']
-    token_expiration_threshold = CONFIG['SESSION']['TOKEN_EXPIRATION_THRESHOLD']
+    ssl_verify = CONFIG['requests']['ssl_verify']
+    token_expiration_threshold = CONFIG['session']['token_expiration_threshold']
 
     _base_dir = os.path.join(os.path.expanduser('~'), '.helios')
     _token_dir = os.path.join(_base_dir, '.tokens')
