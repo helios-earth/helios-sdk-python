@@ -1,5 +1,6 @@
 import json
 import os
+import warnings
 
 try:
     from collections.abc import Mapping
@@ -61,7 +62,13 @@ class Config(Mapping):
             config = self._read_config_file()
         except (IOError, OSError):
             if not os.path.exists(_CONFIG_FILE):
-                write_default_config_file()
+                try:
+                    write_default_config_file()
+                except (IOError, OSError):
+                    warnings.warn('SDK config.json file was not found and '
+                                  'defaults could not be written.  Falling '
+                                  'back to the default configuration.',
+                                  stacklevel=2)
             else:
                 raise
         else:
