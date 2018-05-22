@@ -3,6 +3,20 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. image:: https://img.shields.io/badge/Git-repo-blue.svg?style=flat-square
+    :alt: GitHub Repository
+    :target: https://github.com/harris-helios/helios-sdk-python
+
+.. image:: https://img.shields.io/pypi/v/helios-sdk.svg?style=flat-square
+    :alt: PyPI
+    :target: https://pypi.python.org/pypi/helios-sdk
+
+.. image:: https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square
+    :alt: License
+    :target: https://github.com/harris-helios/helios-sdk-python/blob/master/LICENSE
+
+-----------------
+
 Helios-SDK-Python
 =================
 

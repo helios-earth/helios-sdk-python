@@ -1,8 +1,10 @@
 # Helios - SDK - Python
 
+[![Documentation](https://img.shields.io/badge/SDK-documentation-blue.svg?style=flat-square)](https://helios-sdk-python.readthedocs.io/en/latest/)
 [![PyPI](https://img.shields.io/pypi/v/helios-sdk.svg?style=flat-square)](https://pypi.python.org/pypi/helios-sdk)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](https://github.com/harris-helios/helios-sdk-python/blob/master/LICENSE)
-[![Documentation Status](https://readthedocs.org/projects/helios-sdk-python/badge/?version=latest&style=flat-square)](https://helios-sdk-python.readthedocs.io/en/latest/?badge=latest)
+
+------------------
 
 Use the Helios APIs in Python.
 
