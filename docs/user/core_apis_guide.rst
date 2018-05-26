@@ -110,4 +110,4 @@ Find observations and work with collections
     cams = set([parsing_utils.parse_camera(x) for x in ims])
 
 - ``index_results`` is an instance of :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`.
-- ``add_result`` is an instance of :class::class:`RecordCollection <helios.core.structure.RecordCollection>`.
+- ``add_result`` is an instance of :class:`RecordCollection <helios.core.structure.RecordCollection>`.
