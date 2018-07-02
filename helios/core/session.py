@@ -52,7 +52,7 @@ class Session(object):
     _base_dir = os.path.join(os.path.expanduser('~'), '.helios')
     _token_dir = os.path.join(_base_dir, '.tokens')
     _credentials_file = os.path.join(_base_dir, 'credentials.json')
-    _default_api_url = r'https://api.helios.earth/v1/'
+    _default_api_url = r'https://api.helios.earth/v1'
 
     def __init__(self, env=None):
         """Initialize Helios Session.
@@ -102,7 +102,7 @@ class Session(object):
         self._key_secret = data['helios_client_secret']
         try:
             if data['helios_api_url'] is not None:
-                self.api_url = data['helios_api_url']
+                self.api_url = data['helios_api_url'].rstrip('/')
             else:
                 self.api_url = self._default_api_url
         except KeyError:
@@ -139,7 +139,7 @@ class Session(object):
         return data
 
     def _delete_token(self):
-        """Delete token file."""
+        """Deletes token file."""
         try:
             os.remove(self._token_file)
         except Exception:
@@ -183,7 +183,7 @@ class Session(object):
         logger.info('Successfully acquired new token.')
 
     def _read_token_file(self):
-        """Read token from file."""
+        """Reads token from file."""
         try:
             with open(self._token_file, 'r') as token_file:
                 self.token = json.load(token_file)
@@ -192,7 +192,7 @@ class Session(object):
             raise
 
     def _verify_directories(self):
-        """Verify essential directories."""
+        """Verifies essential directories."""
         if not os.path.exists(self._base_dir):
             os.makedirs(self._base_dir)
 
@@ -200,17 +200,20 @@ class Session(object):
             os.makedirs(self._token_dir)
 
     def _write_token_file(self):
-        """Write token to file."""
+        """Writes token to file."""
         try:
             with open(self._token_file, 'w+') as token_file:
                 json.dump(self.token, token_file)
         except Exception:
             logger.exception('Failed to write token file.')
+            # Prevent a bad token file from persisting after an exception.
+            if os.path.exists(self._token_file):
+                os.remove(self._token_file)
             raise
 
     def start_session(self):
         """
-        Begin Helios session.
+        Begins Helios session.
 
         This will establish and verify a token for the session.  If a token
         file exists the token will be read and verified. If the token file
@@ -225,12 +228,12 @@ class Session(object):
         else:
             if not self.verify_token():
                 self._get_token()
-        finally:
-            self._write_token_file()
+
+        self._write_token_file()
 
     def verify_token(self):
         """
-        Verifies if the current token is still valid.
+        Verifies the token.
 
         If the token is bad or if the expiration time is less than the
         threshold False will be returned.
