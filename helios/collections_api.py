@@ -195,7 +195,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             collection_id (str): Collection to delete.
 
         Returns:
-            dict: JSON response
+            dict: {ok: true}
 
         """
         query_str = '{}/{}/{}'.format(self._base_api_url,
@@ -215,7 +215,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             collection_id (str): Collection to empty.
 
         Returns:
-            dict: JSON response.
+            dict: {ok: true, total: 1000}
 
         """
         query_str = '{}/{}/{}/images'.format(self._base_api_url,
