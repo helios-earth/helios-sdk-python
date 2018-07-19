@@ -55,7 +55,6 @@ verifications with the initialization of every Core API instance.
 
         import helios
         sess = helios.Session()
-        sess.start_session()
         alerts = helios.Alerts(session=sess)
         cameras = helios.Cameras(session=sess)
 
@@ -75,6 +74,8 @@ necessary information for authentication.
 
 .. code-block:: python
 
-   custom_env = {'HELIOS_KEY_ID': 'mykeyid', 'HELIOS_KEY_SECRET': 'mykeysecret'}
+   custom_env = {'helios_client_id': 'your ID key',
+                 'helios_client_secret': 'your secret key',
+                 'helios_api_url': 'optional API URL override'}
    sess = helios.Session(env=custom_env)
    sess.start_session()
