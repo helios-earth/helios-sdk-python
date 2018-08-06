@@ -487,57 +487,62 @@ class CollectionsFeature(object):
 
 class CollectionsFeatureCollection(RecordCollection):
     """
-    Iterable for features obtained via the Collections API.
+    Collection of features obtained via the Collections API.
 
-    All features within CollectionsFeatureCollection are instances of
-    :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`
+    Convenience properties are available to extract values from every feature
+    in content.
+
+    Attributes:
+        content (list of :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`):
+            All requested content.
 
     """
 
     def __init__(self, content, records):
-        super(CollectionsFeatureCollection, self).__init__(content, records)
+        super(CollectionsFeatureCollection, self).__init__(records)
+        self.content = content
 
     @property
     def bucket(self):
         """'bucket' values for every result."""
-        return [x.bucket for x in self._content]
+        return [x.bucket for x in self.content]
 
     @property
     def created_at(self):
         """'city' values for every result."""
-        return [x.created_at for x in self._content]
+        return [x.created_at for x in self.content]
 
     @property
     def description(self):
         """'created_at' values for every result."""
-        return [x.description for x in self._content]
+        return [x.description for x in self.content]
 
     @property
     def id(self):
         """'_id' values for every result."""
-        return [x.id for x in self._content]
+        return [x.id for x in self.content]
 
     @property
     def json(self):
         """Raw 'json' for every feature."""
-        return [x.json for x in self._content]
+        return [x.json for x in self.content]
 
     @property
     def name(self):
         """'name' values for every result."""
-        return [x.name for x in self._content]
+        return [x.name for x in self.content]
 
     @property
     def tags(self):
         """'tags' values for every result."""
-        return [x.tags for x in self._content]
+        return [x.tags for x in self.content]
 
     @property
     def updated_at(self):
         """'updated_at' values for every result."""
-        return [x.updated_at for x in self._content]
+        return [x.updated_at for x in self.content]
 
     @property
     def user_id(self):
         """'user_id' values for every result."""
-        return [x.user_id for x in self._content]
+        return [x.user_id for x in self.content]

@@ -143,97 +143,102 @@ class AlertsFeature(object):
 
 class AlertsFeatureCollection(RecordCollection):
     """
-    Iterable for GeoJSON features obtained via the Alerts API.
+    Collection of GeoJSON features obtained via the Alerts API.
 
-    All features within IndexResults are instances of
-    :class:`AlertsFeature <helios.alerts_api.AlertsFeature>`
+    Convenience properties are available to extract values from every feature
+    in content.
+
+    Attributes:
+        content (list of :class:`AlertsFeature <helios.alerts_api.AlertsFeature>`):
+            All requested content.
 
     """
 
     def __init__(self, content, records):
-        super(AlertsFeatureCollection, self).__init__(content, records)
+        super(AlertsFeatureCollection, self).__init__(records)
+        self.content = content
 
     @property
     def area_description(self):
         """'areaDesc' values for every feature."""
-        return [x.area_description for x in self._content]
+        return [x.area_description for x in self.content]
 
     @property
     def bbox(self):
         """'bbox' values for every feature."""
-        return [x.bbox for x in self._content]
+        return [x.bbox for x in self.content]
 
     @property
     def category(self):
         """'category' values for every feature."""
-        return [x['properties']['category'] for x in self._content]
+        return [x['properties']['category'] for x in self.content]
 
     @property
     def certainty(self):
         """'certainty' values for every feature."""
-        return [x.certainty for x in self._content]
+        return [x.certainty for x in self.content]
 
     @property
     def country(self):
         """'country' values for every feature."""
-        return [x.country for x in self._content]
+        return [x.country for x in self.content]
 
     @property
     def description(self):
         """'description' values for every feature."""
-        return [x.description for x in self._content]
+        return [x.description for x in self.content]
 
     @property
     def effective(self):
         """'effective' values for every feature."""
-        return [x.effective for x in self._content]
+        return [x.effective for x in self.content]
 
     @property
     def event(self):
         """'event' values for every feature."""
-        return [x.event for x in self._content]
+        return [x.event for x in self.content]
 
     @property
     def expires(self):
         """'expires' values for every feature."""
-        return [x.expires for x in self._content]
+        return [x.expires for x in self.content]
 
     @property
     def headline(self):
         """'headline' values for every feature."""
-        return [x.headline for x in self._content]
+        return [x.headline for x in self.content]
 
     @property
     def id(self):
         """'id' values for every feature."""
-        return [x.id for x in self._content]
+        return [x.id for x in self.content]
 
     @property
     def json(self):
         """Raw 'json' for every feature."""
-        return [x.json for x in self._content]
+        return [x.json for x in self.content]
 
     @property
     def origin(self):
         """'origin' values for every feature."""
-        return [x.origin for x in self._content]
+        return [x.origin for x in self.content]
 
     @property
     def severity(self):
         """'severity' values for every feature."""
-        return [x.severity for x in self._content]
+        return [x.severity for x in self.content]
 
     @property
     def states(self):
         """'states' values for every feature."""
-        return [x.states for x in self._content]
+        return [x.states for x in self.content]
 
     @property
     def status(self):
         """'status' values for every feature."""
-        return [x.status for x in self._content]
+        return [x.status for x in self.content]
 
     @property
     def urgency(self):
         """'urgency' values for every feature."""
-        return [x.urgency for x in self._content]
+        return [x.urgency for x in self.content]
