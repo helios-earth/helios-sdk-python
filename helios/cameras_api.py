@@ -221,65 +221,64 @@ class CamerasFeatureCollection(RecordCollection):
     """
     Collection of GeoJSON features obtained via the Cameras API.
 
-    Convenience properties are available to extract values from every feature
-    in content.
+    Convenience properties are available to extract values from every feature.
 
     Attributes:
-        content (list of :class:`CamerasFeature <helios.cameras_api.CamerasFeature>`):
-            All requested content.
+        features (list of :class:`CamerasFeature <helios.cameras_api.CamerasFeature>`):
+            All features returned from a query.
 
     """
 
-    def __init__(self, content, records):
+    def __init__(self, features, records):
         super(CamerasFeatureCollection, self).__init__(records)
-        self.content = content
+        self.features = features
 
     @property
     def city(self):
         """'city' values for every feature."""
-        return [x.city for x in self.content]
+        return [x.city for x in self.features]
 
     @property
     def coordinates(self):
         """'coordinate' values for every feature."""
-        return [x.coordinates for x in self.content]
+        return [x.coordinates for x in self.features]
 
     @property
     def country(self):
         """'country' values for every feature."""
-        return [x.country for x in self.content]
+        return [x.country for x in self.features]
 
     @property
     def description(self):
         """'description' values for every feature."""
-        return [x.description for x in self.content]
+        return [x.description for x in self.features]
 
     @property
     def direction(self):
         """'direction' values for every feature."""
-        return [x.direction for x in self.content]
+        return [x.direction for x in self.features]
 
     @property
     def id(self):
         """'id' values for every feature."""
-        return [x.id for x in self.content]
+        return [x.id for x in self.features]
 
     @property
     def json(self):
         """Raw 'json' for every feature."""
-        return [x.json for x in self.content]
+        return [x.json for x in self.features]
 
     @property
     def region(self):
         """'region' values for every feature."""
-        return [x.region for x in self.content]
+        return [x.region for x in self.features]
 
     @property
     def state(self):
         """'state' values for every feature."""
-        return [x.state for x in self.content]
+        return [x.state for x in self.features]
 
     @property
     def video(self):
         """'video' values for every feature."""
-        return [x.video for x in self.content]
+        return [x.video for x in self.features]
