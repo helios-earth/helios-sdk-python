@@ -82,11 +82,17 @@ class ImageRecord(Record):
 
 
 class ImageCollection(RecordCollection):
-    """Stores all image content and associated metadata."""
+    """
+    Stores all image content and associated metadata.
 
-    def __init__(self, content, records):
+    Attributes:
+        image_data (list of ndarray): All image data.
+
+    """
+
+    def __init__(self, image_data, records):
         super(ImageCollection, self).__init__(records)
-        self.content = content
+        self.image_data = image_data
 
     @property
     def output_files(self):
