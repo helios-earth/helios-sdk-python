@@ -89,7 +89,7 @@ Find observations and work with collections
                                        time_max='2018-02-10T18:15Z')
 
     # Get id for each observation feature.
-    ids = [x.id for x in index_results]
+    ids = [x.id for x in index_results.features]
 
     # Convenience properties also exist for combining attributes from all features.
     ids_1 = index_results.id
