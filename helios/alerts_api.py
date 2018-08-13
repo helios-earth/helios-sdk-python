@@ -170,7 +170,7 @@ class AlertsFeatureCollection(RecordCollection):
     @property
     def category(self):
         """'category' values for every feature."""
-        return [x['properties']['category'] for x in self.features]
+        return [x.category for x in self.features]
 
     @property
     def certainty(self):
