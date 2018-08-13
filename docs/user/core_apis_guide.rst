@@ -68,6 +68,9 @@ Find camera times and download images
 
 
 - ``md_cam_results`` is an instance of :class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`.
+
+  - Access the list of individual features by calling ``md_cam_results.features``.
+
 - ``show_image_results`` is an instance of :class:`ImageCollection <helios.core.structure.ImageCollection>`.
 
 Find observations and work with collections
@@ -110,4 +113,7 @@ Find observations and work with collections
     cams = set([parsing_utils.parse_camera(x) for x in ims])
 
 - ``index_results`` is an instance of :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`.
+
+  - Access the list of individual features by calling ``index_results.features``.
+
 - ``add_result`` is an instance of :class:`RecordCollection <helios.core.structure.RecordCollection>`.
