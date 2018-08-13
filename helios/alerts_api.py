@@ -78,7 +78,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
         Get attributes for alerts.
 
         Args:
-            alert_ids (str or sequence of strs): Helios alert ID(s).
+            alert_ids (str or list of strs): Helios alert ID(s).
 
         Returns:
             :class:`AlertsFeatureCollection <helios.alerts_api.AlertsFeatureCollection>`
@@ -100,7 +100,7 @@ class AlertsFeature(object):
 
     Attributes:
         area_description (str): 'areaDesc' value for the feature.
-        bbox (sequence of floats): 'bbox' value for the feature.
+        bbox (list of floats): 'bbox' value for the feature.
         category (str): 'category' value for the feature.
         certainty (str): 'certainty' value for the feature.
         country (str): 'country' value for the feature.
@@ -113,7 +113,7 @@ class AlertsFeature(object):
         json (dict): Raw 'json' for the feature.
         origin (str): 'origin' value for the feature.
         severity (str): 'severity' value for the feature.
-        states (sequence of strs): 'states' value for the feature.
+        states (list of strs): 'states' value for the feature.
         status (str): 'status' value for the feature.
         urgency (str): 'urgency' value for the feature.
 

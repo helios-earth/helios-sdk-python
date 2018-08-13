@@ -51,7 +51,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 of 500. Defaults to 500.
 
         Returns:
-            sequence of strs: Image times.
+            list of strs: Image times.
 
         """
         if end_time:
@@ -136,7 +136,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         Get attributes for cameras.
 
         Args:
-            camera_ids (str or sequence of strs): Helios camera ID(s).
+            camera_ids (str or list of strs): Helios camera ID(s).
 
         Returns:
             :class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`
@@ -160,7 +160,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         Args:
             camera_id (str): Camera ID.
-            times (str or sequence of strs): Image times, specified in UTC as
+            times (str or list of strs): Image times, specified in UTC as
                 an ISO 8601 string (e.g. 2017-08-01 or 2017-08-01T12:34:56.000Z).
                 The image with the closest matching timestamp will be returned.
             out_dir (optional, str): Directory to write images to.  Defaults to

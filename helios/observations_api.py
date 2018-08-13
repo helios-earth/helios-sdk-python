@@ -100,7 +100,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         Get preview images from observations.
 
         Args:
-            observation_ids (str or sequence of strs): list of observation IDs.
+            observation_ids (str or list of strs): list of observation IDs.
             out_dir (optional, str): Directory to write images to.  Defaults to
                 None.
             return_image_data (optional, bool): If True images will be returned
@@ -172,7 +172,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         Get attributes for observations.
 
         Args:
-            observation_ids (str or sequence of strs): Helios observation ID(s).
+            observation_ids (str or list of strs): Helios observation ID(s).
 
         Returns:
             :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`
