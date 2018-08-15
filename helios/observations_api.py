@@ -234,7 +234,7 @@ class ObservationsFeatureCollection(object):
 
     def __init__(self, features, records=None):
         self.features = features
-        self._queries = RecordCollection(records=records)
+        self.records = RecordCollection(records=records)
 
     @property
     def city(self):
