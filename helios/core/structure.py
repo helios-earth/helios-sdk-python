@@ -81,7 +81,7 @@ class ImageRecord(Record):
         self.output_file = output_file
 
 
-class ImageCollection(RecordCollection):
+class ImageCollection(object):
     """
     Stores all image content and associated metadata.
 
@@ -91,15 +91,15 @@ class ImageCollection(RecordCollection):
     """
 
     def __init__(self, image_data, records):
-        super(ImageCollection, self).__init__(records)
         self.image_data = image_data
+        self.records = RecordCollection(records=records)
 
     @property
     def output_files(self):
         """Full paths to all saved images."""
-        return [x.output_file for x in self._records if x.ok]
+        return [x.output_file for x in self.records.succeeded]
 
     @property
     def image_names(self):
         """Names of all images."""
-        return [x.name for x in self._records if x.ok]
+        return [x.name for x in self.records.succeeded]
