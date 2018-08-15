@@ -11,8 +11,8 @@ class RecordCollection(object):
 
     """
 
-    def __init__(self, records):
-        self._records = records
+    def __init__(self, records=None):
+        self._records = records or []
 
     @property
     def failed(self):
