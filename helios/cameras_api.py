@@ -8,7 +8,6 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from dateutil.parser import parse
-
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
 from helios.core.structure import RecordCollection, ImageCollection
 from helios.utilities import logging_utils
@@ -217,7 +216,7 @@ class CamerasFeature(object):
         self.video = feature['properties'].get('video')
 
 
-class CamerasFeatureCollection(RecordCollection):
+class CamerasFeatureCollection(object):
     """
     Collection of GeoJSON features obtained via the Cameras API.
 
@@ -229,9 +228,9 @@ class CamerasFeatureCollection(RecordCollection):
 
     """
 
-    def __init__(self, features, records):
-        super(CamerasFeatureCollection, self).__init__(records)
+    def __init__(self, features, records=None):
         self.features = features
+        self._queries = RecordCollection(records=records)
 
     @property
     def city(self):

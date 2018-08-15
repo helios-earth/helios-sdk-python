@@ -141,7 +141,7 @@ class AlertsFeature(object):
         self.urgency = feature['properties'].get('urgency')
 
 
-class AlertsFeatureCollection(RecordCollection):
+class AlertsFeatureCollection(object):
     """
     Collection of GeoJSON features obtained via the Alerts API.
 
@@ -153,9 +153,9 @@ class AlertsFeatureCollection(RecordCollection):
 
     """
 
-    def __init__(self, features, records):
-        super(AlertsFeatureCollection, self).__init__(records)
+    def __init__(self, features, records=None):
         self.features = features
+        self._queries = RecordCollection(records=records)
 
     @property
     def area_description(self):

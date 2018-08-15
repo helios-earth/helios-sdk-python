@@ -14,7 +14,6 @@ import numpy as np
 import pandas as pd
 import requests
 from PIL import Image
-
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import ImageRecord, ImageCollection, RecordCollection
 from helios.utilities import logging_utils, parsing_utils
@@ -221,7 +220,7 @@ class ObservationsFeature(object):
         self.time = feature['properties'].get('time')
 
 
-class ObservationsFeatureCollection(RecordCollection):
+class ObservationsFeatureCollection(object):
     """
     Collection of GeoJSON features obtained via the Observations API.
 
@@ -233,9 +232,9 @@ class ObservationsFeatureCollection(RecordCollection):
 
     """
 
-    def __init__(self, features, records):
-        super(ObservationsFeatureCollection, self).__init__(records)
+    def __init__(self, features, records=None):
         self.features = features
+        self._queries = RecordCollection(records=records)
 
     @property
     def city(self):
