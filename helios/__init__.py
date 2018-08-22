@@ -47,4 +47,4 @@ def add_stderr_logger(level=logging.DEBUG):
 # Clean up.
 del NullHandler
 
-__version__ = '2.3.0'
+__version__ = '2.4.0'
