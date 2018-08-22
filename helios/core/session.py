@@ -2,7 +2,6 @@
 import json
 import logging
 import os
-import warnings
 
 import requests
 
@@ -84,18 +83,9 @@ class Session(object):
             with open(self._credentials_file, 'r') as auth_file:
                 data = json.load(auth_file)
         else:
-            data = self._deprecation_check()
-            if data is None:
-                raise Exception('No credentials could be found. Be sure to '
-                                'set environment variables or create a '
-                                'credentials file.')
-            else:
-                message = '''Deprecated auth file was found. Please migrate 
-                             .helios_auth to ~/.helios/credentials.json. Refer 
-                             to the authentication section of the documentation 
-                             for more information.'''
-                warnings.warn(message, DeprecationWarning)
-                logger.warning('DeprecationWarning: ' + message)
+            raise Exception('No credentials could be found. Be sure to '
+                            'set environment variables or create a '
+                            'credentials file.')
 
         # Extract relevant authentication information from data.
         self._key_id = data['helios_client_id']
@@ -114,29 +104,6 @@ class Session(object):
 
         # Finally, start the session.
         self.start_session()
-
-    @staticmethod
-    def _deprecation_check():
-        """Temporary method to check for old auth files."""
-
-        old_auth_file = os.path.join(os.path.expanduser('~'), '.helios_auth')
-
-        data = None
-        # Read credentials from environment.
-        if 'HELIOS_KEY_ID' in os.environ and 'HELIOS_KEY_SECRET' in os.environ:
-            logger.warning('Using deprecated environment variables for session.')
-            data = {'helios_client_id': os.environ['HELIOS_KEY_ID'],
-                    'helios_client_secret': os.environ['HELIOS_KEY_SECRET'],
-                    'helios_api_url': os.environ.get('HELIOS_API_URL')}
-        # Read credentials from file.
-        elif os.path.exists(old_auth_file):
-            logger.warning('Using deprecated credentials file for session.')
-            with open(old_auth_file, 'r') as auth_file:
-                temp = json.load(auth_file)
-                data = {'helios_client_id': temp['HELIOS_KEY_ID'],
-                        'helios_client_secret': temp['HELIOS_KEY_SECRET'],
-                        'helios_api_url': temp.get('HELIOS_API_URL')}
-        return data
 
     def _delete_token(self):
         """Deletes token file."""

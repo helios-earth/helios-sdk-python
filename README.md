@@ -25,11 +25,11 @@ ny_cams = cameras.index(state='New York')
 
 # Gather the camera IDs from the results.
 
-# Combines all id attributes from each GeoJSON feature.
+# Combines all id attributes from each GeoJSON feature using a convenience property.
 ny_cams_ids = ny_cams.id
 
-# Alternatively, you can iterate and extract individual fields.
-ny_cams_ids_2 = [x.id for x in ny_cams]
+# Alternatively, you can iterate and extract individual fields from each feature.
+ny_cams_ids_2 = [x.id for x in ny_cams.features]
 
 ```
 

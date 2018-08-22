@@ -8,7 +8,6 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from dateutil.parser import parse
-
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
 from helios.core.structure import RecordCollection, ImageCollection
 from helios.utilities import logging_utils
@@ -51,7 +50,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 of 500. Defaults to 500.
 
         Returns:
-            sequence of strs: Image times.
+            list of strs: Image times.
 
         """
         if end_time:
@@ -136,7 +135,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         Get attributes for cameras.
 
         Args:
-            camera_ids (str or sequence of strs): Helios camera ID(s).
+            camera_ids (str or list of strs): Helios camera ID(s).
 
         Returns:
             :class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`
@@ -160,7 +159,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         Args:
             camera_id (str): Camera ID.
-            times (str or sequence of strs): Image times, specified in UTC as
+            times (str or list of strs): Image times, specified in UTC as
                 an ISO 8601 string (e.g. 2017-08-01 or 2017-08-01T12:34:56.000Z).
                 The image with the closest matching timestamp will be returned.
             out_dir (optional, str): Directory to write images to.  Defaults to
@@ -217,64 +216,68 @@ class CamerasFeature(object):
         self.video = feature['properties'].get('video')
 
 
-class CamerasFeatureCollection(RecordCollection):
+class CamerasFeatureCollection(object):
     """
-    Iterable for GeoJSON features obtained via the Cameras API.
+    Collection of GeoJSON features obtained via the Cameras API.
 
-    All features within ShowResults are instances of
-    :class:`CamerasFeature <helios.cameras_api.CamerasFeature>`
+    Convenience properties are available to extract values from every feature.
+
+    Attributes:
+        features (list of :class:`CamerasFeature <helios.cameras_api.CamerasFeature>`):
+            All features returned from a query.
 
     """
 
-    def __init__(self, content, records):
-        super(CamerasFeatureCollection, self).__init__(content, records)
+    def __init__(self, features, records=None):
+        self.features = features
+        self.records = RecordCollection(records=records)
 
     @property
     def city(self):
         """'city' values for every feature."""
-        return [x.city for x in self._content]
+        return [x.city for x in self.features]
 
     @property
     def coordinates(self):
         """'coordinate' values for every feature."""
-        return [x.coordinates for x in self._content]
+        return [x.coordinates for x in self.features]
 
     @property
     def country(self):
         """'country' values for every feature."""
-        return [x.country for x in self._content]
+        return [x.country for x in self.features]
 
     @property
     def description(self):
         """'description' values for every feature."""
-        return [x.description for x in self._content]
+        return [x.description for x in self.features]
 
     @property
     def direction(self):
         """'direction' values for every feature."""
-        return [x.direction for x in self._content]
+        return [x.direction for x in self.features]
 
     @property
     def id(self):
         """'id' values for every feature."""
-        return [x.id for x in self._content]
+        return [x.id for x in self.features]
 
     @property
     def json(self):
         """Raw 'json' for every feature."""
-        return [x.json for x in self._content]
+        return [x.json for x in self.features]
 
     @property
     def region(self):
         """'region' values for every feature."""
-        return [x.region for x in self._content]
+        return [x.region for x in self.features]
 
     @property
     def state(self):
         """'state' values for every feature."""
-        return [x.state for x in self._content]
+        return [x.state for x in self.features]
 
     @property
     def video(self):
         """'video' values for every feature."""
-        return [x.video for x in self._content]
+        return [x.video for x in self.features]

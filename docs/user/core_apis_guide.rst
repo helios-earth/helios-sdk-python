@@ -68,6 +68,9 @@ Find camera times and download images
 
 
 - ``md_cam_results`` is an instance of :class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`.
+
+  - Access the list of individual features by calling ``md_cam_results.features``.
+
 - ``show_image_results`` is an instance of :class:`ImageCollection <helios.core.structure.ImageCollection>`.
 
 Find observations and work with collections
@@ -89,7 +92,7 @@ Find observations and work with collections
                                        time_max='2018-02-10T18:15Z')
 
     # Get id for each observation feature.
-    ids = [x.id for x in index_results]
+    ids = [x.id for x in index_results.features]
 
     # Convenience properties also exist for combining attributes from all features.
     ids_1 = index_results.id
@@ -110,4 +113,7 @@ Find observations and work with collections
     cams = set([parsing_utils.parse_camera(x) for x in ims])
 
 - ``index_results`` is an instance of :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`.
+
+  - Access the list of individual features by calling ``index_results.features``.
+
 - ``add_result`` is an instance of :class:`RecordCollection <helios.core.structure.RecordCollection>`.

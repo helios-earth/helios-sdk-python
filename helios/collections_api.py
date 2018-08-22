@@ -11,7 +11,6 @@ import logging
 from collections import namedtuple
 
 import requests
-
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
 from helios.core.structure import ImageCollection, Record, RecordCollection
 from helios.utilities import logging_utils
@@ -73,7 +72,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         Args:
             collection_id (str): Collection ID.
-            assets (dict or sequence of dicts): Data containing any of these
+            assets (dict or list of dicts): Data containing any of these
                 payloads (camera_id), (camera_id, time), (observation_id),
                 (collection_id, image). E.g. data =
                 [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
@@ -156,7 +155,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         Args:
             name (str): Display name for the collection.
             description (str): Description for the collection.
-            tags (str or sequence of strs, optional): Optional comma-delimited
+            tags (str or list of strs, optional): Optional comma-delimited
                 keyword tags to be added to the collection.
 
         Returns:
@@ -242,7 +241,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 their name will be found.
 
         Returns:
-            sequence of strs: Image names.
+            list of strs: Image names.
 
         """
         mark_img = ''
@@ -309,7 +308,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         Args:
             collection_id (str): Collection ID to remove images from.
-            names (str or sequence of strs): List of image names to be removed.
+            names (str or list of strs): List of image names to be removed.
 
         Returns:
             :class:`RecordCollection <helios.core.structure.RecordCollection>`
@@ -388,7 +387,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         Args:
             collection_id (str): Collection ID to add images into.
-            image_names (str or sequence of strs): Image names.
+            image_names (str or list of strs): Image names.
             out_dir (optional, str): Directory to write images to.  Defaults to
                 None.
             return_image_data (optional, bool): If True images will be returned
@@ -419,7 +418,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             collections_id (str): Collection ID.
             name (str, optional): Name to be changed to.
             description (str, optional): Description to be changed to.
-            tags (str or sequence of strs, optional): Optional comma-delimited
+            tags (str or list of strs, optional): Optional comma-delimited
                 keyword tags to be changed to.
 
         """
@@ -461,10 +460,10 @@ class CollectionsFeature(object):
         created_at (str): 'city' value for the result.
         description (str): 'created_at' value for the result.
         id (str): '_id' value for the result.
-        images (sequence of strs): 'images' value for the result.
+        images (list of strs): 'images' value for the result.
         json (dict): Raw JSON result.
         name (str): 'name' value for the result.
-        tags (sequence of strs): 'tags' value for the result.
+        tags (list of strs): 'tags' value for the result.
         updated_at (str): 'updated_at' value for the result.
         user_id (str): 'user_id' value for the result.
 
@@ -485,59 +484,63 @@ class CollectionsFeature(object):
         self.user_id = feature.get('user_id')
 
 
-class CollectionsFeatureCollection(RecordCollection):
+class CollectionsFeatureCollection(object):
     """
-    Iterable for features obtained via the Collections API.
+    Collection of features obtained via the Collections API.
 
-    All features within CollectionsFeatureCollection are instances of
-    :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`
+    Convenience properties are available to extract values from every feature.
+
+    Attributes:
+        features (list of :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`):
+            All features returned from a query.
 
     """
 
-    def __init__(self, content, records):
-        super(CollectionsFeatureCollection, self).__init__(content, records)
+    def __init__(self, features, records=None):
+        self.features = features
+        self.records = RecordCollection(records=records)
 
     @property
     def bucket(self):
         """'bucket' values for every result."""
-        return [x.bucket for x in self._content]
+        return [x.bucket for x in self.features]
 
     @property
     def created_at(self):
         """'city' values for every result."""
-        return [x.created_at for x in self._content]
+        return [x.created_at for x in self.features]
 
     @property
     def description(self):
         """'created_at' values for every result."""
-        return [x.description for x in self._content]
+        return [x.description for x in self.features]
 
     @property
     def id(self):
         """'_id' values for every result."""
-        return [x.id for x in self._content]
+        return [x.id for x in self.features]
 
     @property
     def json(self):
         """Raw 'json' for every feature."""
-        return [x.json for x in self._content]
+        return [x.json for x in self.features]
 
     @property
     def name(self):
         """'name' values for every result."""
-        return [x.name for x in self._content]
+        return [x.name for x in self.features]
 
     @property
     def tags(self):
         """'tags' values for every result."""
-        return [x.tags for x in self._content]
+        return [x.tags for x in self.features]
 
     @property
     def updated_at(self):
         """'updated_at' values for every result."""
-        return [x.updated_at for x in self._content]
+        return [x.updated_at for x in self.features]
 
     @property
     def user_id(self):
         """'user_id' values for every result."""
-        return [x.user_id for x in self._content]
+        return [x.user_id for x in self.features]

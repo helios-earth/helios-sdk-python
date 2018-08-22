@@ -14,7 +14,6 @@ import numpy as np
 import pandas as pd
 import requests
 from PIL import Image
-
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import ImageRecord, ImageCollection, RecordCollection
 from helios.utilities import logging_utils, parsing_utils
@@ -100,7 +99,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         Get preview images from observations.
 
         Args:
-            observation_ids (str or sequence of strs): list of observation IDs.
+            observation_ids (str or list of strs): list of observation IDs.
             out_dir (optional, str): Directory to write images to.  Defaults to
                 None.
             return_image_data (optional, bool): If True images will be returned
@@ -172,7 +171,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         Get attributes for observations.
 
         Args:
-            observation_ids (str or sequence of strs): Helios observation ID(s).
+            observation_ids (str or list of strs): Helios observation ID(s).
 
         Returns:
             :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`
@@ -221,67 +220,71 @@ class ObservationsFeature(object):
         self.time = feature['properties'].get('time')
 
 
-class ObservationsFeatureCollection(RecordCollection):
+class ObservationsFeatureCollection(object):
     """
-    Iterable for GeoJSON features obtained via the Observations API.
+    Collection of GeoJSON features obtained via the Observations API.
 
-    All features within ShowResults are instances of
-    :class:`ObservationsFeature <helios.core.structure.ObservationsFeature>`
+    Convenience properties are available to extract values from every feature.
+
+    Attributes:
+        features (list of :class:`ObservationsFeature <helios.core.structure.ObservationsFeature>`):
+            All features returned from a query.
 
     """
 
-    def __init__(self, content, records):
-        super(ObservationsFeatureCollection, self).__init__(content, records)
+    def __init__(self, features, records=None):
+        self.features = features
+        self.records = RecordCollection(records=records)
 
     @property
     def city(self):
         """'city' values for every feature."""
-        return [x.city for x in self._content]
+        return [x.city for x in self.features]
 
     @property
     def country(self):
         """'country' values for every feature."""
-        return [x.country for x in self._content]
+        return [x.country for x in self.features]
 
     @property
     def description(self):
         """'description' values for every feature."""
-        return [x.description for x in self._content]
+        return [x.description for x in self.features]
 
     @property
     def id(self):
         """'id' values for every feature."""
-        return [x.id for x in self._content]
+        return [x.id for x in self.features]
 
     @property
     def json(self):
         """Raw 'json' for every feature."""
-        return [x.json for x in self._content]
+        return [x.json for x in self.features]
 
     @property
     def prev_id(self):
         """'prev_id' values for every feature."""
-        return [x.prev_id for x in self._content]
+        return [x.prev_id for x in self.features]
 
     @property
     def region(self):
         """'region' values for every feature."""
-        return [x.region for x in self._content]
+        return [x.region for x in self.features]
 
     @property
     def sensors(self):
         """'sensors' values for every feature."""
-        return [x.sensors for x in self._content]
+        return [x.sensors for x in self.features]
 
     @property
     def state(self):
         """'state' values for every feature."""
-        return [x.state for x in self._content]
+        return [x.state for x in self.features]
 
     @property
     def time(self):
         """'time' values for every feature."""
-        return [x.time for x in self._content]
+        return [x.time for x in self.features]
 
     def sensors_to_dataframes(self, output_dir=None, prefix=None):
         """
@@ -305,7 +308,7 @@ class ObservationsFeatureCollection(RecordCollection):
 
         """
         data = {}
-        for feature in self._content:
+        for feature in self.features:
             for sensor, sensor_data in feature.sensors.items():
                 if sensor not in data:
                     data[sensor] = []

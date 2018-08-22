@@ -45,7 +45,7 @@ def test_observations(utc_range):
     preview_results = observations.preview(id_, return_image_data=True)
 
     # Check image data.
-    assert (preview_results[0].size > 0)
+    assert (preview_results.image_data[0].size > 0)
 
 
 if __name__ == '__main__':

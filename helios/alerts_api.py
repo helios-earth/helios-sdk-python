@@ -78,7 +78,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
         Get attributes for alerts.
 
         Args:
-            alert_ids (str or sequence of strs): Helios alert ID(s).
+            alert_ids (str or list of strs): Helios alert ID(s).
 
         Returns:
             :class:`AlertsFeatureCollection <helios.alerts_api.AlertsFeatureCollection>`
@@ -100,7 +100,7 @@ class AlertsFeature(object):
 
     Attributes:
         area_description (str): 'areaDesc' value for the feature.
-        bbox (sequence of floats): 'bbox' value for the feature.
+        bbox (list of floats): 'bbox' value for the feature.
         category (str): 'category' value for the feature.
         certainty (str): 'certainty' value for the feature.
         country (str): 'country' value for the feature.
@@ -113,7 +113,7 @@ class AlertsFeature(object):
         json (dict): Raw 'json' for the feature.
         origin (str): 'origin' value for the feature.
         severity (str): 'severity' value for the feature.
-        states (sequence of strs): 'states' value for the feature.
+        states (list of strs): 'states' value for the feature.
         status (str): 'status' value for the feature.
         urgency (str): 'urgency' value for the feature.
 
@@ -141,99 +141,103 @@ class AlertsFeature(object):
         self.urgency = feature['properties'].get('urgency')
 
 
-class AlertsFeatureCollection(RecordCollection):
+class AlertsFeatureCollection(object):
     """
-    Iterable for GeoJSON features obtained via the Alerts API.
+    Collection of GeoJSON features obtained via the Alerts API.
 
-    All features within IndexResults are instances of
-    :class:`AlertsFeature <helios.alerts_api.AlertsFeature>`
+    Convenience properties are available to extract values from every feature.
+
+    Attributes:
+        features (list of :class:`AlertsFeature <helios.alerts_api.AlertsFeature>`):
+            All features returned from a query.
 
     """
 
-    def __init__(self, content, records):
-        super(AlertsFeatureCollection, self).__init__(content, records)
+    def __init__(self, features, records=None):
+        self.features = features
+        self.records = RecordCollection(records=records)
 
     @property
     def area_description(self):
         """'areaDesc' values for every feature."""
-        return [x.area_description for x in self._content]
+        return [x.area_description for x in self.features]
 
     @property
     def bbox(self):
         """'bbox' values for every feature."""
-        return [x.bbox for x in self._content]
+        return [x.bbox for x in self.features]
 
     @property
     def category(self):
         """'category' values for every feature."""
-        return [x['properties']['category'] for x in self._content]
+        return [x.category for x in self.features]
 
     @property
     def certainty(self):
         """'certainty' values for every feature."""
-        return [x.certainty for x in self._content]
+        return [x.certainty for x in self.features]
 
     @property
     def country(self):
         """'country' values for every feature."""
-        return [x.country for x in self._content]
+        return [x.country for x in self.features]
 
     @property
     def description(self):
         """'description' values for every feature."""
-        return [x.description for x in self._content]
+        return [x.description for x in self.features]
 
     @property
     def effective(self):
         """'effective' values for every feature."""
-        return [x.effective for x in self._content]
+        return [x.effective for x in self.features]
 
     @property
     def event(self):
         """'event' values for every feature."""
-        return [x.event for x in self._content]
+        return [x.event for x in self.features]
 
     @property
     def expires(self):
         """'expires' values for every feature."""
-        return [x.expires for x in self._content]
+        return [x.expires for x in self.features]
 
     @property
     def headline(self):
         """'headline' values for every feature."""
-        return [x.headline for x in self._content]
+        return [x.headline for x in self.features]
 
     @property
     def id(self):
         """'id' values for every feature."""
-        return [x.id for x in self._content]
+        return [x.id for x in self.features]
 
     @property
     def json(self):
         """Raw 'json' for every feature."""
-        return [x.json for x in self._content]
+        return [x.json for x in self.features]
 
     @property
     def origin(self):
         """'origin' values for every feature."""
-        return [x.origin for x in self._content]
+        return [x.origin for x in self.features]
 
     @property
     def severity(self):
         """'severity' values for every feature."""
-        return [x.severity for x in self._content]
+        return [x.severity for x in self.features]
 
     @property
     def states(self):
         """'states' values for every feature."""
-        return [x.states for x in self._content]
+        return [x.states for x in self.features]
 
     @property
     def status(self):
         """'status' values for every feature."""
-        return [x.status for x in self._content]
+        return [x.status for x in self.features]
 
     @property
     def urgency(self):
         """'urgency' values for every feature."""
-        return [x.urgency for x in self._content]
+        return [x.urgency for x in self.features]
