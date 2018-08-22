@@ -8,7 +8,16 @@ from helios.observations_api import ObservationsFeatureCollection
 
 def concatenate_feature_collections(fc_tuple):
     """
-    Joins a sequence of FeatureCollections.
+    Concatenates FeatureCollections.
+
+    .. code-block:: python
+
+        import helios
+        from helios.utilities.data_utils import concatenate_feature_collections
+        cams_inst = helios.Cameras()
+        results1 = cams_inst.index(state='new york')
+        results2 = cams_inst.index(state='maryland')
+        combined = concatenate_feature_collections((results1, results2))
 
     Args:
         fc_tuple (tuple): (fc0, fc1, fc2, ...) FeatureCollections to be
