@@ -1,4 +1,13 @@
 """Use the Helios APIs in Python"""
+import sys
+import warnings
+
+if sys.version_info[0] == 2:
+    warnings.simplefilter('once', DeprecationWarning)
+    warnings.warn(DeprecationWarning('helios-sdk version 2 is the final major '
+                                     'version supporting Python2.'),
+                  stacklevel=2)
+
 import logging
 
 # Load configuration first.
@@ -47,4 +56,4 @@ def add_stderr_logger(level=logging.DEBUG):
 # Clean up.
 del NullHandler
 
-__version__ = '2.4.0'
+__version__ = '2.4.1'
