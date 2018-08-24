@@ -7,13 +7,13 @@ documentation.  Some may have additional functionality for convenience.
 """
 import logging
 import os
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from io import BytesIO
 
 import numpy as np
-import pandas as pd
 import requests
 from PIL import Image
+
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
 from helios.core.structure import ImageRecord, ImageCollection, RecordCollection
 from helios.utilities import logging_utils, parsing_utils
@@ -286,56 +286,28 @@ class ObservationsFeatureCollection(object):
         """'time' values for every feature."""
         return [x.time for x in self.features]
 
-    def sensors_to_dataframes(self, output_dir=None, prefix=None):
+    @property
+    def observations(self):
         """
-        Combine sensor blocks and other useful feature information for
-        observations into Pandas DataFrame objects.
+        Observation data from the sensor block of each feature.
 
-        DataFrames will contain the time, value, previous value,
-        observation ID, and previous observation ID from each feature.
+        Data will be returned as a dictionary with a key for each sensor.
+        Observation data for each sensor is a named tuple ease-of-use.
 
-        Optionally, DataFrames can be written to CSV files. These will follow
-        the format of {prefix}_{sensor_name}.csv.
-
-        Args:
-            output_dir (str, optional): Output directory to write files to. If
-                None, then no files will be written. Defaults to None.
-            prefix (str, optional): Prefix to append to filenames. If None, no
-                prefix will be prepended. Defaults to None.
-
-        Returns:
-            dict: Pandas DataFrame objects for each sensor.
+        Each named tuple contains the sensor, time, data, prev, id, and prev_id.
 
         """
-        data = {}
+
+        Observation = namedtuple('Observation',
+                                 ['sensor', 'time', 'data', 'prev', 'id', 'prev_id'])
+        data = defaultdict(list)
         for feature in self.features:
             for sensor, sensor_data in feature.sensors.items():
-                if sensor not in data:
-                    data[sensor] = []
-                data[sensor].append((sensor,
-                                     feature.time,
-                                     sensor_data.get('data', -1),
-                                     sensor_data.get('prev', -1),
-                                     feature.id,
-                                     feature.prev_id))
+                data[sensor].append(Observation(sensor,
+                                                feature.time,
+                                                sensor_data.get('data', -1),
+                                                sensor_data.get('prev', -1),
+                                                feature.id,
+                                                feature.prev_id))
 
-        # Establish data frames for each sensor.
-        header = ['Sensor', 'Time', 'Data', 'Previous', 'ID', 'Previous_ID']
-        output_data = {name: pd.DataFrame(value, columns=header).sort_values(by=['Time'])
-                       for name, value in data.items()}
-
-        # If output_dir is specified, write to file.
-        if output_dir is not None:
-            if prefix is None:
-                prefix = ''
-            else:
-                prefix += '_'
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-
-            for sensor_name, df in output_data.items():
-                output_file = os.path.join(output_dir,
-                                           prefix + sensor_name + '.csv')
-                df.to_csv(output_file, na_rep=None, index=False)
-
-        return output_data
+        return dict(data)
