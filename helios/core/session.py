@@ -76,7 +76,7 @@ class Session(object):
         # Read credentials from environment.
         elif 'helios_client_id' in os.environ and 'helios_client_secret' in os.environ:
             logger.info('Using environment variables for session.')
-            data = os.environ.copy()
+            data = os.environ
         # Read credentials from file.
         elif os.path.exists(self._credentials_file):
             logger.info('Using credentials file for session.')
@@ -90,13 +90,7 @@ class Session(object):
         # Extract relevant authentication information from data.
         self._key_id = data['helios_client_id']
         self._key_secret = data['helios_client_secret']
-        try:
-            if data['helios_api_url'] is not None:
-                self.api_url = data['helios_api_url'].rstrip('/')
-            else:
-                self.api_url = self._default_api_url
-        except KeyError:
-            self.api_url = self._default_api_url
+        self.api_url = data.get('helios_api_url', self._default_api_url).rstrip('/')
 
         # Create token filename based on authentication ID.
         self._token_file = os.path.join(self._token_dir,
