@@ -91,7 +91,8 @@ class Session(object):
         # Extract relevant authentication information from data.
         self._key_id = data['helios_client_id']
         self._key_secret = data['helios_client_secret']
-        self.api_url = data.get('helios_api_url', self._default_api_url).rstrip('/')
+        self.api_url = data.get('helios_api_url') or self._default_api_url
+        self.api_url = self.api_url.rstrip('/')
 
         # Create token filename based on authentication ID.
         self._token_file = os.path.join(self._token_dir,
@@ -102,11 +103,7 @@ class Session(object):
 
     def _delete_token(self):
         """Deletes token file."""
-        try:
-            os.remove(self._token_file)
-        except Exception:
-            logger.exception('Failed to delete token file.')
-            raise
+        os.remove(self._token_file)
 
     def _get_token(self):
         """
@@ -146,12 +143,8 @@ class Session(object):
 
     def _read_token_file(self):
         """Reads token from file."""
-        try:
-            with open(self._token_file, 'r') as token_file:
-                self.token = json.load(token_file)
-        except Exception:
-            logger.exception('Failed to read token file.')
-            raise
+        with open(self._token_file, 'r') as token_file:
+            self.token = json.load(token_file)
 
     def _verify_directories(self):
         """Verifies essential directories."""
@@ -189,7 +182,6 @@ class Session(object):
             with open(self._token_file, 'w+') as token_file:
                 json.dump(self.token, token_file)
         except Exception:
-            logger.exception('Failed to write token file.')
             # Prevent a bad token file from persisting after an exception.
             if os.path.exists(self._token_file):
                 os.remove(self._token_file)
@@ -208,6 +200,8 @@ class Session(object):
         try:
             self._read_token_file()
         except (IOError, OSError):
+            logger.warning('Could not read token (%s). A new token will be acquired.',
+                           self._token_file)
             self._get_token()
         else:
             if not self.verify_token():
