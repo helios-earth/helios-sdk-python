@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import tempfile
 
 import requests
 
@@ -48,9 +49,6 @@ class Session(object):
     ssl_verify = CONFIG['requests']['ssl_verify']
     token_expiration_threshold = CONFIG['session']['token_expiration_threshold']
 
-    _base_dir = os.path.join(os.path.expanduser('~'), '.helios')
-    _token_dir = os.path.join(_base_dir, '.tokens')
-    _credentials_file = os.path.join(_base_dir, 'credentials.json')
     _default_api_url = r'https://api.helios.earth/v1'
 
     def __init__(self, env=None):
@@ -63,11 +61,14 @@ class Session(object):
                 environment variables.
 
         """
+        # Establish necessary files/directories.
+        self._base_dir = None
+        self._credentials_file = None
+        self._token_dir = None
+        self._verify_directories()
+
         # The token will be established with a call to the start_session method.
         self.token = None
-
-        # Verify essential directories exist.
-        self._verify_directories()
 
         # Use custom credentials.
         if env is not None:
@@ -154,6 +155,28 @@ class Session(object):
 
     def _verify_directories(self):
         """Verifies essential directories."""
+
+        # Explicitly check for write capability.
+        # Provides a fall back to the default temp directory.
+        base_dir = os.path.join(os.path.expanduser('~'), '.helios')
+        write_test_file = os.path.join(base_dir, 'temp_file.tmp')
+        try:
+            if os.path.exists(base_dir):
+                with open(write_test_file, 'w+') as _:
+                    pass
+            else:
+                os.makedirs(base_dir)
+        except (IOError, OSError):
+            base_dir = tempfile.gettempdir()
+        finally:
+            if os.path.exists(write_test_file):
+                os.remove(write_test_file)
+
+        # Establish paths.
+        self._base_dir = base_dir
+        self._token_dir = os.path.join(self._base_dir, '.tokens')
+        self._credentials_file = os.path.join(self._base_dir, 'credentials.json')
+
         if not os.path.exists(self._base_dir):
             os.makedirs(self._base_dir)
 
