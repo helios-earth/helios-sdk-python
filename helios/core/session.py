@@ -52,7 +52,6 @@ class Session(object):
     _default_api_url = r'https://api.helios.earth/v1'
     _default_base_dir = os.path.join(os.path.expanduser('~'), '.helios')
 
-
     def __init__(self, env=None):
         """Initialize Helios Session.
 
