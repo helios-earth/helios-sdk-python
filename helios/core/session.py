@@ -50,6 +50,8 @@ class Session(object):
     token_expiration_threshold = CONFIG['session']['token_expiration_threshold']
 
     _default_api_url = r'https://api.helios.earth/v1'
+    _default_base_dir = os.path.join(os.path.expanduser('~'), '.helios')
+
 
     def __init__(self, env=None):
         """Initialize Helios Session.
@@ -151,7 +153,7 @@ class Session(object):
 
         # Explicitly check for write capability.
         # Provides a fall back to the default temp directory.
-        base_dir = os.path.join(os.path.expanduser('~'), '.helios')
+        base_dir = self._default_base_dir
         write_test_file = os.path.join(base_dir, 'temp_file.tmp')
         try:
             if os.path.exists(base_dir):
@@ -160,7 +162,10 @@ class Session(object):
             else:
                 os.makedirs(base_dir)
         except (IOError, OSError):
+            logger.warning('Could ')
             base_dir = tempfile.gettempdir()
+            logger.warning('Could not write to %s. Falling back to %s',
+                           self._default_base_dir, base_dir)
         finally:
             if os.path.exists(write_test_file):
                 os.remove(write_test_file)
