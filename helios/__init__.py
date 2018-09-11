@@ -12,14 +12,7 @@ from .core.session import Session
 from .observations_api import Observations
 
 # Set default logging handler to avoid "No handler found" warnings.
-try:  # Python 2.7+
-    from logging import NullHandler
-except ImportError:
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
-
-logging.getLogger(__name__).addHandler(NullHandler())
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 def add_stderr_logger(level=logging.DEBUG):
@@ -43,8 +36,5 @@ def add_stderr_logger(level=logging.DEBUG):
     logger.debug('Added a stderr logging handler to logger: %s', __name__)
     return handler
 
-
-# Clean up.
-del NullHandler
 
 __version__ = '2.4.0'
