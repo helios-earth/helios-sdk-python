@@ -2,10 +2,7 @@ import json
 import os
 import warnings
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
+from collections.abc import Mapping
 
 _CONFIG_FILE = os.path.join(os.path.expanduser('~'), '.helios', 'config.json')
 _CONFIG_DEFAULTS = {'general': {'max_threads': 32},

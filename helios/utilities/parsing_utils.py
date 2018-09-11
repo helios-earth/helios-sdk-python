@@ -3,11 +3,7 @@ import hashlib
 import os
 from datetime import datetime
 
-# Python 2 to 3 fix.
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
+from urllib.parse import urlparse
 
 
 def parse_time(data):
