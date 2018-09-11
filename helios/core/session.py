@@ -161,7 +161,6 @@ class Session(object):
             else:
                 os.makedirs(base_dir)
         except (IOError, OSError):
-            logger.warning('Could ')
             base_dir = tempfile.gettempdir()
             logger.warning('Could not write to %s. Falling back to %s',
                            self._default_base_dir, base_dir)
