@@ -1,7 +1,7 @@
 from setuptools import find_packages
 from setuptools import setup
 
-version = '3.0.0'
+version = '3.0.1'
 
 setup(name='helios-sdk',
       version=version,

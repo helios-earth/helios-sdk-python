@@ -37,4 +37,4 @@ def add_stderr_logger(level=logging.DEBUG):
     return handler
 
 
-__version__ = '3.0.0'
+__version__ = '3.0.1'
