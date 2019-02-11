@@ -5,12 +5,11 @@ Methods are meant to represent the core functionality in the developer
 documentation.  Some may have additional functionality for convenience.
 
 """
-
+import asyncio
 import hashlib
 import logging
-from collections import namedtuple
 
-import requests
+import aiohttp
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
 from helios.core.structure import ImageCollection, Record, RecordCollection
 from helios.utilities import logging_utils
@@ -44,7 +43,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         super(Collections, self).__init__(session=session)
 
     @logging_utils.log_entrance_exit
-    def add_image(self, collection_id, assets):
+    async def add_image(self, collection_id, assets):
         """
         Add images to a collection from Helios assets.
 
@@ -81,43 +80,60 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             :class:`RecordCollection <helios.core.structure.RecordCollection>`
 
         """
+
         assert isinstance(assets, (list, tuple, dict))
 
         if isinstance(assets, dict):
             assets = [assets]
 
-        # Create messages for worker.
-        Message = namedtuple('Message', ['collection_id', 'data'])
-        messages = [Message(collection_id, x) for x in assets]
+        success_queue = asyncio.Queue()
+        failure_queue = asyncio.Queue()
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            tasks = []
+            for data in assets:
+                tasks.append(self._add_image_worker(collection_id, data,
+                                                    _session=session,
+                                                    _success_queue=success_queue,
+                                                    _failure_queue=failure_queue))
+            await asyncio.gather(*tasks)
 
-        # Process messages using the worker function.
-        results = self._process_messages(self.__add_image_worker, messages)
+        succeeded = self._get_all_items(success_queue)
+        failed = self._get_all_items(failure_queue)
 
-        return RecordCollection(results)
+        return succeeded, failed
 
-    def __add_image_worker(self, msg):
-        """msg must contain collection_id and data"""
-        # need to strip out the Bearer to work with a POST for collections
-        post_token = self._request_manager.auth_token['value'].replace('Bearer ', '')
+    async def _add_image_worker(self, collection_id, data, _session=None,
+                                _success_queue=None, _failure_queue=None):
+        """
+        Handles add_image call.
 
-        # Compose post request
-        parms = {'access_token': post_token}
-        parms.update(msg.data)
+        Args:
+            collection_id (str): Collection ID.
+            data (dict): Helios asset.
+            _session (aiohttp.ClientSession): Session instance.
+            _success_queue (asyncio.Queue): Queue for successful calls.
+            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+
+        """
 
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
         post_url = '{}/collections/{}/images'.format(self._base_api_url,
-                                                     msg.collection_id)
+                                                     collection_id)
 
         try:
-            resp = self._request_manager.post(post_url, headers=header, data=parms)
-        except requests.exceptions.RequestException as e:
-            return Record(message=msg, query=post_url, error=e)
+            async with _session.post(post_url, headers=header, data=data,
+                                     raise_for_status=True) as resp:
+                resp_json = await resp.json()
+        except Exception as e:
+            logger.exception('Failed to POST %s.', post_url)
+            await _failure_queue.put(Record(query=post_url, error=e))
+            return
 
-        return Record(message=msg, query=post_url, content=resp.json())
+        await _success_queue.put(Record(query=post_url, content=resp_json))
 
     @logging_utils.log_entrance_exit
-    def copy(self, collection_id, new_name):
+    async def copy(self, collection_id, new_name):
         """
         Copy a collection and its contents to a new collection.
 
@@ -129,6 +145,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             str: New collection ID.
 
         """
+
         # Get the collection metadata that needs to be copied.
         query_str = '{}/{}/{}'.format(self._base_api_url,
                                       self._core_api,
@@ -136,19 +153,19 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         metadata = self._request_manager.get(query_str).json()
 
         # Get the images that exist in the collection.
-        image_names = self.images(collection_id)
+        image_names = await self.images(collection_id)
 
         # Create new collection.
-        new_id = self.create(new_name, metadata['description'], metadata['tags'])
+        new_id = await self.create(new_name, metadata['description'], metadata['tags'])
 
         # Add images to new collection.
         data = [{'collection_id': collection_id, 'image': x} for x in image_names]
-        _ = self.add_image(new_id, data)
+        _ = await self.add_image(new_id, data)
 
         return new_id
 
     @logging_utils.log_entrance_exit
-    def create(self, name, description, tags=None):
+    async def create(self, name, description, tags=None):
         """
         Create a new collection.
 
@@ -162,27 +179,27 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             str: New collection ID.
 
         """
-        # need to strip out the Bearer to work with a POST for collections
-        post_token = self._request_manager.auth_token['value'].replace('Bearer ', '')
 
-        # Compose parms block
-        parms = {'name': name, 'description': description, 'access_token': post_token}
+        payload = {'name': name, 'description': description}
         if tags is not None:
             if isinstance(tags, (list, tuple)):
                 tags = ','.join(tags)
-            parms['tags'] = tags
+            payload['tags'] = tags
 
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
 
         post_url = '{}/{}'.format(self._base_api_url, self._core_api)
 
-        resp = self._request_manager.post(post_url, headers=header, data=parms).json()
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            async with session.post(post_url, headers=header, data=payload,
+                                    raise_for_status=True) as resp:
+                resp_json = await resp.json()
 
-        return resp['collection_id']
+        return resp_json['collection_id']
 
     @logging_utils.log_entrance_exit
-    def destroy(self, collection_id):
+    async def destroy(self, collection_id):
         """
         Delete an empty collection.
 
@@ -197,16 +214,17 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             dict: {ok: true}
 
         """
-        query_str = '{}/{}/{}'.format(self._base_api_url,
-                                      self._core_api,
-                                      collection_id)
 
-        resp = self._request_manager.delete(query_str)
+        del_url = '{}/{}/{}'.format(self._base_api_url,
+                                    self._core_api,
+                                    collection_id)
 
-        return resp.json()
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            async with session.delete(del_url, raise_for_status=True) as resp:
+                return await resp.json()
 
     @logging_utils.log_entrance_exit
-    def empty(self, collection_id):
+    async def empty(self, collection_id):
         """
         Bulk remove (up to 1000) images from a collection.
 
@@ -217,16 +235,17 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             dict: {ok: true, total: 1000}
 
         """
-        query_str = '{}/{}/{}/images'.format(self._base_api_url,
+
+        empty_url = '{}/{}/{}/images'.format(self._base_api_url,
                                              self._core_api,
                                              collection_id)
 
-        resp = self._request_manager.delete(query_str)
-
-        return resp.json()
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            async with session.delete(empty_url, raise_for_status=True) as resp:
+                return await resp.json()
 
     @logging_utils.log_entrance_exit
-    def images(self, collection_id, camera=None, old_flag=False):
+    async def images(self, collection_id, camera=None, old_flag=False):
         """
         Get all image names in a given collection.
 
@@ -244,6 +263,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             list of strs: Image names.
 
         """
+
         mark_img = ''
 
         if camera is not None:
@@ -254,7 +274,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         good_images = []
         while True:
-            results = self.show(collection_id, marker=mark_img)
+            results = await self.show(collection_id, marker=mark_img)
 
             # Gather images.
             images_found = results.images
@@ -275,7 +295,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         return good_images
 
-    def index(self, **kwargs):
+    async def index(self, **kwargs):
         """
         Get collections matching the provided spatial, text, or metadata filters.
 
@@ -291,18 +311,17 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
              :class:`CollectionsFeatureCollection <helios.collections_api.CollectionsFeatureCollection>`
 
         """
-        results = super(Collections, self).index(**kwargs)
+        succeeded, failed = await super(Collections, self).index(**kwargs)
 
         content = []
-        for record in results:
-            if record.ok:
-                for feature in record.content['results']:
-                    content.append(CollectionsFeature(feature))
+        for record in succeeded:
+            for feature in record.content['results']:
+                content.append(CollectionsFeature(feature))
 
-        return CollectionsFeatureCollection(content, results)
+        return CollectionsFeatureCollection(content), failed
 
     @logging_utils.log_entrance_exit
-    def remove_image(self, collection_id, names):
+    async def remove_image(self, collection_id, names):
         """
         Remove images from a collection.
 
@@ -317,31 +336,52 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         if not isinstance(names, (list, tuple)):
             names = [names]
 
-        # Create messages for worker.
-        Message = namedtuple('Message', ['collection_id', 'img_name'])
-        messages = [Message(collection_id, x) for x in names]
+        success_queue = asyncio.Queue()
+        failure_queue = asyncio.Queue()
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            tasks = []
+            for name in names:
+                tasks.append(self._add_image_worker(collection_id, name,
+                                                    _session=session,
+                                                    _success_queue=success_queue,
+                                                    _failure_queue=failure_queue))
+            await asyncio.gather(*tasks)
 
-        # Process messages using the worker function.
-        results = self._process_messages(self.__remove_image_worker, messages)
+        succeeded = self._get_all_items(success_queue)
+        failed = self._get_all_items(failure_queue)
 
-        return RecordCollection(results)
+        return succeeded, failed
 
-    def __remove_image_worker(self, msg):
-        """msg must contain collection_id and img_name"""
-        query_str = '{}/{}/{}/images/{}'.format(self._base_api_url,
-                                                self._core_api,
-                                                msg.collection_id,
-                                                msg.img_name)
+    async def _remove_image_worker(self, collection_id, name, _session=None,
+                                   _success_queue=None, _failure_queue=None):
+        """
+        Handles remove_image call.
+
+        Args:
+            collection_id (str): Collection ID.
+            name (dict): Helios asset.
+            _session (aiohttp.ClientSession): Session instance.
+            _success_queue (asyncio.Queue): Queue for successful calls.
+            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+
+        """
+        del_url = '{}/{}/{}/images/{}'.format(self._base_api_url,
+                                              self._core_api,
+                                              collection_id,
+                                              name)
 
         try:
-            resp = self._request_manager.delete(query_str)
-        except requests.exceptions.RequestException as e:
-            return Record(message=msg, query=query_str, error=e)
+            async with _session.delete(del_url, raise_for_status=True) as resp:
+                resp_json = await resp.json()
+        except Exception as e:
+            logger.exception('Failed to DELETE %s.', del_url)
+            await _failure_queue.put(Record(query=del_url, error=e))
+            return
 
-        return Record(message=msg, query=query_str, content=resp.json())
+        return Record(query=del_url, content=resp_json)
 
     @logging_utils.log_entrance_exit
-    def show(self, collection_id, limit=200, marker=None):
+    async def show(self, collection_id, limit=200, marker=None):
         """
         Get the attributes and image list for collections.
 
@@ -374,14 +414,16 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                          collection_id,
                                          params_str)
 
-        resp = self._request_manager.get(query_str)
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            async with session.get(query_str, raise_for_status=True) as resp:
+                resp_json = await resp.json()
 
-        return CollectionsFeature(resp.json())
+        return CollectionsFeature(resp_json)
 
-    def show_image(self, collection_id,
-                   image_names,
-                   out_dir=None,
-                   return_image_data=False):
+    async def show_image(self, collection_id,
+                         image_names,
+                         out_dir=None,
+                         return_image_data=False):
         """
         Get images from a collection.
 
@@ -397,20 +439,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             :class:`ImageCollection <helios.core.structure.ImageCollection>`
 
         """
-        results = super(Collections, self).show_image(collection_id,
-                                                      image_names,
-                                                      out_dir=out_dir,
-                                                      return_image_data=return_image_data)
+        succeeded, failed = await super(Collections, self).show_image(
+            collection_id, image_names, out_dir=out_dir,
+            return_image_data=return_image_data)
 
-        content = []
-        for record in results:
-            if record.ok:
-                content.append(record.content)
-
-        return ImageCollection(content, results)
+        return ImageCollection(succeeded), failed
 
     @logging_utils.log_entrance_exit
-    def update(self, collections_id, name=None, description=None, tags=None):
+    async def update(self, collections_id, name=None, description=None, tags=None):
         """
         Update a collection.
 
@@ -426,9 +462,6 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             raise ValueError('Update requires at least one keyword argument '
                              'to be used.')
 
-        # need to strip out the Bearer to work with a PATCH for collections
-        patch_token = self._request_manager.auth_token['value'].replace('Bearer ', '')
-
         # Compose parms block
         parms = {}
         if name is not None:
@@ -439,7 +472,6 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             if isinstance(tags, (list, tuple)):
                 tags = ','.join(tags)
             parms['tags'] = tags
-        parms['access_token'] = patch_token
 
         header = {'name': 'Content-Type',
                   'value': 'application/x-www-form-urlencoded'}
@@ -448,7 +480,10 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                       self._core_api,
                                       collections_id)
 
-        self._request_manager.patch(patch_url, headers=header, data=parms)
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            async with session.patch(patch_url, data=parms, headers=header,
+                                     raise_for_status=True) as resp:
+                return await resp.json()
 
 
 class CollectionsFeature(object):
