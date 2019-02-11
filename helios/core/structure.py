@@ -4,11 +4,9 @@
 class RecordCollection(object):
     """
     Class for handling query records.
-
     Attributes:
         records (list of :class:`Record <helios.core.structure.Record>`):
             Raw record data for debugging purposes.
-
     """
 
     def __init__(self, records=None):
@@ -30,16 +28,13 @@ class Record(object):
     Individual query record.
 
     Args:
-        message (tuple): Original message. This will be a namedtuple containing
-            all the inputs for an individual call within a batch job.
         query (str): API query.
         content: Returned content. To be defined by method.
         error (exception): Exception that occurred, if any.
 
     """
 
-    def __init__(self, message=None, query=None, content=None, error=None):
-        self.message = message
+    def __init__(self, query=None, content=None, error=None):
         self.query = query
         self.content = content
         self.error = error
@@ -63,20 +58,16 @@ class ImageRecord(Record):
     Record class for images.
 
     Args:
-        message (tuple): Original message. This will be a namedtuple containing
-            all the inputs for an individual call within a batch job.
         query (str): API query.
-        content (numpy.ndarray): Image as a Numpy ndarray.
+        content (PIL.Image.Image): Image data.
         error (exception): Exception that occurred, if any.
         name (str): Name of image.
         output_file (str): Full path to image file that was written.
 
     """
 
-    def __init__(self, message=None, query=None, content=None, error=None,
-                 name=None, output_file=None):
-        super(ImageRecord, self).__init__(message=message, query=query,
-                                          content=content, error=error)
+    def __init__(self, query=None, content=None, error=None, name=None, output_file=None):
+        super(ImageRecord, self).__init__(query=query, content=content, error=error)
         self.name = name
         self.output_file = output_file
 
@@ -85,21 +76,25 @@ class ImageCollection(object):
     """
     Stores all image content and associated metadata.
 
-    Attributes:
-        image_data (list of ndarray): All image data.
+    Args:
+        image_records (list of :class:`Record <helios.core.structure.ImageRecord>`
 
     """
 
-    def __init__(self, image_data, records):
-        self.image_data = image_data
-        self.records = RecordCollection(records=records)
+    def __init__(self, image_records):
+        self.image_records = image_records
 
     @property
     def output_files(self):
         """Full paths to all saved images."""
-        return [x.output_file for x in self.records.succeeded]
+        return [x.output_file for x in self.image_records]
 
     @property
     def image_names(self):
         """Names of all images."""
-        return [x.name for x in self.records.succeeded]
+        return [x.name for x in self.image_records]
+
+    @property
+    def images(self):
+        """PIL images."""
+        return [x.content for x in self.image_records]
