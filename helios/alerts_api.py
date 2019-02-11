@@ -8,7 +8,6 @@ documentation.  Some may have additional functionality for convenience.
 import logging
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
-from helios.core.structure import RecordCollection
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +45,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
         """
         super(Alerts, self).__init__(session=session)
 
-    def index(self, **kwargs):
+    async def index(self, **kwargs):
         """
         Get alerts matching the provided spatial, text, or
         metadata filters.
@@ -63,17 +62,17 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
              :class:`AlertsFeatureCollection <helios.alerts_api.AlertsFeatureCollection>`
 
         """
-        results = super(Alerts, self).index(**kwargs)
+
+        succeeded, failed = await super(Alerts, self).index(**kwargs)
 
         content = []
-        for record in results:
-            if record.ok:
-                for feature in record.content['features']:
-                    content.append(AlertsFeature(feature))
+        for record in succeeded:
+            for features in record.content['features']:
+                content.append(AlertsFeature(features))
 
-        return AlertsFeatureCollection(content, results)
+        return AlertsFeatureCollection(content), failed
 
-    def show(self, alert_ids):
+    async def show_async(self, alert_ids):
         """
         Get attributes for alerts.
 
@@ -84,14 +83,14 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             :class:`AlertsFeatureCollection <helios.alerts_api.AlertsFeatureCollection>`
 
         """
-        results = super(Alerts, self).show(alert_ids)
+
+        succeeded, failed = await super(Alerts, self).show(alert_ids)
 
         content = []
-        for record in results:
-            if record.ok:
-                content.append(AlertsFeature(record.content))
+        for record in succeeded:
+            content.append(AlertsFeature(record.content))
 
-        return AlertsFeatureCollection(content, results)
+        return AlertsFeatureCollection(content), failed
 
 
 class AlertsFeature(object):
@@ -153,9 +152,8 @@ class AlertsFeatureCollection(object):
 
     """
 
-    def __init__(self, features, records=None):
+    def __init__(self, features):
         self.features = features
-        self.records = RecordCollection(records=records)
 
     @property
     def area_description(self):
