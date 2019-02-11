@@ -5,17 +5,18 @@ Methods are meant to represent the core functionality in the developer
 documentation.  Some may have additional functionality for convenience.
 
 """
+import asyncio
 import logging
 import os
 from collections import namedtuple, defaultdict
 from io import BytesIO
 
-import numpy as np
-import requests
+import aiofiles
+import aiohttp
 from PIL import Image
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
-from helios.core.structure import ImageRecord, ImageCollection, RecordCollection
+from helios.core.structure import ImageRecord, ImageCollection
 from helios.utilities import logging_utils, parsing_utils
 
 logger = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         """
         super(Observations, self).__init__(session=session)
 
-    def index(self, **kwargs):
+    async def index(self, **kwargs):
         """
         Get observations matching the provided spatial, text, or
         metadata filters.
@@ -83,18 +84,18 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
              :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`
 
         """
-        results = super(Observations, self).index(**kwargs)
+
+        succeeded, failed = await super(Observations, self).index(**kwargs)
 
         content = []
-        for record in results:
-            if record.ok:
-                for feature in record.content['features']:
-                    content.append(ObservationsFeature(feature))
+        for record in succeeded:
+            for feature in record.content['features']:
+                content.append(ObservationsFeature(feature))
 
-        return ObservationsFeatureCollection(content, results)
+        return ObservationsFeatureCollection(content), failed
 
     @logging_utils.log_entrance_exit
-    def preview(self, observation_ids, out_dir=None, return_image_data=False):
+    async def preview(self, observation_ids, out_dir=None, return_image_data=False):
         """
         Get preview images from observations.
 
@@ -109,64 +110,87 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             :class:`ImageCollection <helios.core.structure.ImageCollection>`
 
         """
-        if not isinstance(observation_ids, (list, tuple)):
-            observation_ids = [observation_ids]
-
-        # Create messages for worker.
-        Message = namedtuple('Message', ['observation_id', 'out_dir',
-                                         'return_image_data'])
-        messages = [Message(x, out_dir, return_image_data) for x in observation_ids]
 
         # Make sure directory exists.
-        if out_dir:
+        if out_dir is not None:
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
 
-        # Process messages using the worker function.
-        results = self._process_messages(self.__preview_worker, messages)
+        tasks = []
+        success_queue = asyncio.Queue()
+        failure_queue = asyncio.Queue()
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            for id_ in observation_ids:
+                tasks.append(self._preview_worker(id_, out_dir=out_dir,
+                                                  return_image_data=return_image_data,
+                                                  _session=session,
+                                                  _success_queue=success_queue,
+                                                  _failure_queue=failure_queue))
+            await asyncio.gather(*tasks)
 
-        content = []
-        for record in results:
-            if record.ok:
-                content.append(record.content)
+        succeeded = self._get_all_items(success_queue)
+        failed = self._get_all_items(failure_queue)
 
-        return ImageCollection(content, results)
+        return ImageCollection(succeeded), failed
 
-    def __preview_worker(self, msg):
-        """msg must contain observation_id, out_dir, and return_image_data"""
+    async def _preview_worker(self, observation_id, out_dir=None, return_image_data=None,
+                              _session=None, _success_queue=None, _failure_queue=None):
+        """
+
+        Args:
+            observation_id (str): Observation ID.
+            out_dir (str, optional): Optionally write data to a directory.
+            return_image_data (bool, optional): Optionally load image data
+                into PIL and include in returned data.
+            _session (aiohttp.ClientSession): Session instance.
+            _success_queue (asyncio.Queue): Queue for successful calls.
+            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+
+        Returns:
+
+        """
 
         query_str = '{}/{}/{}/preview'.format(self._base_api_url,
                                               self._core_api,
-                                              msg.observation_id)
+                                              observation_id)
 
         try:
-            resp = self._request_manager.get(query_str)
-        except requests.exceptions.RequestException as e:
-            return ImageRecord(message=msg, query=query_str, error=e)
+            async with _session.get(query_str, raise_for_status=True) as resp:
+                image_content = await resp.read()
+        except Exception as e:
+            logger.exception('Failed to GET %s', query_str)
+            await _failure_queue.put(ImageRecord(query=query_str, error=e))
+            return
 
         # Parse key from url.
-        parsed_url = parsing_utils.parse_url(resp.url)
+        parsed_url = parsing_utils.parse_url(str(resp.url))
         _, image_name = os.path.split(parsed_url.path)
 
         # Write image to file.
-        if msg.out_dir is not None:
-            out_file = os.path.join(msg.out_dir, image_name)
-            with open(out_file, 'wb') as f:
-                f.write(resp.content)
+        if out_dir:
+            out_file = os.path.join(out_dir, image_name)
+            async with aiofiles.open(out_file, 'wb') as f:
+                await f.write(image_content)
         else:
             out_file = None
 
         # Read and return image data.
-        if msg.return_image_data:
+        if return_image_data:
             # Read image from response.
-            img_data = np.asarray(Image.open(BytesIO(resp.content)))
+            try:
+                img_data = Image.open(BytesIO(image_content))
+            except Exception as e:
+                await _failure_queue.put(ImageRecord(query=query_str, error=e))
+                return
         else:
             img_data = None
 
-        return ImageRecord(message=msg, query=query_str, name=image_name,
-                           content=img_data, output_file=out_file)
+        await _success_queue.put(ImageRecord(query=query_str,
+                                             name=image_name,
+                                             content=img_data,
+                                             output_file=out_file))
 
-    def show(self, observation_ids):
+    async def show(self, observation_ids):
         """
         Get attributes for observations.
 
@@ -177,14 +201,14 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`
 
         """
-        results = super(Observations, self).show(observation_ids)
+
+        succeeded, failed = super(Observations, self).show(observation_ids)
 
         content = []
-        for record in results:
-            if record.ok:
-                content.append(ObservationsFeature(record.content))
+        for record in succeeded:
+            content.append(ObservationsFeature(record.content))
 
-        return ObservationsFeatureCollection(content, results)
+        return ObservationsFeatureCollection(content), failed
 
 
 class ObservationsFeature(object):
@@ -232,9 +256,8 @@ class ObservationsFeatureCollection(object):
 
     """
 
-    def __init__(self, features, records=None):
+    def __init__(self, features):
         self.features = features
-        self.records = RecordCollection(records=records)
 
     @property
     def city(self):
