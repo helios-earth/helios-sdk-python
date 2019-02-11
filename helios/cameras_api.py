@@ -7,9 +7,10 @@ documentation.  Some may have additional functionality for convenience.
 """
 import logging
 
+import aiohttp
 from dateutil.parser import parse
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
-from helios.core.structure import RecordCollection, ImageCollection
+from helios.core.structure import ImageCollection
 from helios.utilities import logging_utils
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         super(Cameras, self).__init__(session=session)
 
     @logging_utils.log_entrance_exit
-    def images(self, camera_id, start_time, end_time=None, limit=500):
+    async def images(self, camera_id, start_time, end_time=None, limit=500):
         """
         Get the image times available for a given camera in the media cache.
 
@@ -53,57 +54,65 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             list of strs: Image times.
 
         """
+
         if end_time:
             end = parse(end_time).utctimetuple()
         else:
             end = None
 
-        image_times = []
-        while True:
-            query_str = '{}/{}/{}/images?time={}&limit={}'.format(self._base_api_url,
-                                                                  self._core_api,
-                                                                  camera_id,
-                                                                  start_time,
-                                                                  limit)
-            # Get image times available.
-            resp = self._request_manager.get(query_str)
-            times = resp.json()['times']
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            image_times = []
+            while True:
+                query_str = '{}/{}/{}/images?time={}&limit={}'.format(self._base_api_url,
+                                                                      self._core_api,
+                                                                      camera_id,
+                                                                      start_time,
+                                                                      limit)
+                # Get image times available.
+                try:
+                    async with session.get(query_str, raise_for_status=True) as resp:
+                        resp_json = await resp.json()
+                except aiohttp.ClientError:
+                    logger.exception('Failed to GET %s.', query_str)
+                    raise
 
-            # Return now if no end_time was provided.
-            if end_time is None:
-                image_times.extend(times)
-                break
+                times = resp_json['times']
 
-            # Parse the last time and break if no times were found
-            try:
-                last = parse(times[-1]).utctimetuple()
-            except IndexError:
-                break
+                # Return now if no end_time was provided.
+                if end_time is None:
+                    image_times.extend(times)
+                    break
 
-            # the last image is still newer than the end time, keep looking
-            if last < end:
-                if len(times) > 1:
-                    image_times.extend(times[0:-1])
-                    start_time = times[-1]
+                # Parse the last time and break if no times were found
+                try:
+                    last = parse(times[-1]).utctimetuple()
+                except IndexError:
+                    break
+
+                # the last image is still newer than the end time, keep looking
+                if last < end:
+                    if len(times) > 1:
+                        image_times.extend(times[0:-1])
+                        start_time = times[-1]
+                    else:
+                        image_times.extend(times)
+                        break
+                # The end time is somewhere in between.
+                elif last > end:
+                    good_times = [x for x in times if parse(x).utctimetuple() < end]
+                    image_times.extend(good_times)
+                    break
                 else:
                     image_times.extend(times)
                     break
-            # The end time is somewhere in between.
-            elif last > end:
-                good_times = [x for x in times if parse(x).utctimetuple() < end]
-                image_times.extend(good_times)
-                break
-            else:
-                image_times.extend(times)
-                break
 
-        if not image_times:
-            logger.warning('No images were found for %s in the %s to %s range.',
-                           camera_id, start_time, end_time)
+            if not image_times:
+                logger.warning('No images were found for %s in the %s to %s range.',
+                               camera_id, start_time, end_time)
 
         return image_times
 
-    def index(self, **kwargs):
+    async def index(self, **kwargs):
         """
         Get cameras matching the provided spatial, text, or
         metadata filters.
@@ -120,17 +129,17 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
              :class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`
 
         """
-        results = super(Cameras, self).index(**kwargs)
+
+        succeeded, failed = await super(Cameras, self).index(**kwargs)
 
         content = []
-        for record in results:
-            if record.ok:
-                for feature in record.content['features']:
-                    content.append(CamerasFeature(feature))
+        for record in succeeded:
+            for feature in record.content['features']:
+                content.append(CamerasFeature(feature))
 
-        return CamerasFeatureCollection(content, results)
+        return CamerasFeatureCollection(content), failed
 
-    def show(self, camera_ids):
+    async def show(self, camera_ids):
         """
         Get attributes for cameras.
 
@@ -141,16 +150,16 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             :class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`
 
         """
-        results = super(Cameras, self).show(camera_ids)
+
+        succeeded, failed = await super(Cameras, self).show(camera_ids)
 
         content = []
-        for record in results:
-            if record.ok:
-                content.append(CamerasFeature(record.content))
+        for record in succeeded:
+            content.append(CamerasFeature(record.content))
 
-        return CamerasFeatureCollection(content, results)
+        return CamerasFeatureCollection(content), failed
 
-    def show_image(self, camera_id, times, out_dir=None, return_image_data=False):
+    async def show_image(self, camera_id, times, out_dir=None, return_image_data=False):
         """
         Get images from the media cache.
 
@@ -164,24 +173,18 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 The image with the closest matching timestamp will be returned.
             out_dir (optional, str): Directory to write images to.  Defaults to
                 None.
-            return_image_data (optional, bool): If True images will be returned
-                as numpy.ndarrays.  Defaults to False.
+            return_image_data (optional, bool): If True, PIL Images will be
+                returned.
 
         Returns:
             :class:`ImageCollection <helios.core.structure.ImageCollection>`
 
         """
-        results = super(Cameras, self).show_image(camera_id,
-                                                  times,
-                                                  out_dir=out_dir,
-                                                  return_image_data=return_image_data)
 
-        content = []
-        for record in results:
-            if record.ok:
-                content.append(record.content)
+        succeeded, failed = await super(Cameras, self).show_image(
+            camera_id, times, out_dir=out_dir, return_image_data=return_image_data)
 
-        return ImageCollection(content, results)
+        return ImageCollection(succeeded), failed
 
 
 class CamerasFeature(object):
@@ -228,9 +231,8 @@ class CamerasFeatureCollection(object):
 
     """
 
-    def __init__(self, features, records=None):
+    def __init__(self, features):
         self.features = features
-        self.records = RecordCollection(records=records)
 
     @property
     def city(self):
