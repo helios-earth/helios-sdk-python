@@ -1,14 +1,13 @@
 """Mixins and core functionality."""
+import asyncio
+import aiofiles
+import aiohttp
 import logging
 import os
 from collections import namedtuple
-from contextlib import closing
 from io import BytesIO
 from math import ceil
-from multiprocessing.pool import ThreadPool
 
-import numpy as np
-import requests
 from PIL import Image
 
 from helios import CONFIG
@@ -27,6 +26,7 @@ class SDKCore(object):
     This class must be inherited by any additional Core API classes.
     """
     _max_threads = CONFIG['general']['max_threads']
+    _async_max_tasks = 10
 
     def __init__(self, session=None):
         """
@@ -52,6 +52,10 @@ class SDKCore(object):
         # If the session hasn't been started, start it.
         if not self._session.token:
             self._session.start_session()
+
+        self._auth_header = {
+            self._session.token['name']: self._session.token['value']
+        }
 
         # Create request manager to handle all API requests.
         self._request_manager = RequestManager(self._session.token,
@@ -102,37 +106,31 @@ class SDKCore(object):
 
         return query_str
 
-    def _process_messages(self, func, messages):
-        n_messages = len(messages)
-        logger.info('%s processing %s messages.', func.__name__, n_messages)
+    @staticmethod
+    def _get_all_items(queue):
+        """
+        Gets all items off an async queue.
+        Args:
+            queue (asyncio.Queue): Queue to get items from.
+        Returns:
+            list: Items from the queue.
+        """
 
-        # Create thread pool
-        with closing(ThreadPool(min(self._max_threads, n_messages))) as thread_pool:
-            results = thread_pool.map(func, messages)
-
-        try:
-            n_successful = sum([True for x in results if x.ok])
-        except AttributeError:
-            pass
-        else:
-            log_message = '{} out of {} successful'.format(n_successful, n_messages)
-            if n_successful == 0:
-                logger.error(log_message)
-            elif n_successful < n_messages:
-                logger.warning(log_message)
-            else:
-                logger.info(log_message)
-
-        return results
+        items = []
+        while True:
+            try:
+                items.append(queue.get_nowait())
+            except asyncio.QueueEmpty:
+                break
+        return items
 
 
 class IndexMixin(object):
     """Mixin for index queries."""
 
     @logging_utils.log_entrance_exit
-    def index(self, **kwargs):
+    async def index(self, **kwargs):
         max_skip = 4000
-
         limit = int(kwargs.pop('limit', 100))
         skip = int(kwargs.pop('skip', 0))
 
@@ -153,12 +151,17 @@ class IndexMixin(object):
             messages.append(Message(kwargs=kwargs, limit=temp_limit, skip=i))
 
         # Process first message.
-        initial_resp = self.__index_worker(messages.pop(0))
-
-        # Handle first query failing.
-        if not initial_resp.ok:
-            logger.error('First query failed. Unable to continue.')
-            raise initial_resp.error
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            initial_call = messages.pop(0)
+            initial_query = self._index_query_builder(initial_call.kwargs,
+                                                      initial_call.limit,
+                                                      initial_call.skip)
+            try:
+                async with session.get(initial_query, raise_for_status=True) as resp:
+                    initial_resp = Record(query=initial_query, content=await resp.json())
+            except aiohttp.ClientError:
+                logger.exception('First index query failed. Unable to continue.')
+                raise
 
         # Get total number of features available.
         try:
@@ -175,122 +178,219 @@ class IndexMixin(object):
 
         # If only one query was necessary, return immediately.
         if total <= limit:
-            return [initial_resp]
+            return [initial_resp], []
 
         # Warn the user when truncation occurs. (max_skip is hit)
         if total > max_skip:
             logger.warning('Maximum skip level. Truncated results for: %s',
                            kwargs)
 
-        # Process messages using the worker function.
-        results = self._process_messages(self.__index_worker, messages)
+        # Get all results.
+        success_queue = asyncio.Queue()
+        failure_queue = asyncio.Queue()
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            tasks = []
+            for msg in messages:
+                tasks.append(
+                    self._index_worker(msg.kwargs, msg.limit, msg.skip,
+                                       _session=session,
+                                       _success_queue=success_queue,
+                                       _failure_queue=failure_queue))
+            await asyncio.gather(*tasks)
+
+        succeeded = self._get_all_items(success_queue)
+        failed = self._get_all_items(failure_queue)
 
         # Put initial query back in list.
-        results.insert(0, initial_resp)
+        succeeded.insert(0, initial_resp)
 
-        return results
+        return succeeded, failed
 
-    def __index_worker(self, msg):
-        """msg must contain kwargs (search criteria), limit, and skip"""
+    def _index_query_builder(self, index_kwargs, limit, skip):
+        """
+        Build index query string.
 
-        params_str = self._parse_query_inputs(msg.kwargs)
+        Args:
+            index_kwargs (dict): Any index query parameters.
+            limit (int): Query limit.
+            skip (int): Query skip.
+
+        Returns:
+            str: Query string.
+
+        """
+
+        params_str = self._parse_query_inputs(index_kwargs)
 
         query_str = '{}/{}?{}&limit={}&skip={}'.format(self._base_api_url,
                                                        self._core_api,
                                                        params_str,
-                                                       msg.limit,
-                                                       msg.skip)
+                                                       limit,
+                                                       skip)
 
-        # Perform query
+        return query_str
+
+    async def _index_worker(self, index_kwargs, limit, skip, _session=None,
+                            _success_queue=None, _failure_queue=None):
+        """
+        Handles index calls.
+
+        Args:
+            index_kwargs (dict): Any index query parameters.
+            limit (int): Query limit.
+            skip (int): Query skip.
+            _session (aiohttp.ClientSession): Session instance.
+            _success_queue (asyncio.Queue): Queue for successful calls.
+            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+
+        """
+
+        query_str = self._index_query_builder(index_kwargs, limit, skip)
+
         try:
-            resp = self._request_manager.get(query_str)
-        except requests.exceptions.RequestException as e:
-            return Record(message=msg, query=query_str, error=e)
+            async with _session.get(query_str, raise_for_status=True) as resp:
+                resp_json = await resp.json()
+        except Exception as e:
+            logger.exception('Failed to GET %s', query_str)
+            await _failure_queue.put(Record(query=query_str, error=e))
+            return
 
-        return Record(message=msg, query=query_str, content=resp.json())
+        await _success_queue.put(Record(query=query_str, content=resp_json))
 
 
 class ShowMixin(object):
     """Mixin for show queries"""
 
     @logging_utils.log_entrance_exit
-    def show(self, ids):
+    async def show(self, ids):
         if not isinstance(ids, (list, tuple)):
             ids = [ids]
 
-        # Create messages for worker.
-        Message = namedtuple('Message', 'id_')
-        messages = [Message(x) for x in ids]
+        tasks = []
+        success_queue = asyncio.Queue()
+        failure_queue = asyncio.Queue()
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            for id_ in ids:
+                tasks.append(self._show_worker(id_,
+                                               _session=session,
+                                               _success_queue=success_queue,
+                                               _failure_queue=failure_queue))
+            await asyncio.gather(*tasks)
 
-        # Process messages using the worker function.
-        results = self._process_messages(self.__show_worker, messages)
+        succeeded = self._get_all_items(success_queue)
+        failed = self._get_all_items(failure_queue)
 
-        return results
+        return succeeded, failed
 
-    def __show_worker(self, msg):
-        """msg must contain id_"""
-        query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, msg.id_)
+    async def _show_worker(self, id_, _session=None, _success_queue=None,
+                           _failure_queue=None):
+        """
+        Handles show call.
+
+        Args:
+            id_ (str): Asset id.
+            _session (aiohttp.ClientSession): Session instance.
+            _success_queue (asyncio.Queue): Queue for successful calls.
+            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+
+        """
+        query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, id_)
 
         try:
-            resp = self._request_manager.get(query_str)
-        except requests.exceptions.RequestException as e:
-            return Record(message=msg, query=query_str, error=e)
+            async with _session.get(query_str, raise_for_status=True) as resp:
+                resp_json = await resp.json()
+        except Exception as e:
+            logger.exception('Failed to GET %s', query_str)
+            await _failure_queue.put(Record(query=query_str, error=e))
+            return
 
-        return Record(message=msg, query=query_str, content=resp.json())
+        await _success_queue.put(Record(query=query_str, content=resp_json))
 
 
 class ShowImageMixin(object):
     """Mixin for show_image queries"""
 
     @logging_utils.log_entrance_exit
-    def show_image(self, id_, data, out_dir=None, return_image_data=False):
+    async def show_image(self, id_, data, out_dir=None, return_image_data=False):
         if not isinstance(data, (list, tuple)):
             data = [data]
 
-        # Create messages for worker.
-        Message = namedtuple('Message', ['id_', 'data', 'out_dir', 'return_image_data'])
-        messages = [Message(id_, x, out_dir, return_image_data) for x in data]
-
         # Make sure directory exists.
-        if out_dir:
+        if out_dir is not None:
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
 
-        # Process messages using the worker function.
-        results = self._process_messages(self.__show_image_worker, messages)
+        tasks = []
+        success_queue = asyncio.Queue()
+        failure_queue = asyncio.Queue()
+        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            for x in data:
+                tasks.append(self._show_image_worker(id_, x, out_dir=out_dir,
+                                                     return_image_data=return_image_data,
+                                                     _session=session,
+                                                     _success_queue=success_queue,
+                                                     _failure_queue=failure_queue))
+            await asyncio.gather(*tasks)
 
-        return results
+        succeeded = self._get_all_items(success_queue)
+        failed = self._get_all_items(failure_queue)
 
-    def __show_image_worker(self, msg):
-        """msg must contain id_, data, out_dir, and return_image_data"""
+        return succeeded, failed
+
+    async def _show_image_worker(self, id_, data, out_dir=None, return_image_data=False,
+                                 _session=None, _success_queue=None, _failure_queue=None):
+        """
+        Handles show_image call.
+
+        Args:
+            id_ (str): Asset id.
+            data (list of str): Datapoints for the id. E.g. for cameras this is
+                image times.
+            out_dir (str, optional): Optionally write data to a directory.
+            return_image_data (bool, optional): Optionally load image data
+                into PIL and include in returned data.
+            _session (aiohttp.ClientSession): Session instance.
+            _success_queue (asyncio.Queue): Queue for successful calls.
+            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+
+        """
         query_str = '{}/{}/{}/images/{}'.format(self._base_api_url,
                                                 self._core_api,
-                                                msg.id_,
-                                                msg.data)
+                                                id_,
+                                                data)
 
         try:
-            resp = self._request_manager.get(query_str)
-        except requests.exceptions.RequestException as e:
-            return ImageRecord(message=msg, query=query_str, error=e)
+            async with _session.get(query_str, raise_for_status=True) as resp:
+                image_content = await resp.read()
+        except Exception as e:
+            logger.exception('Failed to GET %s', query_str)
+            await _failure_queue.put(ImageRecord(query=query_str, error=e))
+            return
 
         # Parse key from url.
-        parsed_url = parsing_utils.parse_url(resp.url)
+        parsed_url = parsing_utils.parse_url(str(resp.url))
         _, image_name = os.path.split(parsed_url.path)
 
         # Write image to file.
-        if msg.out_dir is not None:
-            out_file = os.path.join(msg.out_dir, image_name)
-            with open(out_file, 'wb') as f:
-                f.write(resp.content)
+        if out_dir:
+            out_file = os.path.join(out_dir, image_name)
+            async with aiofiles.open(out_file, 'wb') as f:
+                await f.write(image_content)
         else:
             out_file = None
 
         # Read and return image data.
-        if msg.return_image_data:
+        if return_image_data:
             # Read image from response.
-            img_data = np.asarray(Image.open(BytesIO(resp.content)))
+            try:
+                img_data = Image.open(BytesIO(image_content))
+            except Exception as e:
+                await _failure_queue.put(ImageRecord(query=query_str, error=e))
+                return
         else:
             img_data = None
 
-        return ImageRecord(message=msg, query=query_str, name=image_name,
-                           content=img_data, output_file=out_file)
+        await _success_queue.put(ImageRecord(query=query_str,
+                                             name=image_name,
+                                             content=img_data,
+                                             output_file=out_file))
