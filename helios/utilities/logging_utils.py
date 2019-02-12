@@ -19,14 +19,14 @@ def log_entrance_exit(func):
     """
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    async def wrapper(*args, **kwargs):
 
         logger.info('Entering %s', func.__name__)
 
         # Evaluate wrapped function.
         t0 = timer()
         try:
-            f_result = func(*args, **kwargs)
+            f_result = await func(*args, **kwargs)
         except Exception:
             logger.exception('Unhandled exception occurred.')
             raise
