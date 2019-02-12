@@ -29,8 +29,9 @@ def add_stderr_logger(level=logging.DEBUG):
     # even if helios is vendored within another package.
     logger = logging.getLogger(__name__)
     handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter(fmt='%(asctime)s [%(levelname)s] '
-                                               '%(name)s: %(message)s'))
+    handler.setFormatter(
+        logging.Formatter(fmt='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+    )
     logger.addHandler(handler)
     logger.setLevel(level)
     logger.debug('Added a stderr logging handler to logger: %s', __name__)

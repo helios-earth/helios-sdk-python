@@ -122,11 +122,15 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             for id_ in observation_ids:
                 tasks.append(
-                    self._bound_preview_worker(id_, out_dir=out_dir,
-                                               return_image_data=return_image_data,
-                                               _session=session,
-                                               _success_queue=success_queue,
-                                               _failure_queue=failure_queue))
+                    self._bound_preview_worker(
+                        id_,
+                        out_dir=out_dir,
+                        return_image_data=return_image_data,
+                        _session=session,
+                        _success_queue=success_queue,
+                        _failure_queue=failure_queue,
+                    )
+                )
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
@@ -138,8 +142,15 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         async with self._async_semaphore:
             return await self._preview_worker(*args, **kwargs)
 
-    async def _preview_worker(self, observation_id, out_dir=None, return_image_data=None,
-                              _session=None, _success_queue=None, _failure_queue=None):
+    async def _preview_worker(
+        self,
+        observation_id,
+        out_dir=None,
+        return_image_data=None,
+        _session=None,
+        _success_queue=None,
+        _failure_queue=None,
+    ):
         """
 
         Args:
@@ -155,14 +166,14 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        query_str = '{}/{}/{}/preview'.format(self._base_api_url,
-                                              self._core_api,
-                                              observation_id)
+        query_str = '{}/{}/{}/preview'.format(
+            self._base_api_url, self._core_api, observation_id
+        )
 
         try:
-            async with _session.get(query_str,
-                                    raise_for_status=True,
-                                    ssl=self._ssl_verify) as resp:
+            async with _session.get(
+                query_str, raise_for_status=True, ssl=self._ssl_verify
+            ) as resp:
                 image_content = await resp.read()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
@@ -192,10 +203,11 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         else:
             img_data = None
 
-        await _success_queue.put(ImageRecord(query=query_str,
-                                             name=image_name,
-                                             content=img_data,
-                                             output_file=out_file))
+        await _success_queue.put(
+            ImageRecord(
+                query=query_str, name=image_name, content=img_data, output_file=out_file
+            )
+        )
 
     async def show(self, observation_ids):
         """
@@ -328,16 +340,21 @@ class ObservationsFeatureCollection(object):
 
         """
 
-        Observation = namedtuple('Observation',
-                                 ['sensor', 'time', 'data', 'prev', 'id', 'prev_id'])
+        Observation = namedtuple(
+            'Observation', ['sensor', 'time', 'data', 'prev', 'id', 'prev_id']
+        )
         data = defaultdict(list)
         for feature in self.features:
             for sensor, sensor_data in feature.sensors.items():
-                data[sensor].append(Observation(sensor,
-                                                feature.time,
-                                                sensor_data.get('data', -1),
-                                                sensor_data.get('prev', -1),
-                                                feature.id,
-                                                feature.prev_id))
+                data[sensor].append(
+                    Observation(
+                        sensor,
+                        feature.time,
+                        sensor_data.get('data', -1),
+                        sensor_data.get('prev', -1),
+                        feature.id,
+                        feature.prev_id,
+                    )
+                )
 
         return dict(data)

@@ -85,9 +85,11 @@ class Session(object):
             with open(self._credentials_file, 'r') as auth_file:
                 data = json.load(auth_file)
         else:
-            raise Exception('No credentials could be found. Be sure to '
-                            'set environment variables or create a '
-                            'credentials file.')
+            raise Exception(
+                'No credentials could be found. Be sure to '
+                'set environment variables or create a '
+                'credentials file.'
+            )
 
         # Extract relevant authentication information from data.
         self._key_id = data['helios_client_id']
@@ -96,8 +98,7 @@ class Session(object):
         self.api_url = self.api_url.rstrip('/')
 
         # Create token filename based on authentication ID.
-        self._token_file = os.path.join(self._token_dir,
-                                        self._key_id + '.helios_token')
+        self._token_file = os.path.join(self._token_dir, self._key_id + '.helios_token')
 
         # Finally, start the session.
         self.start_session()
@@ -120,14 +121,20 @@ class Session(object):
         data = {'grant_type': 'client_credentials'}
         auth = (self._key_id, self._key_secret)
         try:
-            resp = requests.post(token_url, data=data, auth=auth,
-                                 verify=self.ssl_verify)
+            resp = requests.post(
+                token_url, data=data, auth=auth, verify=self.ssl_verify
+            )
             resp.raise_for_status()
         except requests.exceptions.HTTPError:
-            logger.warning('Getting token over https failed. Falling back to http.',
-                           exc_info=True)
-            resp = requests.post(token_url.replace('https', 'http'), data=data,
-                                 auth=auth, verify=self.ssl_verify)
+            logger.warning(
+                'Getting token over https failed. Falling back to http.', exc_info=True
+            )
+            resp = requests.post(
+                token_url.replace('https', 'http'),
+                data=data,
+                auth=auth,
+                verify=self.ssl_verify,
+            )
 
         # If the token cannot be acquired raise exception.
         try:
@@ -137,8 +144,10 @@ class Session(object):
             raise
 
         token_request = resp.json()
-        self.token = {'name': 'Authorization',
-                      'value': 'Bearer ' + token_request['access_token']}
+        self.token = {
+            'name': 'Authorization',
+            'value': 'Bearer ' + token_request['access_token'],
+        }
 
         logger.info('Successfully acquired new token.')
 
@@ -162,8 +171,11 @@ class Session(object):
                 os.makedirs(base_dir)
         except (IOError, OSError):
             base_dir = tempfile.gettempdir()
-            logger.warning('Could not write to %s. Falling back to %s',
-                           self._default_base_dir, base_dir)
+            logger.warning(
+                'Could not write to %s. Falling back to %s',
+                self._default_base_dir,
+                base_dir,
+            )
         finally:
             if os.path.exists(write_test_file):
                 os.remove(write_test_file)
@@ -203,8 +215,10 @@ class Session(object):
         try:
             self._read_token_file()
         except (IOError, OSError):
-            logger.warning('Could not read token (%s). A new token will be acquired.',
-                           self._token_file)
+            logger.warning(
+                'Could not read token (%s). A new token will be acquired.',
+                self._token_file,
+            )
             self._get_token()
         else:
             if not self.verify_token():
@@ -223,9 +237,11 @@ class Session(object):
             bool: True if current token is valid, False otherwise.
 
         """
-        resp = requests.get(self.api_url + '/session',
-                            headers={self.token['name']: self.token['value']},
-                            verify=self.ssl_verify)
+        resp = requests.get(
+            self.api_url + '/session',
+            headers={self.token['name']: self.token['value']},
+            verify=self.ssl_verify,
+        )
 
         # If the token cannot be verified raise exception.
         try:
@@ -242,9 +258,11 @@ class Session(object):
         # Check token expiration time.
         expiration = json_resp['expires_in'] / 60.0
         if expiration < self.token_expiration_threshold:
-            logger.warning('Token expiration (%d) is less than the threshold (%d).',
-                           expiration,
-                           self.token_expiration_threshold)
+            logger.warning(
+                'Token expiration (%d) is less than the threshold (%d).',
+                expiration,
+                self.token_expiration_threshold,
+            )
             return False
 
         logger.info('Token is valid for %d minutes.', expiration)

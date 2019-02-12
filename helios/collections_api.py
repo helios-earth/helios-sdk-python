@@ -28,6 +28,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
     removed from the system.
 
     """
+
     _core_api = 'collections'
 
     def __init__(self, session=None):
@@ -92,10 +93,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             tasks = []
             for data in assets:
                 tasks.append(
-                    self._bound_add_image_worker(collection_id, data,
-                                                 _session=session,
-                                                 _success_queue=success_queue,
-                                                 _failure_queue=failure_queue))
+                    self._bound_add_image_worker(
+                        collection_id,
+                        data,
+                        _session=session,
+                        _success_queue=success_queue,
+                        _failure_queue=failure_queue,
+                    )
+                )
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
@@ -107,8 +112,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         async with self._async_semaphore:
             return await self._add_image_worker(*args, **kwargs)
 
-    async def _add_image_worker(self, collection_id, data, _session=None,
-                                _success_queue=None, _failure_queue=None):
+    async def _add_image_worker(
+        self,
+        collection_id,
+        data,
+        _session=None,
+        _success_queue=None,
+        _failure_queue=None,
+    ):
         """
         Handles add_image call.
 
@@ -121,17 +132,17 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         """
 
-        header = {'name': 'Content-Type',
-                  'value': 'application/x-www-form-urlencoded'}
-        post_url = '{}/collections/{}/images'.format(self._base_api_url,
-                                                     collection_id)
+        header = {'name': 'Content-Type', 'value': 'application/x-www-form-urlencoded'}
+        post_url = '{}/collections/{}/images'.format(self._base_api_url, collection_id)
 
         try:
-            async with _session.post(post_url,
-                                     headers=header,
-                                     data=data,
-                                     raise_for_status=True,
-                                     ssl=self._ssl_verify) as resp:
+            async with _session.post(
+                post_url,
+                headers=header,
+                data=data,
+                raise_for_status=True,
+                ssl=self._ssl_verify,
+            ) as resp:
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to POST %s.', post_url)
@@ -155,9 +166,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         """
 
         # Get the collection metadata that needs to be copied.
-        query_str = '{}/{}/{}'.format(self._base_api_url,
-                                      self._core_api,
-                                      collection_id)
+        query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, collection_id)
         metadata = self._request_manager.get(query_str).json()
 
         # Get the images that exist in the collection.
@@ -194,17 +203,18 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 tags = ','.join(tags)
             payload['tags'] = tags
 
-        header = {'name': 'Content-Type',
-                  'value': 'application/x-www-form-urlencoded'}
+        header = {'name': 'Content-Type', 'value': 'application/x-www-form-urlencoded'}
 
         post_url = '{}/{}'.format(self._base_api_url, self._core_api)
 
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.post(post_url,
-                                    headers=header,
-                                    data=payload,
-                                    raise_for_status=True,
-                                    ssl=self._ssl_verify) as resp:
+            async with session.post(
+                post_url,
+                headers=header,
+                data=payload,
+                raise_for_status=True,
+                ssl=self._ssl_verify,
+            ) as resp:
                 resp_json = await resp.json()
 
         return resp_json['collection_id']
@@ -226,14 +236,12 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         """
 
-        del_url = '{}/{}/{}'.format(self._base_api_url,
-                                    self._core_api,
-                                    collection_id)
+        del_url = '{}/{}/{}'.format(self._base_api_url, self._core_api, collection_id)
 
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.delete(del_url,
-                                      raise_for_status=True,
-                                      ssl=self._ssl_verify) as resp:
+            async with session.delete(
+                del_url, raise_for_status=True, ssl=self._ssl_verify
+            ) as resp:
                 return await resp.json()
 
     @logging_utils.log_entrance_exit
@@ -249,14 +257,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         """
 
-        empty_url = '{}/{}/{}/images'.format(self._base_api_url,
-                                             self._core_api,
-                                             collection_id)
+        empty_url = '{}/{}/{}/images'.format(
+            self._base_api_url, self._core_api, collection_id
+        )
 
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.delete(empty_url,
-                                      raise_for_status=True,
-                                      ssl=self._ssl_verify) as resp:
+            async with session.delete(
+                empty_url, raise_for_status=True, ssl=self._ssl_verify
+            ) as resp:
                 return await resp.json()
 
     @logging_utils.log_entrance_exit
@@ -357,10 +365,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             tasks = []
             for name in names:
                 tasks.append(
-                    self._bound_remove_image_worker(collection_id, name,
-                                                    _session=session,
-                                                    _success_queue=success_queue,
-                                                    _failure_queue=failure_queue))
+                    self._bound_remove_image_worker(
+                        collection_id,
+                        name,
+                        _session=session,
+                        _success_queue=success_queue,
+                        _failure_queue=failure_queue,
+                    )
+                )
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
@@ -372,8 +384,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         async with self._async_semaphore:
             return await self._remove_image_worker(*args, **kwargs)
 
-    async def _remove_image_worker(self, collection_id, name, _session=None,
-                                   _success_queue=None, _failure_queue=None):
+    async def _remove_image_worker(
+        self,
+        collection_id,
+        name,
+        _session=None,
+        _success_queue=None,
+        _failure_queue=None,
+    ):
         """
         Handles remove_image call.
 
@@ -385,15 +403,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
 
         """
-        del_url = '{}/{}/{}/images/{}'.format(self._base_api_url,
-                                              self._core_api,
-                                              collection_id,
-                                              name)
+        del_url = '{}/{}/{}/images/{}'.format(
+            self._base_api_url, self._core_api, collection_id, name
+        )
 
         try:
-            async with _session.delete(del_url,
-                                       raise_for_status=True,
-                                       ssl=self._ssl_verify) as resp:
+            async with _session.delete(
+                del_url, raise_for_status=True, ssl=self._ssl_verify
+            ) as resp:
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to DELETE %s.', del_url)
@@ -427,27 +444,27 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         """
         if not isinstance(collection_id, str):
-            raise TypeError('Expected collection_id to be a str but found {} '
-                            'instead'.format(type(collection_id)))
+            raise TypeError(
+                'Expected collection_id to be a str but found {} '
+                'instead'.format(type(collection_id))
+            )
 
         params_str = self._parse_query_inputs(dict(limit=limit, marker=marker))
-        query_str = '{}/{}/{}?{}'.format(self._base_api_url,
-                                         self._core_api,
-                                         collection_id,
-                                         params_str)
+        query_str = '{}/{}/{}?{}'.format(
+            self._base_api_url, self._core_api, collection_id, params_str
+        )
 
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.get(query_str,
-                                   raise_for_status=True,
-                                   ssl=self._ssl_verify) as resp:
+            async with session.get(
+                query_str, raise_for_status=True, ssl=self._ssl_verify
+            ) as resp:
                 resp_json = await resp.json()
 
         return CollectionsFeature(resp_json)
 
-    async def show_image(self, collection_id,
-                         image_names,
-                         out_dir=None,
-                         return_image_data=False):
+    async def show_image(
+        self, collection_id, image_names, out_dir=None, return_image_data=False
+    ):
         """
         Get images from a collection.
 
@@ -464,8 +481,11 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         """
         succeeded, failed = await super(Collections, self).show_image(
-            collection_id, image_names, out_dir=out_dir,
-            return_image_data=return_image_data)
+            collection_id,
+            image_names,
+            out_dir=out_dir,
+            return_image_data=return_image_data,
+        )
 
         return ImageCollection(succeeded), failed
 
@@ -483,8 +503,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         """
         if name is None and description is None and tags is None:
-            raise ValueError('Update requires at least one keyword argument '
-                             'to be used.')
+            raise ValueError(
+                'Update requires at least one keyword argument to be used.'
+            )
 
         # Compose parms block
         parms = {}
@@ -497,19 +518,20 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 tags = ','.join(tags)
             parms['tags'] = tags
 
-        header = {'name': 'Content-Type',
-                  'value': 'application/x-www-form-urlencoded'}
+        header = {'name': 'Content-Type', 'value': 'application/x-www-form-urlencoded'}
 
-        patch_url = '{}/{}/{}'.format(self._base_api_url,
-                                      self._core_api,
-                                      collections_id)
+        patch_url = '{}/{}/{}'.format(
+            self._base_api_url, self._core_api, collections_id
+        )
 
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.patch(patch_url,
-                                     data=parms,
-                                     headers=header,
-                                     raise_for_status=True,
-                                     ssl=self._ssl_verify) as resp:
+            async with session.patch(
+                patch_url,
+                data=parms,
+                headers=header,
+                raise_for_status=True,
+                ssl=self._ssl_verify,
+            ) as resp:
                 return await resp.json()
 
 

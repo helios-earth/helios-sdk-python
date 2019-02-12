@@ -45,11 +45,14 @@ def load_config():
     try:
         ssl_verify = _handle_bool_env(os.environ.get('ssl_verify', '1'))
     except ValueError:
-        logger.exception('Could not load "ssl_verify" from env variables. '
-                         'Make sure value is "1", "0", "False", or "True"')
+        logger.exception(
+            'Could not load "ssl_verify" from env variables. '
+            'Make sure value is "1", "0", "False", or "True"'
+        )
         raise
 
     config['max_concurrency'] = int(os.environ.get('max_concurrency', 500))
     config['ssl_verify'] = ssl_verify
     config['token_expiration_threshold'] = int(
-        os.environ.get('token_expiration_threshold', 60))
+        os.environ.get('token_expiration_threshold', 60)
+    )

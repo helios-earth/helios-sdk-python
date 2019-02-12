@@ -66,7 +66,9 @@ class ImageRecord(Record):
 
     """
 
-    def __init__(self, query=None, content=None, error=None, name=None, output_file=None):
+    def __init__(
+        self, query=None, content=None, error=None, name=None, output_file=None
+    ):
         super(ImageRecord, self).__init__(query=query, content=content, error=error)
         self.name = name
         self.output_file = output_file

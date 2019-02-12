@@ -31,8 +31,7 @@ def log_entrance_exit(func):
             logger.exception('Unhandled exception occurred.')
             raise
 
-        logger.info('Exiting %s [%s]', func.__name__,
-                    '{0:.4f}s'.format(timer() - t0))
+        logger.info('Exiting %s [%s]', func.__name__, '{0:.4f}s'.format(timer() - t0))
 
         return f_result
 

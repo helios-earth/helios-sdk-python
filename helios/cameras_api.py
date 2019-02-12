@@ -63,16 +63,14 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             image_times = []
             while True:
-                query_str = '{}/{}/{}/images?time={}&limit={}'.format(self._base_api_url,
-                                                                      self._core_api,
-                                                                      camera_id,
-                                                                      start_time,
-                                                                      limit)
+                query_str = '{}/{}/{}/images?time={}&limit={}'.format(
+                    self._base_api_url, self._core_api, camera_id, start_time, limit
+                )
                 # Get image times available.
                 try:
-                    async with session.get(query_str,
-                                           raise_for_status=True,
-                                           ssl=self._ssl_verify) as resp:
+                    async with session.get(
+                        query_str, raise_for_status=True, ssl=self._ssl_verify
+                    ) as resp:
                         resp_json = await resp.json()
                 except aiohttp.ClientError:
                     logger.exception('Failed to GET %s.', query_str)
@@ -109,8 +107,12 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                     break
 
             if not image_times:
-                logger.warning('No images were found for %s in the %s to %s range.',
-                               camera_id, start_time, end_time)
+                logger.warning(
+                    'No images were found for %s in the %s to %s range.',
+                    camera_id,
+                    start_time,
+                    end_time,
+                )
 
         return image_times
 
@@ -184,7 +186,8 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         """
 
         succeeded, failed = await super(Cameras, self).show_image(
-            camera_id, times, out_dir=out_dir, return_image_data=return_image_data)
+            camera_id, times, out_dir=out_dir, return_image_data=return_image_data
+        )
 
         return ImageCollection(succeeded), failed
 

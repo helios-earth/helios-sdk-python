@@ -24,6 +24,7 @@ class SDKCore(object):
 
     This class must be inherited by any additional Core API classes.
     """
+
     _max_concurrency = config['max_concurrency']
     _ssl_verify = config['ssl_verify']
 
@@ -55,9 +56,7 @@ class SDKCore(object):
         if not self._session.token:
             self._session.start_session()
 
-        self._auth_header = {
-            self._session.token['name']: self._session.token['value']
-        }
+        self._auth_header = {self._session.token['name']: self._session.token['value']}
 
     @property
     def _base_api_url(self):
@@ -92,12 +91,9 @@ class SDKCore(object):
                 continue
 
             if isinstance(val, (list, tuple)):
-                query_str += (str(key) +
-                              '=' +
-                              ','.join([str(x) for x in val]) +
-                              '&')
+                query_str += str(key) + '=' + ','.join([str(x) for x in val]) + '&'
             else:
-                query_str += (str(key) + '=' + str(val) + '&')
+                query_str += str(key) + '=' + str(val) + '&'
 
         # Remove final ampersand
         query_str = query_str[:-1]
@@ -134,8 +130,10 @@ class IndexMixin(object):
 
         # Raise right away if skip is too high.
         if skip > max_skip:
-            raise ValueError('skip must be less than the maximum skip value '
-                             'of {}. A value of {} was tried.'.format(max_skip, skip))
+            raise ValueError(
+                'skip must be less than the maximum skip value '
+                'of {}. A value of {} was tried.'.format(max_skip, skip)
+            )
 
         # Create the messages up to the maximum skip.
         Message = namedtuple('Message', ['kwargs', 'limit', 'skip'])
@@ -151,14 +149,16 @@ class IndexMixin(object):
         # Process first message.
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             initial_call = messages.pop(0)
-            initial_query = self._index_query_builder(initial_call.kwargs,
-                                                      initial_call.limit,
-                                                      initial_call.skip)
+            initial_query = self._index_query_builder(
+                initial_call.kwargs, initial_call.limit, initial_call.skip
+            )
             try:
-                async with session.get(initial_query,
-                                       raise_for_status=True,
-                                       ssl=self._ssl_verify) as resp:
-                    initial_resp = Record(query=initial_query, content=await resp.json())
+                async with session.get(
+                    initial_query, raise_for_status=True, ssl=self._ssl_verify
+                ) as resp:
+                    initial_resp = Record(
+                        query=initial_query, content=await resp.json()
+                    )
             except aiohttp.ClientError:
                 logger.exception('First index query failed. Unable to continue.')
                 raise
@@ -171,7 +171,7 @@ class IndexMixin(object):
 
         # Determine number of iterations that will be needed.
         n_queries_needed = int(ceil((total - skip) / float(limit)))
-        messages = messages[0:n_queries_needed - 1]
+        messages = messages[0 : n_queries_needed - 1]
 
         # Log number of queries required.
         logger.info('%s index queries required for: %s', n_queries_needed, kwargs)
@@ -182,8 +182,7 @@ class IndexMixin(object):
 
         # Warn the user when truncation occurs. (max_skip is hit)
         if total > max_skip:
-            logger.warning('Maximum skip level. Truncated results for: %s',
-                           kwargs)
+            logger.warning('Maximum skip level. Truncated results for: %s', kwargs)
 
         # Get all results.
         success_queue = asyncio.Queue()
@@ -192,10 +191,15 @@ class IndexMixin(object):
             tasks = []
             for msg in messages:
                 tasks.append(
-                    self._bound_index_worker(msg.kwargs, msg.limit, msg.skip,
-                                             _session=session,
-                                             _success_queue=success_queue,
-                                             _failure_queue=failure_queue))
+                    self._bound_index_worker(
+                        msg.kwargs,
+                        msg.limit,
+                        msg.skip,
+                        _session=session,
+                        _success_queue=success_queue,
+                        _failure_queue=failure_queue,
+                    )
+                )
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
@@ -222,11 +226,9 @@ class IndexMixin(object):
 
         params_str = self._parse_query_inputs(index_kwargs)
 
-        query_str = '{}/{}?{}&limit={}&skip={}'.format(self._base_api_url,
-                                                       self._core_api,
-                                                       params_str,
-                                                       limit,
-                                                       skip)
+        query_str = '{}/{}?{}&limit={}&skip={}'.format(
+            self._base_api_url, self._core_api, params_str, limit, skip
+        )
 
         return query_str
 
@@ -234,8 +236,15 @@ class IndexMixin(object):
         async with self._async_semaphore:
             return await self._index_worker(*args, **kwargs)
 
-    async def _index_worker(self, index_kwargs, limit, skip, _session=None,
-                            _success_queue=None, _failure_queue=None):
+    async def _index_worker(
+        self,
+        index_kwargs,
+        limit,
+        skip,
+        _session=None,
+        _success_queue=None,
+        _failure_queue=None,
+    ):
         """
         Handles index calls.
 
@@ -252,9 +261,9 @@ class IndexMixin(object):
         query_str = self._index_query_builder(index_kwargs, limit, skip)
 
         try:
-            async with _session.get(query_str,
-                                    raise_for_status=True,
-                                    ssl=self._ssl_verify) as resp:
+            async with _session.get(
+                query_str, raise_for_status=True, ssl=self._ssl_verify
+            ) as resp:
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
@@ -278,10 +287,13 @@ class ShowMixin(object):
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             for id_ in ids:
                 tasks.append(
-                    self._bound_show_worker(id_,
-                                            _session=session,
-                                            _success_queue=success_queue,
-                                            _failure_queue=failure_queue))
+                    self._bound_show_worker(
+                        id_,
+                        _session=session,
+                        _success_queue=success_queue,
+                        _failure_queue=failure_queue,
+                    )
+                )
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
@@ -293,8 +305,9 @@ class ShowMixin(object):
         async with self._async_semaphore:
             return await self._show_worker(*args, **kwargs)
 
-    async def _show_worker(self, id_, _session=None, _success_queue=None,
-                           _failure_queue=None):
+    async def _show_worker(
+        self, id_, _session=None, _success_queue=None, _failure_queue=None
+    ):
         """
         Handles show call.
 
@@ -308,9 +321,9 @@ class ShowMixin(object):
         query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, id_)
 
         try:
-            async with _session.get(query_str,
-                                    raise_for_status=True,
-                                    ssl=self._ssl_verify) as resp:
+            async with _session.get(
+                query_str, raise_for_status=True, ssl=self._ssl_verify
+            ) as resp:
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
@@ -339,11 +352,16 @@ class ShowImageMixin(object):
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             for x in data:
                 tasks.append(
-                    self._bound_show_image_worker(id_, x, out_dir=out_dir,
-                                                  return_image_data=return_image_data,
-                                                  _session=session,
-                                                  _success_queue=success_queue,
-                                                  _failure_queue=failure_queue))
+                    self._bound_show_image_worker(
+                        id_,
+                        x,
+                        out_dir=out_dir,
+                        return_image_data=return_image_data,
+                        _session=session,
+                        _success_queue=success_queue,
+                        _failure_queue=failure_queue,
+                    )
+                )
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
@@ -355,8 +373,16 @@ class ShowImageMixin(object):
         async with self._async_semaphore:
             return await self._show_image_worker(*args, **kwargs)
 
-    async def _show_image_worker(self, id_, data, out_dir=None, return_image_data=False,
-                                 _session=None, _success_queue=None, _failure_queue=None):
+    async def _show_image_worker(
+        self,
+        id_,
+        data,
+        out_dir=None,
+        return_image_data=False,
+        _session=None,
+        _success_queue=None,
+        _failure_queue=None,
+    ):
         """
         Handles show_image call.
 
@@ -372,15 +398,14 @@ class ShowImageMixin(object):
             _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
 
         """
-        query_str = '{}/{}/{}/images/{}'.format(self._base_api_url,
-                                                self._core_api,
-                                                id_,
-                                                data)
+        query_str = '{}/{}/{}/images/{}'.format(
+            self._base_api_url, self._core_api, id_, data
+        )
 
         try:
-            async with _session.get(query_str,
-                                    raise_for_status=True,
-                                    ssl=self._ssl_verify) as resp:
+            async with _session.get(
+                query_str, raise_for_status=True, ssl=self._ssl_verify
+            ) as resp:
                 image_content = await resp.read()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
@@ -410,7 +435,8 @@ class ShowImageMixin(object):
         else:
             img_data = None
 
-        await _success_queue.put(ImageRecord(query=query_str,
-                                             name=image_name,
-                                             content=img_data,
-                                             output_file=out_file))
+        await _success_queue.put(
+            ImageRecord(
+                query=query_str, name=image_name, content=img_data, output_file=out_file
+            )
+        )
