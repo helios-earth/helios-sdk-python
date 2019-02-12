@@ -121,17 +121,22 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         failure_queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             for id_ in observation_ids:
-                tasks.append(self._preview_worker(id_, out_dir=out_dir,
-                                                  return_image_data=return_image_data,
-                                                  _session=session,
-                                                  _success_queue=success_queue,
-                                                  _failure_queue=failure_queue))
+                tasks.append(
+                    self._bound_preview_worker(id_, out_dir=out_dir,
+                                               return_image_data=return_image_data,
+                                               _session=session,
+                                               _success_queue=success_queue,
+                                               _failure_queue=failure_queue))
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
         failed = self._get_all_items(failure_queue)
 
         return ImageCollection(succeeded), failed
+
+    async def _bound_preview_worker(self, *args, **kwargs):
+        async with self._async_semaphore:
+            return await self._preview_worker(*args, **kwargs)
 
     async def _preview_worker(self, observation_id, out_dir=None, return_image_data=None,
                               _session=None, _success_queue=None, _failure_queue=None):

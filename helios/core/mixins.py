@@ -26,7 +26,7 @@ class SDKCore(object):
     This class must be inherited by any additional Core API classes.
     """
     _max_threads = CONFIG['general']['max_threads']
-    _async_max_tasks = 10
+    _async_max_tasks = 500
 
     def __init__(self, session=None):
         """
@@ -42,6 +42,9 @@ class SDKCore(object):
                 created for you.
 
         """
+
+        # Create async semaphore for concurrency limit.
+        self._async_semaphore = asyncio.Semaphore(value=self._async_max_tasks)
 
         # Start session or use custom session.
         if session is None:
@@ -192,10 +195,10 @@ class IndexMixin(object):
             tasks = []
             for msg in messages:
                 tasks.append(
-                    self._index_worker(msg.kwargs, msg.limit, msg.skip,
-                                       _session=session,
-                                       _success_queue=success_queue,
-                                       _failure_queue=failure_queue))
+                    self._bound_index_worker(msg.kwargs, msg.limit, msg.skip,
+                                             _session=session,
+                                             _success_queue=success_queue,
+                                             _failure_queue=failure_queue))
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
@@ -229,6 +232,10 @@ class IndexMixin(object):
                                                        skip)
 
         return query_str
+
+    async def _bound_index_worker(self, *args, **kwargs):
+        async with self._async_semaphore:
+            return await self._index_worker(*args, **kwargs)
 
     async def _index_worker(self, index_kwargs, limit, skip, _session=None,
                             _success_queue=None, _failure_queue=None):
@@ -271,16 +278,21 @@ class ShowMixin(object):
         failure_queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             for id_ in ids:
-                tasks.append(self._show_worker(id_,
-                                               _session=session,
-                                               _success_queue=success_queue,
-                                               _failure_queue=failure_queue))
+                tasks.append(
+                    self._bound_show_worker(id_,
+                                            _session=session,
+                                            _success_queue=success_queue,
+                                            _failure_queue=failure_queue))
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
         failed = self._get_all_items(failure_queue)
 
         return succeeded, failed
+
+    async def _bound_show_worker(self, *args, **kwargs):
+        async with self._async_semaphore:
+            return await self._show_worker(*args, **kwargs)
 
     async def _show_worker(self, id_, _session=None, _success_queue=None,
                            _failure_queue=None):
@@ -325,17 +337,22 @@ class ShowImageMixin(object):
         failure_queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             for x in data:
-                tasks.append(self._show_image_worker(id_, x, out_dir=out_dir,
-                                                     return_image_data=return_image_data,
-                                                     _session=session,
-                                                     _success_queue=success_queue,
-                                                     _failure_queue=failure_queue))
+                tasks.append(
+                    self._bound_show_image_worker(id_, x, out_dir=out_dir,
+                                                  return_image_data=return_image_data,
+                                                  _session=session,
+                                                  _success_queue=success_queue,
+                                                  _failure_queue=failure_queue))
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
         failed = self._get_all_items(failure_queue)
 
         return succeeded, failed
+
+    async def _bound_show_image_worker(self, *args, **kwargs):
+        async with self._async_semaphore:
+            return await self._show_image_worker(*args, **kwargs)
 
     async def _show_image_worker(self, id_, data, out_dir=None, return_image_data=False,
                                  _session=None, _success_queue=None, _failure_queue=None):

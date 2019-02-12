@@ -91,16 +91,21 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             tasks = []
             for data in assets:
-                tasks.append(self._add_image_worker(collection_id, data,
-                                                    _session=session,
-                                                    _success_queue=success_queue,
-                                                    _failure_queue=failure_queue))
+                tasks.append(
+                    self._bound_add_image_worker(collection_id, data,
+                                                 _session=session,
+                                                 _success_queue=success_queue,
+                                                 _failure_queue=failure_queue))
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
         failed = self._get_all_items(failure_queue)
 
         return succeeded, failed
+
+    async def _bound_add_image_worker(self, *args, **kwargs):
+        async with self._async_semaphore:
+            return await self._add_image_worker(*args, **kwargs)
 
     async def _add_image_worker(self, collection_id, data, _session=None,
                                 _success_queue=None, _failure_queue=None):
@@ -341,7 +346,8 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             tasks = []
             for name in names:
-                tasks.append(self._add_image_worker(collection_id, name,
+                tasks.append(
+                    self._bound_remove_image_worker(collection_id, name,
                                                     _session=session,
                                                     _success_queue=success_queue,
                                                     _failure_queue=failure_queue))
@@ -351,6 +357,10 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         failed = self._get_all_items(failure_queue)
 
         return succeeded, failed
+
+    async def _bound_remove_image_worker(self, *args, **kwargs):
+        async with self._async_semaphore:
+            return await self._remove_image_worker(*args, **kwargs)
 
     async def _remove_image_worker(self, collection_id, name, _session=None,
                                    _success_queue=None, _failure_queue=None):
