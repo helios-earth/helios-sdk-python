@@ -72,7 +72,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
         return AlertsFeatureCollection(content), failed
 
-    async def show_async(self, alert_ids):
+    async def show(self, alert_ids):
         """
         Get attributes for alerts.
 
