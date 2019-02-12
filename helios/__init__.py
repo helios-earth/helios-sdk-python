@@ -2,7 +2,10 @@
 import logging
 
 # Load configuration first.
-from .core.config import CONFIG
+from .core.config import config, load_config
+
+load_config()
+
 from . import core
 from . import utilities
 from .alerts_api import Alerts

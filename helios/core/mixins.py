@@ -10,7 +10,7 @@ from math import ceil
 
 from PIL import Image
 
-from helios import CONFIG
+from helios import config
 from helios.core.session import Session
 from helios.core.structure import ImageRecord, Record
 from helios.utilities import logging_utils, parsing_utils
@@ -24,8 +24,8 @@ class SDKCore(object):
 
     This class must be inherited by any additional Core API classes.
     """
-    _max_threads = CONFIG['general']['max_threads']
-    _async_max_tasks = 500
+    _max_concurrency = config['max_concurrency']
+    _verify_ssl = config['ssl_verify']
 
     def __init__(self, session=None):
         """
@@ -43,7 +43,7 @@ class SDKCore(object):
         """
 
         # Create async semaphore for concurrency limit.
-        self._async_semaphore = asyncio.Semaphore(value=self._async_max_tasks)
+        self._async_semaphore = asyncio.Semaphore(value=self._max_concurrency)
 
         # Start session or use custom session.
         if session is None:

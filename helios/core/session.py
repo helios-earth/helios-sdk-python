@@ -6,7 +6,7 @@ import tempfile
 
 import requests
 
-from helios import CONFIG
+from helios import config
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +46,8 @@ class Session(object):
 
     """
 
-    ssl_verify = CONFIG['requests']['ssl_verify']
-    token_expiration_threshold = CONFIG['session']['token_expiration_threshold']
+    ssl_verify = config['ssl_verify']
+    token_expiration_threshold = config['token_expiration_threshold']
 
     _default_api_url = r'https://api.helios.earth/v1'
     _default_base_dir = os.path.join(os.path.expanduser('~'), '.helios')
