@@ -11,7 +11,6 @@ from math import ceil
 from PIL import Image
 
 from helios import CONFIG
-from helios.core.request_manager import RequestManager
 from helios.core.session import Session
 from helios.core.structure import ImageRecord, Record
 from helios.utilities import logging_utils, parsing_utils
@@ -59,10 +58,6 @@ class SDKCore(object):
         self._auth_header = {
             self._session.token['name']: self._session.token['value']
         }
-
-        # Create request manager to handle all API requests.
-        self._request_manager = RequestManager(self._session.token,
-                                               pool_maxsize=self._max_threads)
 
     @property
     def _base_api_url(self):
