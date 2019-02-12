@@ -127,8 +127,11 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                                      collection_id)
 
         try:
-            async with _session.post(post_url, headers=header, data=data,
-                                     raise_for_status=True) as resp:
+            async with _session.post(post_url,
+                                     headers=header,
+                                     data=data,
+                                     raise_for_status=True,
+                                     ssl=self._ssl_verify) as resp:
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to POST %s.', post_url)
@@ -197,8 +200,11 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         post_url = '{}/{}'.format(self._base_api_url, self._core_api)
 
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.post(post_url, headers=header, data=payload,
-                                    raise_for_status=True) as resp:
+            async with session.post(post_url,
+                                    headers=header,
+                                    data=payload,
+                                    raise_for_status=True,
+                                    ssl=self._ssl_verify) as resp:
                 resp_json = await resp.json()
 
         return resp_json['collection_id']
@@ -225,7 +231,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                     collection_id)
 
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.delete(del_url, raise_for_status=True) as resp:
+            async with session.delete(del_url,
+                                      raise_for_status=True,
+                                      ssl=self._ssl_verify) as resp:
                 return await resp.json()
 
     @logging_utils.log_entrance_exit
@@ -246,7 +254,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                              collection_id)
 
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.delete(empty_url, raise_for_status=True) as resp:
+            async with session.delete(empty_url,
+                                      raise_for_status=True,
+                                      ssl=self._ssl_verify) as resp:
                 return await resp.json()
 
     @logging_utils.log_entrance_exit
@@ -381,7 +391,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                               name)
 
         try:
-            async with _session.delete(del_url, raise_for_status=True) as resp:
+            async with _session.delete(del_url,
+                                       raise_for_status=True,
+                                       ssl=self._ssl_verify) as resp:
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to DELETE %s.', del_url)
@@ -425,7 +437,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                          params_str)
 
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.get(query_str, raise_for_status=True) as resp:
+            async with session.get(query_str,
+                                   raise_for_status=True,
+                                   ssl=self._ssl_verify) as resp:
                 resp_json = await resp.json()
 
         return CollectionsFeature(resp_json)
@@ -491,8 +505,11 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                                       collections_id)
 
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.patch(patch_url, data=parms, headers=header,
-                                     raise_for_status=True) as resp:
+            async with session.patch(patch_url,
+                                     data=parms,
+                                     headers=header,
+                                     raise_for_status=True,
+                                     ssl=self._ssl_verify) as resp:
                 return await resp.json()
 
 

@@ -70,7 +70,9 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                                                                       limit)
                 # Get image times available.
                 try:
-                    async with session.get(query_str, raise_for_status=True) as resp:
+                    async with session.get(query_str,
+                                           raise_for_status=True,
+                                           ssl=self._ssl_verify) as resp:
                         resp_json = await resp.json()
                 except aiohttp.ClientError:
                     logger.exception('Failed to GET %s.', query_str)

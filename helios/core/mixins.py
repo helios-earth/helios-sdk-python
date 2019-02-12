@@ -25,7 +25,7 @@ class SDKCore(object):
     This class must be inherited by any additional Core API classes.
     """
     _max_concurrency = config['max_concurrency']
-    _verify_ssl = config['ssl_verify']
+    _ssl_verify = config['ssl_verify']
 
     def __init__(self, session=None):
         """
@@ -155,7 +155,9 @@ class IndexMixin(object):
                                                       initial_call.limit,
                                                       initial_call.skip)
             try:
-                async with session.get(initial_query, raise_for_status=True) as resp:
+                async with session.get(initial_query,
+                                       raise_for_status=True,
+                                       ssl=self._ssl_verify) as resp:
                     initial_resp = Record(query=initial_query, content=await resp.json())
             except aiohttp.ClientError:
                 logger.exception('First index query failed. Unable to continue.')
@@ -250,7 +252,9 @@ class IndexMixin(object):
         query_str = self._index_query_builder(index_kwargs, limit, skip)
 
         try:
-            async with _session.get(query_str, raise_for_status=True) as resp:
+            async with _session.get(query_str,
+                                    raise_for_status=True,
+                                    ssl=self._ssl_verify) as resp:
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
@@ -304,7 +308,9 @@ class ShowMixin(object):
         query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, id_)
 
         try:
-            async with _session.get(query_str, raise_for_status=True) as resp:
+            async with _session.get(query_str,
+                                    raise_for_status=True,
+                                    ssl=self._ssl_verify) as resp:
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
@@ -372,7 +378,9 @@ class ShowImageMixin(object):
                                                 data)
 
         try:
-            async with _session.get(query_str, raise_for_status=True) as resp:
+            async with _session.get(query_str,
+                                    raise_for_status=True,
+                                    ssl=self._ssl_verify) as resp:
                 image_content = await resp.read()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)

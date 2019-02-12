@@ -160,7 +160,9 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                                               observation_id)
 
         try:
-            async with _session.get(query_str, raise_for_status=True) as resp:
+            async with _session.get(query_str,
+                                    raise_for_status=True,
+                                    ssl=self._ssl_verify) as resp:
                 image_content = await resp.read()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
