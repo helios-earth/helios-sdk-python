@@ -44,9 +44,7 @@ def concatenate_feature_collections(fc_tuple):
 
     # Gather all features and records from each feature collection.
     features = []
-    records = []
     for fc in fc_tuple:
         features.extend(fc.features)
-        records.extend(fc.records._records)
 
-    return fc_alias(features, records=records)
+    return fc_alias(features)
