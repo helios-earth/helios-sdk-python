@@ -30,7 +30,7 @@ def _handle_bool_env(value):
     elif value == '0':
         return False
     elif value == '1':
-        return False
+        return True
     elif value.lower() == 'none':
         return None
     else:
