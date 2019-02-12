@@ -14,9 +14,6 @@ from .collections_api import Collections
 from .core.session import Session
 from .observations_api import Observations
 
-# Set default logging handler to avoid "No handler found" warnings.
-logging.getLogger(__name__).addHandler(logging.NullHandler())
-
 
 def add_stderr_logger(level=logging.DEBUG):
     """
