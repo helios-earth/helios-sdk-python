@@ -212,16 +212,37 @@ class CamerasFeature(object):
     def __init__(self, feature):
         self.json = feature
 
-        # Use dict.get built-in to guarantee all values will be initialized.
-        self.city = feature['properties'].get('city')
-        self.coordinates = feature['geometry'].get('coordinates')
-        self.country = feature['properties'].get('country')
-        self.description = feature['properties'].get('description')
-        self.direction = feature['properties'].get('direction')
-        self.id = feature.get('id')
-        self.region = feature['properties'].get('region')
-        self.state = feature['properties'].get('state')
-        self.video = feature['properties'].get('video')
+    @property
+    def city(self):
+        return self.json['properties'].get('city')
+
+    @property
+    def coordinates(self):
+        return self.json['geometry'].get('coordinates')
+
+    @property
+    def country(self):
+        return self.json['properties'].get('country')
+
+    @property
+    def description(self):
+        return self.json['properties'].get('description')
+
+    @property
+    def direction(self):
+        return self.json['properties'].get('direction')
+
+    @property
+    def id(self):
+        return self.json.get('id')
+
+    @property
+    def region(self):
+        return self.json['properties'].get('region')
+
+    @property
+    def state(self):
+        return self.json['properties'].get('state')
 
 
 class CamerasFeatureCollection(object):
@@ -283,8 +304,3 @@ class CamerasFeatureCollection(object):
     def state(self):
         """'state' values for every feature."""
         return [x.state for x in self.features]
-
-    @property
-    def video(self):
-        """'video' values for every feature."""
-        return [x.video for x in self.features]

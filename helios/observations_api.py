@@ -251,16 +251,41 @@ class ObservationsFeature(object):
     def __init__(self, feature):
         self.json = feature
 
-        # Use dict.get built-in to guarantee all values will be initialized.
-        self.city = feature['properties'].get('city')
-        self.country = feature['properties'].get('country')
-        self.description = feature['properties'].get('description')
-        self.id = feature.get('id')
-        self.prev_id = feature['properties'].get('prev_id')
-        self.region = feature['properties'].get('region')
-        self.sensors = feature['properties'].get('sensors')
-        self.state = feature['properties'].get('state')
-        self.time = feature['properties'].get('time')
+    @property
+    def city(self):
+        return self.json['properties'].get('city')
+
+    @property
+    def country(self):
+        return self.json['properties'].get('country')
+
+    @property
+    def description(self):
+        return self.json['properties'].get('description')
+
+    @property
+    def id(self):
+        return self.json.get('id')
+
+    @property
+    def prev_id(self):
+        return self.json['properties'].get('prev_id')
+
+    @property
+    def region(self):
+        return self.json['properties'].get('region')
+
+    @property
+    def sensors(self):
+        return self.json['properties'].get('sensors')
+
+    @property
+    def state(self):
+        return self.json['properties'].get('state')
+
+    @property
+    def time(self):
+        return self.json['properties'].get('time')
 
 
 class ObservationsFeatureCollection(object):

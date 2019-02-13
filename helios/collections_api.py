@@ -556,16 +556,41 @@ class CollectionsFeature(object):
     def __init__(self, feature):
         self.json = feature
 
-        # Use dict.get built-in to guarantee all values will be initialized.
-        self.bucket = feature.get('bucket')
-        self.created_at = feature.get('created_at')
-        self.description = feature.get('description')
-        self.id = feature.get('_id')
-        self.images = feature.get('images')
-        self.name = feature.get('name')
-        self.tags = feature.get('tags')
-        self.updated_at = feature.get('updated_at')
-        self.user_id = feature.get('user_id')
+    @property
+    def bucket(self):
+        return self.json.get('bucket')
+
+    @property
+    def created_at(self):
+        return self.json.get('created_at')
+
+    @property
+    def description(self):
+        return self.json.get('description')
+
+    @property
+    def id(self):
+        return self.json.get('_id')
+
+    @property
+    def images(self):
+        return self.json.get('images')
+
+    @property
+    def name(self):
+        return self.json.get('name')
+
+    @property
+    def tags(self):
+        return self.json.get('tags')
+
+    @property
+    def updated_at(self):
+        return self.json.get('updated_at')
+
+    @property
+    def user_id(self):
+        return self.json.get('user_id')
 
 
 class CollectionsFeatureCollection(object):

@@ -121,23 +121,69 @@ class AlertsFeature(object):
     def __init__(self, feature):
         self.json = feature
 
-        # Use dict.get built-in to guarantee all values will be initialized.
-        self.area_description = feature['properties'].get('areaDesc')
-        self.bbox = feature.get('bbox')
-        self.category = feature['properties'].get('category')
-        self.certainty = feature['properties'].get('certainty')
-        self.country = feature['properties'].get('country')
-        self.description = feature['properties'].get('description')
-        self.effective = feature['properties'].get('effective')
-        self.event = feature['properties'].get('event')
-        self.expires = feature['properties'].get('expires')
-        self.headline = feature['properties'].get('headline')
-        self.id = feature.get('id')
-        self.origin = feature['properties'].get('origin')
-        self.severity = feature['properties'].get('severity')
-        self.states = feature['properties'].get('states')
-        self.status = feature['properties'].get('status')
-        self.urgency = feature['properties'].get('urgency')
+    @property
+    def area_description(self):
+        return self.json['properties'].get('areaDesc')
+
+    @property
+    def bbox(self):
+        return self.json.get('bbox')
+
+    @property
+    def category(self):
+        return self.json['properties'].get('category')
+
+    @property
+    def certainty(self):
+        return self.json['properties'].get('certainty')
+
+    @property
+    def country(self):
+        return self.json['properties'].get('country')
+
+    @property
+    def description(self):
+        return self.json['properties'].get('description')
+
+    @property
+    def effective(self):
+        return self.json['properties'].get('effective')
+
+    @property
+    def event(self):
+        return self.json['properties'].get('event')
+
+    @property
+    def expires(self):
+        return self.json['properties'].get('expires')
+
+    @property
+    def headline(self):
+        return self.json['properties'].get('headline')
+
+    @property
+    def id(self):
+        return self.json.get('id')
+
+    @property
+    def origin(self):
+        return self.json['properties'].get('origin')
+
+    @property
+    def severity(self):
+        return self.json['properties'].get('severity')
+
+    @property
+    def states(self):
+        return self.json['properties'].get('states')
+
+    @property
+    def status(self):
+        return self.json['properties'].get('status')
+
+    @property
+    def urgency(self):
+        return self.json['properties'].get('urgency')
 
 
 class AlertsFeatureCollection(object):
