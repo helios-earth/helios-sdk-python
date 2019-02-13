@@ -167,7 +167,13 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         # Get the collection metadata that needs to be copied.
         query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, collection_id)
-        metadata = self._request_manager.get(query_str).json()
+        async with aiohttp.ClientSession(headers=self._auth_header) as sess:
+            try:
+                async with sess.get(query_str, raise_for_status=True) as resp:
+                    metadata = await resp.json()
+            except Exception:
+                logger.exception('Failed to GET collection metadata. %s', query_str)
+                raise
 
         # Get the images that exist in the collection.
         image_names = await self.images(collection_id)
