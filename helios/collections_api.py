@@ -31,17 +31,17 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
     _core_api = 'collections'
 
-    def __init__(self, session=None):
+    def __init__(self, session):
         """
         Initialize Collection instance.
 
         Args:
-            session (helios.Session object, optional): An instance of the
+            session (helios.HeliosSession): An instance of the
                 Session. Defaults to None. If unused a session will be
                 created for you.
 
         """
-        super(Collections, self).__init__(session=session)
+        super(Collections, self).__init__(session)
 
     @logging_utils.log_entrance_exit
     async def add_image(self, collection_id, assets):
@@ -53,22 +53,23 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         .. code-block:: python
 
             # Asset examples that can be included in the `assets` input list.
-            {'camera_id': ''}
-            {'camera_id': '', 'time': ''}
-            {'observation_id': ''}
-            {'collection_is': '', 'image': ''}
+            data = {'camera_id': ''}
+            data = {'camera_id': '', 'time': ''}
+            data = {'observation_id': ''}
+            data = {'collection_is': '', 'image': ''}
 
         Usage example:
 
         .. code-block:: python
 
             import helios
-            collections = helios.Collections()
-            camera_id = '...'
-            times = [...] # List of image times.
-            destination_id = '...'
-            data = [{'camera_id': camera_id, 'time': x} for x in times]
-            collections.add_image(destination_id, data)
+            async with helios.HeliosSession() as sess:
+                coll_inst = helios.Collections(sess)
+                camera_id = '...'
+                times = [...] # List of image times.
+                destination_id = '...'
+                data = [{'camera_id': camera_id, 'time': x} for x in times]
+                results, failures = await coll_inst.add_image(destination_id, data)
 
         Args:
             collection_id (str): Collection ID.
@@ -78,7 +79,11 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
 
         Returns:
-            :class:`RecordCollection <helios.core.structure.RecordCollection>`
+            tuple: A tuple containing:
+                succeeded (list of :class:`Record <helios.core.structure.Record>`):
+                    Successful API call records.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API call records.
 
         """
 
@@ -337,7 +342,11 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             **kwargs: Any keyword arguments found in the collections_index_documentation_.
 
         Returns:
-             :class:`CollectionsFeatureCollection <helios.collections_api.CollectionsFeatureCollection>`
+            tuple: A tuple containing:
+                feature_collection (:class:`CollectionsFeatureCollection <helios.collections_api.CollectionsFeatureCollection>`):
+                    Collections feature collection.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API call records.
 
         """
         succeeded, failed = await super(Collections, self).index(**kwargs)
@@ -359,7 +368,11 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             names (str or list of strs): List of image names to be removed.
 
         Returns:
-            :class:`RecordCollection <helios.core.structure.RecordCollection>`
+            tuple: A tuple containing:
+                succeeded (list of :class:`Record <helios.core.structure.Record>`):
+                    Successful API call records.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API call records.
 
         """
         if not isinstance(names, (list, tuple)):
@@ -446,7 +459,8 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 matching result will be the first image returned.
 
         Returns:
-            :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`
+            :class:`CollectionsFeature <helios.collections_api.CollectionsFeature>`:
+                A single collection feature.
 
         """
         if not isinstance(collection_id, str):
@@ -483,7 +497,11 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            :class:`ImageCollection <helios.core.structure.ImageCollection>`
+            tuple: A tuple containing:
+                image_collection (:class:`ImageCollection <helios.core.structure.ImageCollection>`):
+                    All received images.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API calls.
 
         """
         succeeded, failed = await super(Collections, self).show_image(
@@ -506,6 +524,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             description (str, optional): Description to be changed to.
             tags (str or list of strs, optional): Optional comma-delimited
                 keyword tags to be changed to.
+
+        Returns:
+            dict: Json response.
 
         """
         if name is None and description is None and tags is None:

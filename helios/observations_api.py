@@ -31,17 +31,17 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
     _core_api = 'observations'
 
-    def __init__(self, session=None):
+    def __init__(self, session):
         """
         Initialize Observations instance.
 
         Args:
-            session (helios.Session object, optional): An instance of the
+            session (helios.HeliosSession): An instance of the
                 Session. Defaults to None. If unused a session will be
                 created for you.
 
         """
-        super(Observations, self).__init__(session=session)
+        super(Observations, self).__init__(session)
 
     async def index(self, **kwargs):
         """
@@ -56,23 +56,25 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         .. code-block:: python
 
             import helios
-            obs = helios.Observations()
-            state = 'Maryland'
-            bbox = [-169.352,1.137,-1.690,64.008]
-            sensors = 'sensors[visibility][min]=0&sensors[visibility][max]=1'
-            results = obs.index(state=state,
-                                bbox=bbox,
-                                sensors=sensors)
+            async with helios.HeliosSession() as sess:
+                obs_inst = helios.Observations(sess)
+                state = 'Maryland'
+                bbox = [-169.352,1.137,-1.690,64.008]
+                sensors = 'sensors[visibility][min]=0&sensors[visibility][max]=1'
+                results, failures = await obs.index(state=state,
+                                                    bbox=bbox,
+                                                    sensors=sensors)
 
         Usage example for transitions:
 
         .. code-block:: python
 
             import helios
-            obs = helios.Observations()
-            # transition from dry/wet to partial/fully-covered snow roads
-            sensors = 'sensors[road_weather][data][min]=6&sensors[road_weather][prev][max]=3'
-            results = obs.index(sensors=sensors_query)
+            async with helios.HeliosSession() as sess:
+                obs_inst = helios.Observations(sess)
+                # transition from dry/wet to partial/fully-covered snow roads
+                sensors = 'sensors[road_weather][data][min]=6&sensors[road_weather][prev][max]=3'
+                results, failures = await obs.index(sensors=sensors_query)
 
         .. _observations_index_documentation: https://helios.earth/developers/api/observations/#index
 
@@ -81,7 +83,11 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 observations_index_documentation_.
 
         Returns:
-             :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`
+            tuple: A tuple containing:
+                feature_collection (:class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`):
+                    Observations feature collection.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API call records.
 
         """
 
@@ -107,7 +113,11 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 as numpy.ndarrays.  Defaults to False.
 
         Returns:
-            :class:`ImageCollection <helios.core.structure.ImageCollection>`
+            tuple: A tuple containing:
+                image_collection (:class:`ImageCollection <helios.core.structure.ImageCollection>`):
+                    All received images.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API calls.
 
         """
 
@@ -152,6 +162,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         _failure_queue=None,
     ):
         """
+        Handles preview calls.
 
         Args:
             observation_id (str): Observation ID.
@@ -161,8 +172,6 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             _session (aiohttp.ClientSession): Session instance.
             _success_queue (asyncio.Queue): Queue for successful calls.
             _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
-
-        Returns:
 
         """
 
@@ -217,7 +226,11 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             observation_ids (str or list of strs): Helios observation ID(s).
 
         Returns:
-            :class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`
+            tuple: A tuple containing:
+                feature_collection (:class:`ObservationsFeatureCollection <helios.observations_api.ObservationsFeatureCollection>`):
+                    Observations feature collection.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API call records.
 
         """
 

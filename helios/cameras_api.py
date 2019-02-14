@@ -21,17 +21,17 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
     _core_api = 'cameras'
 
-    def __init__(self, session=None):
+    def __init__(self, session):
         """
         Initialize Cameras instance.
 
         Args:
-            session (helios.Session object, optional): An instance of the
+            session (helios.HeliosSession): An instance of the
                 Session. Defaults to None. If unused a session will be
                 created for you.
 
         """
-        super(Cameras, self).__init__(session=session)
+        super(Cameras, self).__init__(session)
 
     @logging_utils.log_entrance_exit
     async def images(self, camera_id, start_time, end_time=None, limit=500):
@@ -130,7 +130,11 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             **kwargs: Any keyword arguments found in the cameras_index_documentation_.
 
         Returns:
-             :class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`
+            tuple: A tuple containing:
+                feature_collection (:class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`):
+                    Cameras feature collection.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API call records.
 
         """
 
@@ -151,7 +155,11 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             camera_ids (str or list of strs): Helios camera ID(s).
 
         Returns:
-            :class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`
+            tuple: A tuple containing:
+                feature_collection (:class:`CamerasFeatureCollection <helios.cameras_api.CamerasFeatureCollection>`):
+                    Cameras feature collection.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API call records.
 
         """
 
@@ -181,7 +189,11 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 returned.
 
         Returns:
-            :class:`ImageCollection <helios.core.structure.ImageCollection>`
+            tuple: A tuple containing:
+                image_collection (:class:`ImageCollection <helios.core.structure.ImageCollection>`):
+                    All received images.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API calls.
 
         """
 

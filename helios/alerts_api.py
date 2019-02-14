@@ -33,17 +33,15 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
     _core_api = 'alerts'
 
-    def __init__(self, session=None):
+    def __init__(self, session):
         """
         Initialize Alerts instance.
 
         Args:
-            session (helios.Session object, optional): An instance of the
-                Session. Defaults to None. If unused a session will be
-                created for you.
+            session (helios.HeliosSession): A HeliosSession instance.
 
         """
-        super(Alerts, self).__init__(session=session)
+        super(Alerts, self).__init__(session)
 
     async def index(self, **kwargs):
         """
@@ -59,7 +57,11 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             **kwargs: Any keyword arguments found in the alerts_index_documentation_.
 
         Returns:
-             :class:`AlertsFeatureCollection <helios.alerts_api.AlertsFeatureCollection>`
+            tuple: A tuple containing:
+                feature_collection (:class:`AlertsFeatureCollection <helios.alerts_api.AlertsFeatureCollection>`):
+                    Alerts feature collection.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API call records.
 
         """
 
@@ -80,7 +82,11 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             alert_ids (str or list of strs): Helios alert ID(s).
 
         Returns:
-            :class:`AlertsFeatureCollection <helios.alerts_api.AlertsFeatureCollection>`
+            tuple: A tuple containing:
+                feature_collection (:class:`AlertsFeatureCollection <helios.alerts_api.AlertsFeatureCollection>`):
+                    Alerts feature collection.
+                failed (list of :class:`Record <helios.core.structure.Record>`):
+                    Failed API call records.
 
         """
 
