@@ -611,9 +611,8 @@ class CollectionsFeatureCollection(object):
 
     """
 
-    def __init__(self, features, records=None):
+    def __init__(self, features):
         self.features = features
-        self.records = RecordCollection(records=records)
 
     @property
     def bucket(self):
