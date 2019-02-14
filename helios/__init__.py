@@ -1,17 +1,11 @@
 """Use the Helios APIs in Python"""
 import logging
-
-# Load configuration first.
-from .core.config import config, load_config
-
-load_config()
-
 from . import core
 from . import utilities
 from .alerts_api import Alerts
 from .cameras_api import Cameras
 from .collections_api import Collections
-from .core.session import Session
+from .core.session import HeliosSession
 from .observations_api import Observations
 
 

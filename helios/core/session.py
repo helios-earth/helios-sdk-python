@@ -1,115 +1,152 @@
 """Manager for the authorization token required to access the Helios API."""
+import asyncio
 import json
 import logging
 import os
-import tempfile
 
-import requests
-
-from helios import config
+import aiofiles
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
+# Defaults
+_DEFAULT_API_URL = r'https://api.helios.earth/v1'
+_DEFAULT_BASE_DIR = os.path.join(os.path.expanduser('~'), '.helios')
 
-class Session(object):
-    """Manages API tokens for authentication.
 
-    Authentication credentials can be specified using the env input parameter,
-    environment variables, or a credentials.json file in your ~/.helios
-    directory.  See the official documentation for more authentication
-    information.
+class HeliosSession:
+    """
+    Handles parameters for Helios APIs.
 
-    Required keys:
-        - helios_client_id: Client ID from API key pair.
-        - helios_client_secret: Client Secret ID from API key pair.
-    Optional keys:
-        - helios_api_url: Optional, URL for API endpoint.
-
-    A session can be established and reused for multiple core API instances.
+    The Helios session supports the context manager protocol for initiating
+    a session:
 
     .. code-block:: python
 
         import helios
-        sess = helios.Session()
-        alerts = helios.Alerts(session=sess)
-        cameras = helios.Cameras(session=sess)
+        async with helios.HeliosSession() as sess:
+            alerts_inst = helios.Alerts(sess)
 
-    If a session is not specified before hand, one will be initialized
-    automatically.  This is less efficient because each core API instance
-    will try to initialize a session.
+    Also, for creating and storing a session instance:
 
     .. code-block:: python
 
         import helios
-        alerts = helios.Alerts()
-        cameras = helios.Cameras()
+        sess = helios.HeliosSession()
+        await sess.start_session() # Must manually start the session.
+        alerts_inst = helios.Alerts(sess)
+
+    Args:
+        client_id (str, optional): API key ID.
+        client_secret (str, optional): API key secret.
+        api_url (str, optional): Override the default API URL.
+        base_directory (str, optional): Override the base directory for
+            storage of tokens and credentials.json file.
+        max_concurrency (int, optional): The maximum concurrency allowed for
+            batch calls. Defaults to 500.
+        token_expiration_threshold (int, optional): The number of minutes
+            to allow before token expiration.  E.g. if the token will expire
+            in 29 minutes and the threshold is set to 30, a new token will
+            be acquired because expiration time is below the threshold.
+        ssl_verify (bool, optional): Use SSL verification for all HTTP
+            requests.  Defaults to True.
+
+    Attributes:
+        auth_header (dict): Authentication header for HTTP requests.
+        token (dict): API token.
+        client_id (str): API key ID.
+        client_secret (str): API key secret.
+        api_url (str): API URL.
+        max_concurrency (int): Maximum concurrency allowed.
 
     """
 
-    ssl_verify = config['ssl_verify']
-    token_expiration_threshold = config['token_expiration_threshold']
+    def __init__(
+        self,
+        client_id=None,
+        client_secret=None,
+        api_url=None,
+        base_directory=None,
+        max_concurrency=500,
+        token_expiration_threshold=60,
+        ssl_verify=True,
+    ):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.api_url = api_url
+        self.max_concurrency = max_concurrency
+        self.ssl_verify = ssl_verify
 
-    _default_api_url = r'https://api.helios.earth/v1'
-    _default_base_dir = os.path.join(os.path.expanduser('~'), '.helios')
+        self._token_expiration_threshold = token_expiration_threshold
+        self._base_directory = base_directory
 
-    def __init__(self, env=None):
-        """Initialize Helios Session.
-
-        Args:
-            env (dict): Dictionary containing 'helios_client_id',
-                'helios_client_secret', and optionally 'helios_api_url'.
-                This will override any information in credentials.json and
-                environment variables.
-
-        """
-        # Establish necessary files/directories.
-        self._base_dir = None
-        self._credentials_file = None
-        self._token_dir = None
-        self._verify_directories()
-
-        # The token will be established with a call to the start_session method.
+        # The following will be established upon entering a session.
+        self.auth_header = None
         self.token = None
+        self._token_file = None
+        self._token_dir = None
 
-        # Use custom credentials.
-        if env is not None:
-            logger.info('Using custom env for session.')
-            data = env
-        # Read credentials from environment.
-        elif 'helios_client_id' in os.environ and 'helios_client_secret' in os.environ:
-            logger.info('Using environment variables for session.')
+        if self._base_directory is None:
+            self._base_directory = _DEFAULT_BASE_DIR
+
+        if None in (self.client_id, self.client_secret):
+            self._get_credentials()
+
+        if self.api_url is None:
+            self.api_url = _DEFAULT_API_URL
+        else:
+            self.api_url = self.api_url.rstrip('/')
+
+        # Create async semaphore for concurrency limit.
+        self.async_semaphore = asyncio.Semaphore(value=self.max_concurrency)
+
+    def _get_credentials(self):
+        """Handles the various methods for referencing API credentials."""
+        if self._base_directory is None:
+            self._base_directory = _DEFAULT_BASE_DIR
+
+        if 'helios_client_id' in os.environ and 'helios_client_secret' in os.environ:
+            logger.info('Credentials found in environment variables.')
             data = os.environ
-        # Read credentials from file.
-        elif os.path.exists(self._credentials_file):
-            logger.info('Using credentials file for session.')
-            with open(self._credentials_file, 'r') as auth_file:
-                data = json.load(auth_file)
+        elif os.path.exists(os.path.join(self._base_directory, 'credentials.json')):
+            self._credentials_file = os.path.join(
+                self._base_directory, 'credentials.json'
+            )
+            logger.info('Credentials found in credentials.json file.')
+            with open(self._credentials_file, 'r') as f:
+                data = json.load(f)
         else:
             raise Exception(
                 'No credentials could be found. Be sure to '
                 'set environment variables or create a '
                 'credentials file.'
             )
+        self.client_id = data['helios_client_id']
+        self.client_secret = data['helios_client_secret']
+        if self.api_url is None:
+            self.api_url = data.get('helios_api_url')
 
-        # Extract relevant authentication information from data.
-        self._key_id = data['helios_client_id']
-        self._key_secret = data['helios_client_secret']
-        self.api_url = data.get('helios_api_url') or self._default_api_url
-        self.api_url = self.api_url.rstrip('/')
+    async def _read_token(self):
+        """Reads token from file."""
+        async with aiofiles.open(self._token_file, mode='r') as f:
+            self.token = json.loads(await f.read())
 
-        # Create token filename based on authentication ID.
-        self._token_file = os.path.join(self._token_dir, self._key_id + '.helios_token')
+    async def _write_token(self):
+        """Writes token to file."""
+        if not os.path.exists(self._token_dir):
+            os.makedirs(self._token_dir)
+        try:
+            async with aiofiles.open(self._token_file, mode='w') as f:
+                await f.write(json.dumps(self.token))
+        except Exception:
+            # Prevent a bad token file from persisting after an exception.
+            if os.path.exists(self._token_file):
+                os.remove(self._token_file)
+            raise
 
-        # Finally, start the session.
-        self.start_session()
-
-    def _delete_token(self):
-        """Deletes token file."""
-        os.remove(self._token_file)
-
-    def _get_token(self):
+    async def _get_new_token(self):
         """
-        Gets a fresh token.
+        Gets a fresh token and saves it.
 
         The token will be acquired and then written to file for reuse. If the
         request fails over https, http will be used as a fallback.
@@ -118,115 +155,31 @@ class Session(object):
         logger.info('Acquiring a new token.')
 
         token_url = self.api_url + '/oauth/token'
-        data = {'grant_type': 'client_credentials'}
-        auth = (self._key_id, self._key_secret)
-        try:
-            resp = requests.post(
-                token_url, data=data, auth=auth, verify=self.ssl_verify
-            )
-            resp.raise_for_status()
-        except requests.exceptions.HTTPError:
-            logger.warning(
-                'Getting token over https failed. Falling back to http.', exc_info=True
-            )
-            resp = requests.post(
-                token_url.replace('https', 'http'),
-                data=data,
-                auth=auth,
-                verify=self.ssl_verify,
-            )
+        data = {
+            'grant_type': 'client_credentials',
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+        }
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    token_url, data=data, ssl=self.ssl_verify, raise_for_status=True
+                ) as resp:
+                    json_resp = await resp.json()
+            except Exception:
+                logger.exception('Failed to acquire token.')
+                raise
 
-        # If the token cannot be acquired raise exception.
-        try:
-            resp.raise_for_status()
-        except requests.exceptions.RequestException:
-            logger.exception('Failed to acquire token.')
-            raise
-
-        token_request = resp.json()
         self.token = {
             'name': 'Authorization',
-            'value': 'Bearer ' + token_request['access_token'],
+            'value': 'Bearer ' + json_resp['access_token'],
         }
+
+        await self._write_token()
 
         logger.info('Successfully acquired new token.')
 
-    def _read_token_file(self):
-        """Reads token from file."""
-        with open(self._token_file, 'r') as token_file:
-            self.token = json.load(token_file)
-
-    def _verify_directories(self):
-        """Verifies essential directories."""
-
-        # Explicitly check for write capability.
-        # Provides a fall back to the default temp directory.
-        base_dir = self._default_base_dir
-        write_test_file = os.path.join(base_dir, 'temp_file.tmp')
-        try:
-            if os.path.exists(base_dir):
-                with open(write_test_file, 'w+') as _:
-                    pass
-            else:
-                os.makedirs(base_dir)
-        except (IOError, OSError):
-            base_dir = tempfile.gettempdir()
-            logger.warning(
-                'Could not write to %s. Falling back to %s',
-                self._default_base_dir,
-                base_dir,
-            )
-        finally:
-            if os.path.exists(write_test_file):
-                os.remove(write_test_file)
-
-        # Establish paths.
-        self._base_dir = base_dir
-        self._token_dir = os.path.join(self._base_dir, '.tokens')
-        self._credentials_file = os.path.join(self._base_dir, 'credentials.json')
-
-        if not os.path.exists(self._base_dir):
-            os.makedirs(self._base_dir)
-
-        if not os.path.exists(self._token_dir):
-            os.makedirs(self._token_dir)
-
-    def _write_token_file(self):
-        """Writes token to file."""
-        try:
-            with open(self._token_file, 'w+') as token_file:
-                json.dump(self.token, token_file)
-        except Exception:
-            # Prevent a bad token file from persisting after an exception.
-            if os.path.exists(self._token_file):
-                os.remove(self._token_file)
-            raise
-
-    def start_session(self):
-        """
-        Begins Helios session.
-
-        This will establish and verify a token for the session.  If a token
-        file exists the token will be read and verified. If the token file
-        doesn't exist or the token has expired then a new token will be
-        acquired.
-
-        """
-        try:
-            self._read_token_file()
-        except (IOError, OSError):
-            logger.warning(
-                'Could not read token (%s). A new token will be acquired.',
-                self._token_file,
-            )
-            self._get_token()
-        else:
-            if not self.verify_token():
-                self._get_token()
-
-        self._write_token_file()
-
-    def verify_token(self):
+    async def verify_token(self):
         """
         Verifies the token.
 
@@ -237,34 +190,68 @@ class Session(object):
             bool: True if current token is valid, False otherwise.
 
         """
-        resp = requests.get(
-            self.api_url + '/session',
-            headers={self.token['name']: self.token['value']},
-            verify=self.ssl_verify,
-        )
 
-        # If the token cannot be verified raise exception.
-        try:
-            resp.raise_for_status()
-        except requests.exceptions.RequestException:
-            logger.exception('Failed to verify token.')
-            raise
-
-        json_resp = resp.json()
+        auth_header = {self.token['name']: self.token['value']}
+        verify_url = self.api_url + '/session'
+        async with aiohttp.ClientSession(headers=auth_header) as session:
+            try:
+                async with session.get(verify_url, ssl=self.ssl_verify) as resp:
+                    json_resp = await resp.json()
+            except Exception:
+                logger.exception('Failed to verify token.')
+                raise
 
         if not json_resp['name'] or not json_resp['expires_in']:
             return False
 
         # Check token expiration time.
         expiration = json_resp['expires_in'] / 60.0
-        if expiration < self.token_expiration_threshold:
+        if expiration < self._token_expiration_threshold:
             logger.warning(
                 'Token expiration (%d) is less than the threshold (%d).',
                 expiration,
-                self.token_expiration_threshold,
+                self._token_expiration_threshold,
             )
             return False
 
         logger.info('Token is valid for %d minutes.', expiration)
 
         return True
+
+    async def start_session(self):
+        """Starts the Helios session by finding a token."""
+
+        # Create token filename based on authentication ID.
+        self._token_dir = os.path.join(self._base_directory, '.tokens')
+        self._token_file = os.path.join(
+            self._token_dir, self.client_id + '.helios_token'
+        )
+
+        try:
+            await self._read_token()
+        except (IOError, OSError):
+            logger.warning(
+                'Could not read token file (%s). A new token will be acquired.',
+                self._token_file,
+            )
+            await self._get_new_token()
+        else:
+            if not await self.verify_token():
+                await self._get_new_token()
+
+        self.auth_header = {self.token['name']: self.token['value']}
+
+    def __enter__(self) -> None:
+        raise TypeError("Use async with instead")
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    async def __aenter__(self):
+        if self.token is None:
+            await self.start_session()
+
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
