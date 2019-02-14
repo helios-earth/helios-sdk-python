@@ -5,14 +5,15 @@ version = '3.0.1'
 
 setup(name='helios-sdk',
       version=version,
-      description='Use the Helios APIs in Python',
+      description='Asynchronous Python SDK for the Helios APIs.',
       author='Michael Bayer',
       author_email='mbayer@harris.com',
       url='https://github.com/harris-helios/helios-sdk-python',
       download_url='https://github.com/harris-helios/'
                    'helios-sdk-python/archive/{}.tar.gz'.format(version),
       license='MIT',
-      install_requires=['requests>=2.0.0',
+      install_requires=['aiohttp>=3.5.0,<4.0.0',
+                        'aiofiles>=0.4.0,<1.0.0',
                         'numpy>=1.13.0',
                         'Pillow>=5.0.0',
                         'python-dateutil>=2.7.0'],
