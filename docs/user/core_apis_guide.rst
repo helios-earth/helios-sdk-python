@@ -6,7 +6,7 @@ Creating Instances
 
 Instances of the core APIs are easy to create.
 
-.. code-block:: python
+.. code-block:: python3
 
     import helios
     async with helios.HeliosSession() as sess:
@@ -28,7 +28,7 @@ be initialized and used outside of `async with`, but care must be taken to make
 a call to the :meth:`start_session <helios.core.session.HeliosSession.start_session>`
 method.
 
-.. code-block:: python
+.. code-block:: python3
 
     import helios
     sess = helios.HeliosSession()
@@ -44,7 +44,7 @@ Examples
 Find alerts
 ~~~~~~~~~~~
 
-.. code-block:: python
+.. code-block:: python3
 
     import helios
     async with helios.HeliosSession() as sess:
@@ -63,7 +63,7 @@ Find alerts
 Find camera times and download images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: python
+.. code-block:: python3
 
     import helios
     import numpy as np
@@ -93,7 +93,7 @@ Find camera times and download images
 Find observations and work with collections
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: python
+.. code-block:: python3
 
     import helios
     import requests

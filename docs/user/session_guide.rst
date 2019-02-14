@@ -22,7 +22,7 @@ straightforward using the `async with` protocol.  Create a
 instance without any inputs.  The authentication information 
 stored on your machine will automatically be applied.
 
-.. code-block:: python
+.. code-block:: python3
 
     import helios
     async with helios.HeliosSession() as sess:
@@ -37,7 +37,7 @@ authentication information needed to being using the core APIs.
 
 Alternatively, you can make a manual call to :meth:`start_session <helios.core.session.HeliosSession.start_session>`.
 
-.. code-block:: python
+.. code-block:: python3
 
     import helios
     sess = helios.HeliosSession()
@@ -60,7 +60,7 @@ with various configuration parameters.
 
 E.g. Limit the maximum concurrency:
 
-.. code-block:: python
+.. code-block:: python3
 
     import helios
     async with helios.HeliosSession(max_concurrency=50) as sess:
@@ -68,7 +68,7 @@ E.g. Limit the maximum concurrency:
 
 E.g. Override the base directory for storing tokens/credentials.json files:
 
-.. code-block:: python
+.. code-block:: python3
 
     import helios
     async with helios.HeliosSession(base_dir='/tmp/custom') as sess:
@@ -77,7 +77,7 @@ E.g. Override the base directory for storing tokens/credentials.json files:
 E.g. Using custom credentials outside of the standard :ref:`authentication`
 methods:
 
-.. code-block:: python
+.. code-block:: python3
 
    helios_client_id = '*your ID key*',
    helios_client_secret = '*your secret key*',

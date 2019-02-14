@@ -50,7 +50,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         `assets` dictionary templates:
 
-        .. code-block:: python
+        .. code-block:: python3
 
             # Asset examples that can be included in the `assets` input list.
             data = {'camera_id': ''}
@@ -60,7 +60,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         Usage example:
 
-        .. code-block:: python
+        .. code-block:: python3
 
             import helios
             async with helios.HeliosSession() as sess:

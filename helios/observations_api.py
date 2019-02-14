@@ -53,7 +53,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         Usage example:
 
-        .. code-block:: python
+        .. code-block:: python3
 
             import helios
             async with helios.HeliosSession() as sess:
@@ -67,7 +67,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         Usage example for transitions:
 
-        .. code-block:: python
+        .. code-block:: python3
 
             import helios
             async with helios.HeliosSession() as sess:

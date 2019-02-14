@@ -21,7 +21,7 @@ class HeliosSession:
     The Helios session supports the context manager protocol for initiating
     a session:
 
-    .. code-block:: python
+    .. code-block:: python3
 
         import helios
         async with helios.HeliosSession() as sess:
@@ -29,7 +29,7 @@ class HeliosSession:
 
     Also, for creating and storing a session instance:
 
-    .. code-block:: python
+    .. code-block:: python3
 
         import helios
         sess = helios.HeliosSession()
