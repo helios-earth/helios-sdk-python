@@ -20,7 +20,7 @@
 Helios-SDK-Python
 =================
 
-Use the Helios APIs in Python.
+Asynchronous Python SDK for the Helios APIs.
 
 Helios® weather analytics from Harris Corporation provide fast and 
 accurate local ground weather intelligence to assist organizations 

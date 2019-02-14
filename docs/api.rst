@@ -1,36 +1,33 @@
-Core APIs
-=========
-
-Alerts
-------
+Alerts API
+==========
 
 .. automodule:: helios.alerts_api
     :members:
     :inherited-members:
 
-Cameras
--------
+Cameras API
+===========
 
 .. automodule:: helios.cameras_api
     :members:
     :inherited-members:
 
-Collections
------------
+Collections API
+===============
 
 .. automodule:: helios.collections_api
     :members:
     :inherited-members:
 
-Observations
-------------
+Observations API
+================
 
 .. automodule:: helios.observations_api
     :members:
     :inherited-members:
 
-Session
-=======
+HeliosSession
+=============
 
 .. automodule:: helios.core.session
     :members:
