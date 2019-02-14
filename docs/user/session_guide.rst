@@ -1,7 +1,7 @@
 .. _session_instances:
 
-Session Instances
-=================
+HeliosSession
+=============
 
 A Helios :class:`HeliosSession <helios.core.session.HeliosSession>` depends
 on properly established authentication procedures.  See 
