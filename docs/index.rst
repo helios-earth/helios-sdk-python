@@ -44,8 +44,8 @@ For further developer information, refer to
 
     user/install
     user/auth
-    user/core_apis_guide
     user/session_guide
+    user/core_apis_guide
     user/license
 
 
@@ -53,11 +53,11 @@ For further developer information, refer to
     :maxdepth: 2
     :caption: Documentation
 
+    components/helios_session
     components/alerts_api
     components/cameras_api
     components/collections_api
     components/observations_api
-    components/helios_session
     components/structure
     components/utilities
 
