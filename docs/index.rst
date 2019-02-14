@@ -53,7 +53,14 @@ For further developer information, refer to
     :maxdepth: 2
     :caption: Documentation
 
-    api
+    components/alerts_api
+    components/cameras_api
+    components/collections_api
+    components/observations_api
+    components/helios_session
+    components/structure
+    components/utilities
+
 
 Indices and tables
 ==================
