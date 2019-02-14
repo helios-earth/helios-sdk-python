@@ -10,8 +10,6 @@ from math import ceil
 
 from PIL import Image
 
-from helios import config
-from helios.core.session import Session
 from helios.core.structure import ImageRecord, Record
 from helios.utilities import logging_utils, parsing_utils
 
@@ -25,10 +23,7 @@ class SDKCore(object):
     This class must be inherited by any additional Core API classes.
     """
 
-    _max_concurrency = config['max_concurrency']
-    _ssl_verify = config['ssl_verify']
-
-    def __init__(self, session=None):
+    def __init__(self, session):
         """
         Initialize core API instance.
 
@@ -37,34 +32,29 @@ class SDKCore(object):
         be started automatically.
 
         Args:
-            session (helios.Session object, optional): An instance of the
+            session (helios.HeliosSession): An instance of the
                 Session. Defaults to None. If unused a session will be
                 created for you.
 
         """
 
-        # Create async semaphore for concurrency limit.
-        self._async_semaphore = asyncio.Semaphore(value=self._max_concurrency)
-
-        # Start session or use custom session.
-        if session is None:
-            self._session = Session()
-        else:
-            self._session = session
-
-        # If the session hasn't been started, start it.
-        if not self._session.token:
-            self._session.start_session()
-
-        self._auth_header = {self._session.token['name']: self._session.token['value']}
+        self._session = session
 
     @property
     def _base_api_url(self):
         return self._session.api_url
 
-    @_base_api_url.setter
-    def _base_api_url(self, value):
-        raise AttributeError('Access to _base_api_url is restricted.')
+    @property
+    def _auth_header(self):
+        return self._session.auth_header
+
+    @property
+    def _async_semaphore(self):
+        return self._session.async_semaphore
+
+    @property
+    def _ssl_verify(self):
+        return self._session.ssl_verify
 
     @staticmethod
     def _parse_query_inputs(parameters):
@@ -171,7 +161,7 @@ class IndexMixin(object):
 
         # Determine number of iterations that will be needed.
         n_queries_needed = int(ceil((total - skip) / float(limit)))
-        messages = messages[0 : n_queries_needed - 1]
+        messages = messages[0: n_queries_needed - 1]
 
         # Log number of queries required.
         logger.info('%s index queries required for: %s', n_queries_needed, kwargs)
