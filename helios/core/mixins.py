@@ -1,13 +1,12 @@
 """Mixins and core functionality."""
 import asyncio
-import aiofiles
-import aiohttp
+import functools
 import logging
 import os
-from collections import namedtuple
 from io import BytesIO
-from math import ceil
 
+import aiofiles
+import aiohttp
 from PIL import Image
 
 from helios.core.structure import ImageRecord, Record
@@ -57,17 +56,17 @@ class SDKCore(object):
         return self._session.ssl_verify
 
     @staticmethod
-    def _parse_query_inputs(parameters):
+    def _parse_query_inputs(**kwargs):
         """
         Create query string from a dictionary of parameters.
 
         Args:
-            parameters (dict):  Key/values to combine into a query string.
+            kwargs:  Key/values to combine into a query string.
 
         Returns:
             str: Query string.
         """
-        parameters_temp = parameters.copy()
+        parameters_temp = kwargs.copy()
 
         query_str = ''
 
@@ -82,6 +81,8 @@ class SDKCore(object):
 
             if isinstance(val, (list, tuple)):
                 query_str += str(key) + '=' + ','.join([str(x) for x in val]) + '&'
+            elif isinstance(val, bool):
+                query_str += str(key) + '=' + str(val).lower() + '&'
             else:
                 query_str += str(key) + '=' + str(val) + '&'
 
@@ -116,105 +117,75 @@ class IndexMixin(object):
     async def index(self, **kwargs):
         max_skip = 4000
         limit = int(kwargs.pop('limit', 100))
-        skip = int(kwargs.pop('skip', 0))
+        starting_skip = int(kwargs.pop('skip', 0))
 
         # Raise right away if skip is too high.
-        if skip > max_skip:
+        if starting_skip > max_skip:
             raise ValueError(
                 'skip must be less than the maximum skip value '
-                'of {}. A value of {} was tried.'.format(max_skip, skip)
+                'of {}. A value of {} was tried.'.format(max_skip, starting_skip)
             )
-
-        # Create the messages up to the maximum skip.
-        Message = namedtuple('Message', ['kwargs', 'limit', 'skip'])
-
-        messages = []
-        for i in range(skip, max_skip, limit):
-            if i + limit > max_skip:
-                temp_limit = max_skip - i
-            else:
-                temp_limit = limit
-            messages.append(Message(kwargs=kwargs, limit=temp_limit, skip=i))
-
-        # Process first message.
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            initial_call = messages.pop(0)
-            initial_query = self._index_query_builder(
-                initial_call.kwargs, initial_call.limit, initial_call.skip
-            )
-            try:
-                async with session.get(
-                    initial_query, raise_for_status=True, ssl=self._ssl_verify
-                ) as resp:
-                    initial_resp = Record(
-                        query=initial_query, content=await resp.json()
-                    )
-            except aiohttp.ClientError:
-                logger.exception('First index query failed. Unable to continue.')
-                raise
-
-        # Get total number of features available.
-        try:
-            total = initial_resp.content['properties']['total']
-        except KeyError:
-            total = initial_resp.content['total']
-
-        # Determine number of iterations that will be needed.
-        n_queries_needed = int(ceil((total - skip) / float(limit)))
-        messages = messages[0: n_queries_needed - 1]
-
-        # Log number of queries required.
-        logger.info('%s index queries required for: %s', n_queries_needed, kwargs)
-
-        # If only one query was necessary, return immediately.
-        if total <= limit:
-            return [initial_resp], []
-
-        # Warn the user when truncation occurs. (max_skip is hit)
-        if total > max_skip:
-            logger.warning('Maximum skip level. Truncated results for: %s', kwargs)
 
         # Get all results.
         success_queue = asyncio.Queue()
         failure_queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            tasks = []
-            for msg in messages:
-                tasks.append(
-                    self._bound_index_worker(
-                        msg.kwargs,
-                        msg.limit,
-                        msg.skip,
-                        _session=session,
-                        _success_queue=success_queue,
-                        _failure_queue=failure_queue,
-                    )
-                )
+            worker = functools.partial(
+                self._bound_index_worker,
+                _session=session,
+                _success_queue=success_queue,
+                _failure_queue=failure_queue
+            )
+
+            await worker(limit, starting_skip, **kwargs)
+            try:
+                initial_call = success_queue.get_nowait()
+            except asyncio.QueueEmpty:
+                failure = failure_queue.get_nowait()
+                raise failure.error
+
+            # Get total number of features available.
+            try:
+                total = initial_call.content['properties']['total']
+            except KeyError:
+                total = initial_call.content['total']
+
+            # If only one query was necessary, return immediately.
+            if total <= limit:
+                return [initial_call], []
+
+            # Warn the user when truncation will occur. (max_skip is hit)
+            if total > max_skip:
+                logger.warning('Maximum skip level. Truncated results for: %s', kwargs)
+
+            tasks = [worker(limit, skip, **kwargs) for skip in
+                     range(starting_skip + limit, total, limit)]
+            logger.info('%s index queries required for: %s', len(tasks) + 1, kwargs)
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
         failed = self._get_all_items(failure_queue)
 
         # Put initial query back in list.
-        succeeded.insert(0, initial_resp)
+        succeeded.insert(0, initial_call)
 
         return succeeded, failed
 
-    def _index_query_builder(self, index_kwargs, limit, skip):
+    def _index_query_builder(self, limit, skip, **kwargs):
         """
         Build index query string.
 
         Args:
-            index_kwargs (dict): Any index query parameters.
             limit (int): Query limit.
             skip (int): Query skip.
+            kwargs: Any index query parameters.
 
         Returns:
             str: Query string.
 
         """
 
-        params_str = self._parse_query_inputs(index_kwargs)
+        params_str = self._parse_query_inputs(**kwargs)
 
         query_str = '{}/{}?{}&limit={}&skip={}'.format(
             self._base_api_url, self._core_api, params_str, limit, skip
@@ -228,27 +199,27 @@ class IndexMixin(object):
 
     async def _index_worker(
         self,
-        index_kwargs,
         limit,
         skip,
         _session=None,
         _success_queue=None,
         _failure_queue=None,
+        **kwargs
     ):
         """
         Handles index calls.
 
         Args:
-            index_kwargs (dict): Any index query parameters.
             limit (int): Query limit.
             skip (int): Query skip.
             _session (aiohttp.ClientSession): Session instance.
             _success_queue (asyncio.Queue): Queue for successful calls.
             _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+            kwargs (dict): Any index query parameters.
 
         """
 
-        query_str = self._index_query_builder(index_kwargs, limit, skip)
+        query_str = self._index_query_builder(limit, skip, **kwargs)
 
         try:
             async with _session.get(
