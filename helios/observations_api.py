@@ -6,6 +6,7 @@ documentation.  Some may have additional functionality for convenience.
 
 """
 import asyncio
+import functools
 import logging
 import os
 from collections import namedtuple, defaultdict
@@ -126,21 +127,17 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
 
-        tasks = []
         success_queue = asyncio.Queue()
         failure_queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            for id_ in observation_ids:
-                tasks.append(
-                    self._bound_preview_worker(
-                        id_,
-                        out_dir=out_dir,
-                        return_image_data=return_image_data,
-                        _session=session,
-                        _success_queue=success_queue,
-                        _failure_queue=failure_queue,
-                    )
-                )
+            worker = functools.partial(
+                self._bound_preview_worker, out_dir=out_dir,
+                return_image_data=return_image_data,
+                _session=session,
+                _success_queue=success_queue,
+                _failure_queue=failure_queue
+            )
+            tasks = [worker(id_) for id_ in observation_ids]
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)

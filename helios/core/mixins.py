@@ -242,19 +242,16 @@ class ShowMixin(object):
         if not isinstance(ids, (list, tuple)):
             ids = [ids]
 
-        tasks = []
         success_queue = asyncio.Queue()
         failure_queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            for id_ in ids:
-                tasks.append(
-                    self._bound_show_worker(
-                        id_,
-                        _session=session,
-                        _success_queue=success_queue,
-                        _failure_queue=failure_queue,
-                    )
-                )
+            worker = functools.partial(
+                self._bound_show_worker,
+                _session=session,
+                _success_queue=success_queue,
+                _failure_queue=failure_queue
+            )
+            tasks = [worker(id_) for id_ in ids]
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
@@ -307,22 +304,18 @@ class ShowImageMixin(object):
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
 
-        tasks = []
         success_queue = asyncio.Queue()
         failure_queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            for x in data:
-                tasks.append(
-                    self._bound_show_image_worker(
-                        id_,
-                        x,
-                        out_dir=out_dir,
-                        return_image_data=return_image_data,
-                        _session=session,
-                        _success_queue=success_queue,
-                        _failure_queue=failure_queue,
-                    )
-                )
+            worker = functools.partial(
+                self._bound_show_image_worker,
+                out_dir=out_dir,
+                return_image_data=return_image_data,
+                _session=session,
+                _success_queue=success_queue,
+                _failure_queue=failure_queue
+            )
+            tasks = [worker(id_, x) for x in data]
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
