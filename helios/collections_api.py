@@ -44,7 +44,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         super(Collections, self).__init__(session)
 
     @logging_utils.log_entrance_exit
-    async def add_image(self, collection_id, assets):
+    async def add_image(self, assets, collection_id):
         """
         Add images to a collection from Helios assets.
 
@@ -56,7 +56,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             data = {'camera_id': ''}
             data = {'camera_id': '', 'time': ''}
             data = {'observation_id': ''}
-            data = {'collection_is': '', 'image': ''}
+            data = {'collection_id': '', 'image': ''}
 
         Usage example:
 
@@ -69,14 +69,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 times = [...] # List of image times.
                 destination_id = '...'
                 data = [{'camera_id': camera_id, 'time': x} for x in times]
-                results, failures = await coll_inst.add_image(destination_id, data)
+                results, failures = await coll_inst.add_image(data, destination_id)
 
         Args:
-            collection_id (str): Collection ID.
             assets (dict or list of dicts): Data containing any of these
                 payloads (camera_id), (camera_id, time), (observation_id),
                 (collection_id, image). E.g. data =
                 [{'camera_id': 'cam_01', time: '2017-01-01T00:00:000Z'}]
+            collection_id (str): Collection ID.
 
         Returns:
             tuple: A tuple containing:
@@ -95,17 +95,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         success_queue = asyncio.Queue()
         failure_queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            tasks = []
-            for data in assets:
-                tasks.append(
-                    self._bound_add_image_worker(
-                        collection_id,
-                        data,
-                        _session=session,
-                        _success_queue=success_queue,
-                        _failure_queue=failure_queue,
-                    )
-                )
+            worker = functools.partial(
+                self._bound_add_image_worker,
+                collection_id,
+                _session=session,
+                _success_queue=success_queue,
+                _failure_queue=failure_queue
+            )
+            tasks = [worker(data) for data in assets]
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
@@ -188,7 +185,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         # Add images to new collection.
         data = [{'collection_id': collection_id, 'image': x} for x in image_names]
-        _ = await self.add_image(new_id, data)
+        _ = await self.add_image(data, new_id)
 
         return new_id
 
@@ -359,13 +356,13 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         return CollectionsFeatureCollection(content), failed
 
     @logging_utils.log_entrance_exit
-    async def remove_image(self, collection_id, names):
+    async def remove_image(self, names, collection_id):
         """
         Remove images from a collection.
 
         Args:
-            collection_id (str): Collection ID to remove images from.
             names (str or list of strs): List of image names to be removed.
+            collection_id (str): Collection ID to remove images from.
 
         Returns:
             tuple: A tuple containing:
@@ -381,17 +378,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         success_queue = asyncio.Queue()
         failure_queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            tasks = []
-            for name in names:
-                tasks.append(
-                    self._bound_remove_image_worker(
-                        collection_id,
-                        name,
-                        _session=session,
-                        _success_queue=success_queue,
-                        _failure_queue=failure_queue,
-                    )
-                )
+            worker = functools.partial(
+                self._bound_remove_image_worker,
+                collection_id,
+                _session=session,
+                _success_queue=success_queue,
+                _failure_queue=failure_queue
+            )
+            tasks = [worker(name) for name in names]
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
