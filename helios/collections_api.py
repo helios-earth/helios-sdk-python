@@ -6,12 +6,14 @@ documentation.  Some may have additional functionality for convenience.
 
 """
 import asyncio
+import functools
 import hashlib
 import logging
 
 import aiohttp
+
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
-from helios.core.structure import ImageCollection, Record, RecordCollection
+from helios.core.structure import ImageCollection, Record
 from helios.utilities import logging_utils
 
 logger = logging.getLogger(__name__)
@@ -430,7 +432,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             await _failure_queue.put(Record(query=del_url, error=e))
             return
 
-        return Record(query=del_url, content=resp_json)
+        await _success_queue.put(Record(query=del_url, content=resp_json))
 
     @logging_utils.log_entrance_exit
     async def show(self, collection_id, limit=200, marker=None):
@@ -463,7 +465,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 'instead'.format(type(collection_id))
             )
 
-        params_str = self._parse_query_inputs(dict(limit=limit, marker=marker))
+        params_str = self._parse_query_inputs(**dict(limit=limit, marker=marker))
         query_str = '{}/{}/{}?{}'.format(
             self._base_api_url, self._core_api, collection_id, params_str
         )
