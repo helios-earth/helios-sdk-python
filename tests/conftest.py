@@ -6,12 +6,12 @@ from helios.core.structure import Record
 
 @pytest.fixture(scope='session')
 def record():
-    return Record(message=('test',), query='test', content='test', error=None)
+    return Record(query='test', content='test', error=None)
 
 
 @pytest.fixture(scope='session')
 def record_fail():
-    return Record(message=('test',), query='test', content='test',
+    return Record(query='test', content='test',
                   error=Exception('test'))
 
 
@@ -102,8 +102,7 @@ def observations_json():
 def alerts_feature_collection(alerts_json, record, record_fail):
     alerts_feature = helios.alerts_api.AlertsFeature(alerts_json)
     alerts_fc = helios.alerts_api.AlertsFeatureCollection(
-        [alerts_feature, alerts_feature],
-        records=[record, record_fail])
+        [alerts_feature, alerts_feature])
 
     return alerts_fc
 
@@ -112,8 +111,7 @@ def alerts_feature_collection(alerts_json, record, record_fail):
 def cameras_feature_collection(cameras_json, record, record_fail):
     cameras_feature = helios.cameras_api.CamerasFeature(cameras_json)
     cameras_fc = helios.cameras_api.CamerasFeatureCollection(
-        [cameras_feature, cameras_feature],
-        records=[record, record_fail])
+        [cameras_feature, cameras_feature])
 
     return cameras_fc
 
@@ -122,8 +120,7 @@ def cameras_feature_collection(cameras_json, record, record_fail):
 def collections_feature_collection(collections_json, record, record_fail):
     collections_feature = helios.collections_api.CollectionsFeature(collections_json)
     collections_fc = helios.collections_api.CollectionsFeatureCollection(
-        [collections_feature, collections_feature],
-        records=[record, record_fail])
+        [collections_feature, collections_feature])
 
     return collections_fc
 
@@ -132,7 +129,6 @@ def collections_feature_collection(collections_json, record, record_fail):
 def observations_feature_collection(observations_json, record, record_fail):
     observations_feature = helios.observations_api.ObservationsFeature(observations_json)
     observations_fc = helios.observations_api.ObservationsFeatureCollection(
-        [observations_feature, observations_feature],
-        records=[record, record_fail])
+        [observations_feature, observations_feature])
 
     return observations_fc
