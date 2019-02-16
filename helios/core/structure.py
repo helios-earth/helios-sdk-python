@@ -28,14 +28,14 @@ class Record(object):
     Individual query record.
 
     Args:
-        query (str): API query.
+        url (str): API URL.
         content: Returned content. To be defined by method.
         error (exception): Exception that occurred, if any.
 
     """
 
-    def __init__(self, query=None, content=None, error=None):
-        self.query = query
+    def __init__(self, url=None, content=None, error=None):
+        self.url = url
         self.content = content
         self.error = error
 
@@ -58,7 +58,7 @@ class ImageRecord(Record):
     Record class for images.
 
     Args:
-        query (str): API query.
+        url (str): API URL.
         content (PIL.Image.Image): Image data.
         error (exception): Exception that occurred, if any.
         name (str): Name of image.
@@ -67,9 +67,9 @@ class ImageRecord(Record):
     """
 
     def __init__(
-        self, query=None, content=None, error=None, name=None, output_file=None
+        self, url=None, content=None, error=None, name=None, output_file=None
     ):
-        super(ImageRecord, self).__init__(query=query, content=content, error=error)
+        super(ImageRecord, self).__init__(url=url, content=content, error=error)
         self.name = name
         self.output_file = output_file
 

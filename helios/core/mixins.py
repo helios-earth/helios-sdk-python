@@ -228,10 +228,10 @@ class IndexMixin(object):
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            await _failure_queue.put(Record(query=query_str, error=e))
+            await _failure_queue.put(Record(url=query_str, error=e))
             return
 
-        await _success_queue.put(Record(query=query_str, content=resp_json))
+        await _success_queue.put(Record(url=query_str, content=resp_json))
 
 
 class ShowMixin(object):
@@ -285,10 +285,10 @@ class ShowMixin(object):
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            await _failure_queue.put(Record(query=query_str, error=e))
+            await _failure_queue.put(Record(url=query_str, error=e))
             return
 
-        await _success_queue.put(Record(query=query_str, content=resp_json))
+        await _success_queue.put(Record(url=query_str, content=resp_json))
 
 
 class ShowImageMixin(object):
@@ -363,7 +363,7 @@ class ShowImageMixin(object):
                 image_content = await resp.read()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            await _failure_queue.put(ImageRecord(query=query_str, error=e))
+            await _failure_queue.put(ImageRecord(url=query_str, error=e))
             return
 
         # Parse key from url.
@@ -384,13 +384,13 @@ class ShowImageMixin(object):
             try:
                 img_data = Image.open(BytesIO(image_content))
             except Exception as e:
-                await _failure_queue.put(ImageRecord(query=query_str, error=e))
+                await _failure_queue.put(ImageRecord(url=query_str, error=e))
                 return
         else:
             img_data = None
 
         await _success_queue.put(
             ImageRecord(
-                query=query_str, name=image_name, content=img_data, output_file=out_file
+                url=query_str, name=image_name, content=img_data, output_file=out_file
             )
         )

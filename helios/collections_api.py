@@ -150,10 +150,10 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to POST %s.', post_url)
-            await _failure_queue.put(Record(query=post_url, error=e))
+            await _failure_queue.put(Record(url=post_url, error=e))
             return
 
-        await _success_queue.put(Record(query=post_url, content=resp_json))
+        await _success_queue.put(Record(url=post_url, content=resp_json))
 
     @logging_utils.log_entrance_exit
     async def copy(self, collection_id, new_name):
@@ -429,10 +429,10 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to DELETE %s.', del_url)
-            await _failure_queue.put(Record(query=del_url, error=e))
+            await _failure_queue.put(Record(url=del_url, error=e))
             return
 
-        await _success_queue.put(Record(query=del_url, content=resp_json))
+        await _success_queue.put(Record(url=del_url, content=resp_json))
 
     @logging_utils.log_entrance_exit
     async def show(self, collection_id, limit=200, marker=None):
