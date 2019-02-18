@@ -10,7 +10,6 @@ import logging
 import aiohttp
 from dateutil.parser import parse
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
-from helios.core.structure import ImageCollection
 from helios.utilities import logging_utils
 
 logger = logging.getLogger(__name__)
@@ -185,14 +184,15 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 The image with the closest matching timestamp will be returned.
             out_dir (optional, str): Directory to write images to.  Defaults to
                 None.
-            return_image_data (optional, bool): If True, PIL Images will be
-                returned.
+            return_image_data (optional, bool): If True images will be
+                available as PIL images in the returned ImageRecords.
+                Defaults to False.
 
         Returns:
             tuple: A tuple containing:
-                image_collection (:class:`ImageCollection <helios.core.structure.ImageCollection>`):
+                images (list of :class:`ImageRecord <helios.core.structure.ImageRecord>`):
                     All received images.
-                failed (list of :class:`Record <helios.core.structure.Record>`):
+                failed (list of ::class:`ImageRecord <helios.core.structure.ImageRecord>`):
                     Failed API calls.
 
         """
@@ -201,7 +201,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
             camera_id, times, out_dir=out_dir, return_image_data=return_image_data
         )
 
-        return ImageCollection(succeeded), failed
+        return succeeded, failed
 
 
 class CamerasFeature(object):

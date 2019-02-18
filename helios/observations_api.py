@@ -17,7 +17,7 @@ import aiohttp
 from PIL import Image
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
-from helios.core.structure import ImageRecord, ImageCollection
+from helios.core.structure import ImageRecord
 from helios.utilities import logging_utils, parsing_utils
 
 logger = logging.getLogger(__name__)
@@ -110,14 +110,15 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             observation_ids (str or list of strs): list of observation IDs.
             out_dir (optional, str): Directory to write images to.  Defaults to
                 None.
-            return_image_data (optional, bool): If True images will be returned
-                as numpy.ndarrays.  Defaults to False.
+            return_image_data (optional, bool): If True images will be
+                available as PIL images in the returned ImageRecords.
+                Defaults to False.
 
         Returns:
             tuple: A tuple containing:
-                image_collection (:class:`ImageCollection <helios.core.structure.ImageCollection>`):
+                images (list of :class:`ImageRecord <helios.core.structure.ImageRecord>`):
                     All received images.
-                failed (list of :class:`Record <helios.core.structure.Record>`):
+                failed (list of :class:`ImageRecord <helios.core.structure.ImageRecord>`):
                     Failed API calls.
 
         """
@@ -144,7 +145,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         succeeded = self._get_all_items(success_queue)
         failed = self._get_all_items(failure_queue)
 
-        return ImageCollection(succeeded), failed
+        return succeeded, failed
 
     async def _bound_preview_worker(self, *args, **kwargs):
         async with self._async_semaphore:

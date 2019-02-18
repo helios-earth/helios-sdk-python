@@ -95,39 +95,22 @@ class ImageRecord(Record):
 
     Args:
         name (str): Name of image.
-        output_file (str): Full path to image file that was written.
+        filename (str): Full path to image file that was written.
 
     """
 
-    def __init__(self, name=None, output_file=None, **kwargs):
+    def __init__(self, name=None, filename=None, **kwargs):
         super().__init__(**kwargs)
         self.name = name
-        self.output_file = output_file
-
-
-class ImageCollection(object):
-    """
-    Stores all image content and associated metadata.
-
-    Args:
-        image_records (list of :class:`Record <helios.core.structure.ImageRecord>`
-
-    """
-
-    def __init__(self, image_records):
-        self.image_records = image_records
+        self.filename = filename
 
     @property
-    def output_files(self):
-        """Full paths to all saved images."""
-        return [x.output_file for x in self.image_records]
+    def image(self):
+        """
+        Alias for Record content attribute.
 
-    @property
-    def image_names(self):
-        """Names of all images."""
-        return [x.name for x in self.image_records]
+        Returns:
+            PIL.Image.Image: Image data.
 
-    @property
-    def images(self):
-        """PIL images."""
-        return [x.content for x in self.image_records]
+        """
+        return self.content

@@ -13,7 +13,7 @@ import logging
 import aiohttp
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
-from helios.core.structure import ImageCollection, Record
+from helios.core.structure import Record
 from helios.utilities import logging_utils
 
 logger = logging.getLogger(__name__)
@@ -502,14 +502,15 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             image_names (str or list of strs): Image names.
             out_dir (optional, str): Directory to write images to.  Defaults to
                 None.
-            return_image_data (optional, bool): If True images will be returned
-                as numpy.ndarrays.  Defaults to False.
+            return_image_data (optional, bool): If True images will be
+                available as PIL images in the returned ImageRecords.
+                Defaults to False.
 
         Returns:
             tuple: A tuple containing:
-                image_collection (:class:`ImageCollection <helios.core.structure.ImageCollection>`):
+                images (list of :class:`ImageRecord <helios.core.structure.ImageRecord>`):
                     All received images.
-                failed (list of :class:`Record <helios.core.structure.Record>`):
+                failed (:class:`ImageRecord <helios.core.structure.ImageRecord>`):
                     Failed API calls.
 
         """
@@ -520,7 +521,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             return_image_data=return_image_data,
         )
 
-        return ImageCollection(succeeded), failed
+        return succeeded, failed
 
     @logging_utils.log_entrance_exit
     async def update(self, collections_id, name=None, description=None, tags=None):
