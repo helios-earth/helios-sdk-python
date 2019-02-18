@@ -94,27 +94,13 @@ class ImageRecord(Record):
     Record class for images.
 
     Args:
-        url (str): API URL.
-        parameters (dict): All parameters for current function or method call.
-        content (PIL.Image.Image): Image data.
-        error (exception): Exception that occurred, if any.
         name (str): Name of image.
         output_file (str): Full path to image file that was written.
 
     """
 
-    def __init__(
-        self,
-        url=None,
-        parameters=None,
-        content=None,
-        error=None,
-        name=None,
-        output_file=None,
-    ):
-        super(ImageRecord, self).__init__(
-            url=url, parameters=parameters, content=content, error=error
-        )
+    def __init__(self, name=None, output_file=None, **kwargs):
+        super().__init__(**kwargs)
         self.name = name
         self.output_file = output_file
 
