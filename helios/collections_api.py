@@ -102,7 +102,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 collection_id,
                 _session=session,
                 _success_queue=success_queue,
-                _failure_queue=failure_queue
+                _failure_queue=failure_queue,
             )
             tasks = [worker(data) for data in assets]
             await asyncio.gather(*tasks)
@@ -391,7 +391,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 collection_id,
                 _session=session,
                 _success_queue=success_queue,
-                _failure_queue=failure_queue
+                _failure_queue=failure_queue,
             )
             tasks = [worker(name) for name in names]
             await asyncio.gather(*tasks)

@@ -104,11 +104,17 @@ class ImageRecord(Record):
     """
 
     def __init__(
-        self, url=None, parameters=None, content=None, error=None, name=None,
-        output_file=None
+        self,
+        url=None,
+        parameters=None,
+        content=None,
+        error=None,
+        name=None,
+        output_file=None,
     ):
-        super(ImageRecord, self).__init__(url=url, parameters=parameters, content=content,
-                                          error=error)
+        super(ImageRecord, self).__init__(
+            url=url, parameters=parameters, content=content, error=error
+        )
         self.name = name
         self.output_file = output_file
 

@@ -134,7 +134,7 @@ class IndexMixin(object):
                 self._bound_index_worker,
                 _session=session,
                 _success_queue=success_queue,
-                _failure_queue=failure_queue
+                _failure_queue=failure_queue,
             )
 
             await worker(limit, starting_skip, **kwargs)
@@ -158,8 +158,10 @@ class IndexMixin(object):
             if total > max_skip:
                 logger.warning('Maximum skip level. Truncated results for: %s', kwargs)
 
-            tasks = [worker(limit, skip, **kwargs) for skip in
-                     range(starting_skip + limit, total, limit)]
+            tasks = [
+                worker(limit, skip, **kwargs)
+                for skip in range(starting_skip + limit, total, limit)
+            ]
             logger.info('%s index queries required for: %s', len(tasks) + 1, kwargs)
             await asyncio.gather(*tasks)
 
@@ -254,7 +256,7 @@ class ShowMixin(object):
                 self._bound_show_worker,
                 _session=session,
                 _success_queue=success_queue,
-                _failure_queue=failure_queue
+                _failure_queue=failure_queue,
             )
             tasks = [worker(id_) for id_ in ids]
             await asyncio.gather(*tasks)
@@ -325,7 +327,7 @@ class ShowImageMixin(object):
                 return_image_data=return_image_data,
                 _session=session,
                 _success_queue=success_queue,
-                _failure_queue=failure_queue
+                _failure_queue=failure_queue,
             )
             tasks = [worker(asset_id, x) for x in data]
             await asyncio.gather(*tasks)
@@ -410,7 +412,10 @@ class ShowImageMixin(object):
 
         await _success_queue.put(
             ImageRecord(
-                url=query_str, parameters=call_params, name=image_name, content=img_data,
-                output_file=out_file
+                url=query_str,
+                parameters=call_params,
+                name=image_name,
+                content=img_data,
+                output_file=out_file,
             )
         )

@@ -131,11 +131,12 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         failure_queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             worker = functools.partial(
-                self._bound_preview_worker, out_dir=out_dir,
+                self._bound_preview_worker,
+                out_dir=out_dir,
                 return_image_data=return_image_data,
                 _session=session,
                 _success_queue=success_queue,
-                _failure_queue=failure_queue
+                _failure_queue=failure_queue,
             )
             tasks = [worker(id_) for id_ in observation_ids]
             await asyncio.gather(*tasks)
@@ -217,8 +218,11 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         await _success_queue.put(
             ImageRecord(
-                url=query_str, parameters=call_params, name=image_name, content=img_data,
-                output_file=out_file
+                url=query_str,
+                parameters=call_params,
+                name=image_name,
+                content=img_data,
+                output_file=out_file,
             )
         )
 
