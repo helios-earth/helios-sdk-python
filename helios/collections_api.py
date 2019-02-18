@@ -43,7 +43,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 created for you.
 
         """
-        super(Collections, self).__init__(session)
+        super().__init__(session)
 
     @logging_utils.log_entrance_exit
     async def add_image(self, assets, collection_id):
@@ -354,7 +354,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                     Failed API call records.
 
         """
-        succeeded, failed = await super(Collections, self).index(**kwargs)
+        succeeded, failed = await super().index(**kwargs)
 
         content = []
         for record in succeeded:
@@ -513,7 +513,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                     Failed API calls.
 
         """
-        succeeded, failed = await super(Collections, self).show_image(
+        succeeded, failed = await super().show_image(
             collection_id,
             image_names,
             out_dir=out_dir,

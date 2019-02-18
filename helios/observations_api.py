@@ -42,7 +42,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 created for you.
 
         """
-        super(Observations, self).__init__(session)
+        super().__init__(session)
 
     async def index(self, **kwargs):
         """
@@ -92,7 +92,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super(Observations, self).index(**kwargs)
+        succeeded, failed = await super().index(**kwargs)
 
         content = []
         for record in succeeded:
@@ -242,7 +242,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = super(Observations, self).show(observation_ids)
+        succeeded, failed = super().show(observation_ids)
 
         content = []
         for record in succeeded:

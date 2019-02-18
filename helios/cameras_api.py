@@ -31,7 +31,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 created for you.
 
         """
-        super(Cameras, self).__init__(session)
+        super().__init__(session)
 
     @logging_utils.log_entrance_exit
     async def images(self, camera_id, start_time, end_time=None, limit=500):
@@ -138,7 +138,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super(Cameras, self).index(**kwargs)
+        succeeded, failed = await super().index(**kwargs)
 
         content = []
         for record in succeeded:
@@ -163,7 +163,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super(Cameras, self).show(camera_ids)
+        succeeded, failed = await super().show(camera_ids)
 
         content = []
         for record in succeeded:
@@ -197,7 +197,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super(Cameras, self).show_image(
+        succeeded, failed = await super().show_image(
             camera_id, times, out_dir=out_dir, return_image_data=return_image_data
         )
 

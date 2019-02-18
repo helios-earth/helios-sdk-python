@@ -41,7 +41,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             session (helios.HeliosSession): A HeliosSession instance.
 
         """
-        super(Alerts, self).__init__(session)
+        super().__init__(session)
 
     async def index(self, **kwargs):
         """
@@ -65,7 +65,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super(Alerts, self).index(**kwargs)
+        succeeded, failed = await super().index(**kwargs)
 
         content = []
         for record in succeeded:
@@ -90,7 +90,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super(Alerts, self).show(alert_ids)
+        succeeded, failed = await super().show(alert_ids)
 
         content = []
         for record in succeeded:
