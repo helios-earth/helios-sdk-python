@@ -20,7 +20,7 @@ from helios.utilities import logging_utils, parsing_utils
 logger = logging.getLogger(__name__)
 
 
-class SDKCore(object):
+class SDKCore:
     """
     Core class for Python interface to Helios Core APIs.
 
@@ -115,7 +115,7 @@ class SDKCore(object):
         return items
 
 
-class IndexMixin(object):
+class IndexMixin:
     """Mixin for index queries."""
 
     @logging_utils.log_entrance_exit
@@ -246,7 +246,7 @@ class IndexMixin(object):
         )
 
 
-class ShowMixin(object):
+class ShowMixin:
     """Mixin for show queries"""
 
     @logging_utils.log_entrance_exit
@@ -310,7 +310,7 @@ class ShowMixin(object):
         )
 
 
-class ShowImageMixin(object):
+class ShowImageMixin:
     """Mixin for show_image queries"""
 
     @logging_utils.log_entrance_exit

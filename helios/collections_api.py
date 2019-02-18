@@ -572,7 +572,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 return await resp.json()
 
 
-class CollectionsFeature(object):
+class CollectionsFeature:
     """
     Individual Collection JSON result.
 
@@ -630,7 +630,7 @@ class CollectionsFeature(object):
         return self.json.get('user_id')
 
 
-class CollectionsFeatureCollection(object):
+class CollectionsFeatureCollection:
     """
     Collection of features obtained via the Collections API.
 

@@ -1,7 +1,7 @@
 """Base data structures for the SDK."""
 
 
-class RecordCollection(object):
+class RecordCollection:
     """
     Class for handling query records.
     Attributes:
@@ -23,7 +23,7 @@ class RecordCollection(object):
         return [x for x in self._records if x.ok]
 
 
-class Record(object):
+class Record:
     """
     Individual query record.
 

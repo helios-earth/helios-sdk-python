@@ -252,7 +252,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         return ObservationsFeatureCollection(content), failed
 
 
-class ObservationsFeature(object):
+class ObservationsFeature:
     """
     Individual Observation GeoJSON feature.
 
@@ -310,7 +310,7 @@ class ObservationsFeature(object):
         return self.json['properties'].get('time')
 
 
-class ObservationsFeatureCollection(object):
+class ObservationsFeatureCollection:
     """
     Collection of GeoJSON features obtained via the Observations API.
 

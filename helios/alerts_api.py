@@ -99,7 +99,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
         return AlertsFeatureCollection(content), failed
 
 
-class AlertsFeature(object):
+class AlertsFeature:
     """
     Individual Alert GeoJSON feature.
 
@@ -192,7 +192,7 @@ class AlertsFeature(object):
         return self.json['properties'].get('urgency')
 
 
-class AlertsFeatureCollection(object):
+class AlertsFeatureCollection:
     """
     Collection of GeoJSON features obtained via the Alerts API.
 

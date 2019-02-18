@@ -204,7 +204,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         return succeeded, failed
 
 
-class CamerasFeature(object):
+class CamerasFeature:
     """
     Individual Camera GeoJSON feature.
 
@@ -257,7 +257,7 @@ class CamerasFeature(object):
         return self.json['properties'].get('state')
 
 
-class CamerasFeatureCollection(object):
+class CamerasFeatureCollection:
     """
     Collection of GeoJSON features obtained via the Cameras API.
 
