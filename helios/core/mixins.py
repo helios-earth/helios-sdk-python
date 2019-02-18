@@ -1,4 +1,9 @@
-"""Mixins and core functionality."""
+"""
+Mixins and core functionality.
+
+Note: Mixins, in this case, simply refers to shared code.
+
+"""
 import asyncio
 import functools
 import logging
