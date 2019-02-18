@@ -29,15 +29,39 @@ class Record(object):
 
     Args:
         url (str): API URL.
+        parameters (dict): All parameters for current function or method call.
         content: Returned content. To be defined by method.
         error (exception): Exception that occurred, if any.
 
     """
 
-    def __init__(self, url=None, content=None, error=None):
+    def __init__(self, url=None, parameters=None, content=None, error=None):
         self.url = url
+        self._parameters = parameters
         self.content = content
         self.error = error
+
+    @staticmethod
+    def _get_public_params(params):
+        """
+        Returns parameters dictionary with leading underscore params removed.
+
+        Non-public parameters in this case contain a leading underscore.
+
+        Args:
+            params (dict): Parameter dictionary.
+
+        Returns:
+            dict: Public parameters.
+
+        """
+
+        output = {}
+        for k, v in params.items():
+            if not k.startswith('_') and not k == 'self':
+                output[k] = v
+
+        return output
 
     @property
     def ok(self):
@@ -52,6 +76,18 @@ class Record(object):
             return False
         return True
 
+    @property
+    def parameters(self):
+        """
+        Function call parameters.
+
+        Returns:
+            dict: Parameters dictionary.
+
+        """
+
+        return self._get_public_params(self._parameters)
+
 
 class ImageRecord(Record):
     """
@@ -59,6 +95,7 @@ class ImageRecord(Record):
 
     Args:
         url (str): API URL.
+        parameters (dict): All parameters for current function or method call.
         content (PIL.Image.Image): Image data.
         error (exception): Exception that occurred, if any.
         name (str): Name of image.
@@ -67,9 +104,11 @@ class ImageRecord(Record):
     """
 
     def __init__(
-        self, url=None, content=None, error=None, name=None, output_file=None
+        self, url=None, parameters=None, content=None, error=None, name=None,
+        output_file=None
     ):
-        super(ImageRecord, self).__init__(url=url, content=content, error=error)
+        super(ImageRecord, self).__init__(url=url, parameters=parameters, content=content,
+                                          error=error)
         self.name = name
         self.output_file = output_file
 

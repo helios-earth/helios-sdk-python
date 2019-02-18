@@ -172,6 +172,8 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         """
 
+        call_params = locals()
+
         query_str = '{}/{}/{}/preview'.format(
             self._base_api_url, self._core_api, observation_id
         )
@@ -183,7 +185,9 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 image_content = await resp.read()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            await _failure_queue.put(ImageRecord(url=query_str, error=e))
+            await _failure_queue.put(
+                ImageRecord(url=query_str, parameters=call_params, error=e)
+            )
             return
 
         # Parse key from url.
@@ -204,14 +208,17 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             try:
                 img_data = Image.open(BytesIO(image_content))
             except Exception as e:
-                await _failure_queue.put(ImageRecord(url=query_str, error=e))
+                await _failure_queue.put(
+                    ImageRecord(url=query_str, parameters=call_params, error=e)
+                )
                 return
         else:
             img_data = None
 
         await _success_queue.put(
             ImageRecord(
-                url=query_str, name=image_name, content=img_data, output_file=out_file
+                url=query_str, parameters=call_params, name=image_name, content=img_data,
+                output_file=out_file
             )
         )
 

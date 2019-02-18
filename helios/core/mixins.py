@@ -218,8 +218,9 @@ class IndexMixin(object):
             kwargs (dict): Any index query parameters.
 
         """
-
+        call_params = locals()
         query_str = self._index_query_builder(limit, skip, **kwargs)
+        call_record = Record(url=query_str, parameters=call_params)
 
         try:
             async with _session.get(
@@ -228,10 +229,14 @@ class IndexMixin(object):
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            await _failure_queue.put(Record(url=query_str, error=e))
+            await _failure_queue.put(
+                Record(url=query_str, parameters=call_params, error=e)
+            )
             return
 
-        await _success_queue.put(Record(url=query_str, content=resp_json))
+        await _success_queue.put(
+            Record(url=query_str, parameters=call_params, content=resp_json)
+        )
 
 
 class ShowMixin(object):
@@ -264,19 +269,22 @@ class ShowMixin(object):
             return await self._show_worker(*args, **kwargs)
 
     async def _show_worker(
-        self, id_, _session=None, _success_queue=None, _failure_queue=None
+        self, asset_id, _session=None, _success_queue=None, _failure_queue=None
     ):
         """
         Handles show call.
 
         Args:
-            id_ (str): Asset id.
+            asset_id (str): Asset id.
             _session (aiohttp.ClientSession): Session instance.
             _success_queue (asyncio.Queue): Queue for successful calls.
             _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
 
         """
-        query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, id_)
+
+        call_params = locals()
+
+        query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, asset_id)
 
         try:
             async with _session.get(
@@ -285,17 +293,21 @@ class ShowMixin(object):
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            await _failure_queue.put(Record(url=query_str, error=e))
+            await _failure_queue.put(
+                Record(url=query_str, parameters=call_params, error=e)
+            )
             return
 
-        await _success_queue.put(Record(url=query_str, content=resp_json))
+        await _success_queue.put(
+            Record(url=query_str, parameters=call_params, content=resp_json)
+        )
 
 
 class ShowImageMixin(object):
     """Mixin for show_image queries"""
 
     @logging_utils.log_entrance_exit
-    async def show_image(self, id_, data, out_dir=None, return_image_data=False):
+    async def show_image(self, asset_id, data, out_dir=None, return_image_data=False):
         if not isinstance(data, (list, tuple)):
             data = [data]
 
@@ -315,7 +327,7 @@ class ShowImageMixin(object):
                 _success_queue=success_queue,
                 _failure_queue=failure_queue
             )
-            tasks = [worker(id_, x) for x in data]
+            tasks = [worker(asset_id, x) for x in data]
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
@@ -329,7 +341,7 @@ class ShowImageMixin(object):
 
     async def _show_image_worker(
         self,
-        id_,
+        asset_id,
         data,
         out_dir=None,
         return_image_data=False,
@@ -341,7 +353,7 @@ class ShowImageMixin(object):
         Handles show_image call.
 
         Args:
-            id_ (str): Asset id.
+            asset_id (str): Asset id.
             data (list of str): Datapoints for the id. E.g. for cameras this is
                 image times.
             out_dir (str, optional): Optionally write data to a directory.
@@ -352,8 +364,11 @@ class ShowImageMixin(object):
             _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
 
         """
+
+        call_params = locals()
+
         query_str = '{}/{}/{}/images/{}'.format(
-            self._base_api_url, self._core_api, id_, data
+            self._base_api_url, self._core_api, asset_id, data
         )
 
         try:
@@ -363,7 +378,9 @@ class ShowImageMixin(object):
                 image_content = await resp.read()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            await _failure_queue.put(ImageRecord(url=query_str, error=e))
+            await _failure_queue.put(
+                ImageRecord(url=query_str, parameters=call_params, error=e)
+            )
             return
 
         # Parse key from url.
@@ -384,13 +401,16 @@ class ShowImageMixin(object):
             try:
                 img_data = Image.open(BytesIO(image_content))
             except Exception as e:
-                await _failure_queue.put(ImageRecord(url=query_str, error=e))
+                await _failure_queue.put(
+                    ImageRecord(url=query_str, parameters=call_params, error=e)
+                )
                 return
         else:
             img_data = None
 
         await _success_queue.put(
             ImageRecord(
-                url=query_str, name=image_name, content=img_data, output_file=out_file
+                url=query_str, parameters=call_params, name=image_name, content=img_data,
+                output_file=out_file
             )
         )

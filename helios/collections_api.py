@@ -136,6 +136,8 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         """
 
+        call_params = locals()
+
         header = {'name': 'Content-Type', 'value': 'application/x-www-form-urlencoded'}
         post_url = '{}/collections/{}/images'.format(self._base_api_url, collection_id)
 
@@ -150,10 +152,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to POST %s.', post_url)
-            await _failure_queue.put(Record(url=post_url, error=e))
+            await _failure_queue.put(
+                Record(url=post_url, parameters=call_params, error=e)
+            )
             return
 
-        await _success_queue.put(Record(url=post_url, content=resp_json))
+        await _success_queue.put(
+            Record(url=post_url, parameters=call_params, content=resp_json)
+        )
 
     @logging_utils.log_entrance_exit
     async def copy(self, collection_id, new_name):
@@ -418,6 +424,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
 
         """
+
+        call_params = locals()
+
         del_url = '{}/{}/{}/images/{}'.format(
             self._base_api_url, self._core_api, collection_id, name
         )
@@ -429,10 +438,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 resp_json = await resp.json()
         except Exception as e:
             logger.exception('Failed to DELETE %s.', del_url)
-            await _failure_queue.put(Record(url=del_url, error=e))
+            await _failure_queue.put(
+                Record(url=del_url, parameters=call_params, error=e)
+            )
             return
 
-        await _success_queue.put(Record(url=del_url, content=resp_json))
+        await _success_queue.put(
+            Record(url=del_url, parameters=call_params, content=resp_json)
+        )
 
     @logging_utils.log_entrance_exit
     async def show(self, collection_id, limit=200, marker=None):
