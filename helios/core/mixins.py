@@ -120,9 +120,12 @@ class IndexMixin:
 
     @logging_utils.log_entrance_exit
     async def index(self, **kwargs):
+        max_limit = 100
         max_skip = 4000
-        limit = int(kwargs.pop('limit', 100))
+
         starting_skip = int(kwargs.pop('skip', 0))
+        if 'limit' not in kwargs:
+            kwargs['limit'] = max_limit
 
         # Raise right away if skip is too high.
         if starting_skip > max_skip:
@@ -137,12 +140,13 @@ class IndexMixin:
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             worker = functools.partial(
                 self._bound_index_worker,
+                query_params=kwargs,
                 _session=session,
                 _success_queue=success_queue,
                 _failure_queue=failure_queue,
             )
 
-            await worker(limit, starting_skip, **kwargs)
+            await worker(starting_skip)
             try:
                 initial_call = success_queue.get_nowait()
             except asyncio.QueueEmpty:
@@ -156,7 +160,7 @@ class IndexMixin:
                 total = initial_call.content['total']
 
             # If only one query was necessary, return immediately.
-            if total <= limit:
+            if total <= kwargs['limit']:
                 return [initial_call], []
 
             # Warn the user when truncation will occur. (max_skip is hit)
@@ -164,8 +168,8 @@ class IndexMixin:
                 logger.warning('Maximum skip level. Truncated results for: %s', kwargs)
 
             tasks = [
-                worker(limit, skip, **kwargs)
-                for skip in range(starting_skip + limit, total, limit)
+                worker(skip)
+                for skip in range(starting_skip + kwargs['limit'], total, kwargs['limit'])
             ]
             logger.info('%s index queries required for: %s', len(tasks) + 1, kwargs)
             await asyncio.gather(*tasks)
@@ -178,13 +182,11 @@ class IndexMixin:
 
         return succeeded, failed
 
-    def _index_query_builder(self, limit, skip, **kwargs):
+    def _index_query_builder(self, **kwargs):
         """
         Build index query string.
 
         Args:
-            limit (int): Query limit.
-            skip (int): Query skip.
             kwargs: Any index query parameters.
 
         Returns:
@@ -194,9 +196,7 @@ class IndexMixin:
 
         params_str = self._parse_query_inputs(**kwargs)
 
-        query_str = '{}/{}?{}&limit={}&skip={}'.format(
-            self._base_api_url, self._core_api, params_str, limit, skip
-        )
+        query_str = '{}/{}?{}'.format(self._base_api_url, self._core_api, params_str)
 
         return query_str
 
@@ -206,27 +206,25 @@ class IndexMixin:
 
     async def _index_worker(
         self,
-        limit,
         skip,
+        query_params,
         _session=None,
         _success_queue=None,
         _failure_queue=None,
-        **kwargs
     ):
         """
         Handles index calls.
 
         Args:
-            limit (int): Query limit.
             skip (int): Query skip.
+            query_params (dict): Any optional search parameters.
             _session (aiohttp.ClientSession): Session instance.
             _success_queue (asyncio.Queue): Queue for successful calls.
             _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
-            kwargs (dict): Any index query parameters.
 
         """
         call_params = locals()
-        query_str = self._index_query_builder(limit, skip, **kwargs)
+        query_str = self._index_query_builder(skip=skip, **query_params)
         call_record = Record(url=query_str, parameters=call_params)
 
         try:
