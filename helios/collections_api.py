@@ -492,14 +492,14 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         return CollectionsFeature(resp_json)
 
     async def show_image(
-        self, collection_id, image_names, out_dir=None, return_image_data=False
+        self, image_names, collection_id, out_dir=None, return_image_data=False
     ):
         """
         Get images from a collection.
 
         Args:
-            collection_id (str): Collection ID to add images into.
             image_names (str or list of strs): Image names.
+            collection_id (str): Collection ID to add images into.
             out_dir (optional, str): Directory to write images to.  Defaults to
                 None.
             return_image_data (optional, bool): If True images will be
@@ -515,8 +515,8 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         """
         succeeded, failed = await super().show_image(
-            collection_id,
             image_names,
+            collection_id,
             out_dir=out_dir,
             return_image_data=return_image_data,
         )

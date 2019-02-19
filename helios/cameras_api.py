@@ -170,7 +170,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         return CamerasFeatureCollection(content), failed
 
-    async def show_image(self, camera_id, times, out_dir=None, return_image_data=False):
+    async def show_image(self, times, camera_id, out_dir=None, return_image_data=False):
         """
         Get images from the media cache.
 
@@ -178,10 +178,10 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         for internal analytics or for end user recording purposes.
 
         Args:
-            camera_id (str): Camera ID.
             times (str or list of strs): Image times, specified in UTC as
                 an ISO 8601 string (e.g. 2017-08-01 or 2017-08-01T12:34:56.000Z).
                 The image with the closest matching timestamp will be returned.
+            camera_id (str): Camera ID.
             out_dir (optional, str): Directory to write images to.  Defaults to
                 None.
             return_image_data (optional, bool): If True images will be
@@ -198,7 +198,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         """
 
         succeeded, failed = await super().show_image(
-            camera_id, times, out_dir=out_dir, return_image_data=return_image_data
+            times, camera_id, out_dir=out_dir, return_image_data=return_image_data
         )
 
         return succeeded, failed

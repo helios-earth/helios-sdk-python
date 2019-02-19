@@ -311,7 +311,7 @@ class ShowImageMixin:
     """Mixin for show_image queries"""
 
     @logging_utils.log_entrance_exit
-    async def show_image(self, asset_id, data, out_dir=None, return_image_data=False):
+    async def show_image(self, data, asset_id, out_dir=None, return_image_data=False):
         if not isinstance(data, (list, tuple)):
             data = [data]
 
@@ -325,13 +325,14 @@ class ShowImageMixin:
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             worker = functools.partial(
                 self._bound_show_image_worker,
+                asset_id=asset_id,
                 out_dir=out_dir,
                 return_image_data=return_image_data,
                 _session=session,
                 _success_queue=success_queue,
                 _failure_queue=failure_queue,
             )
-            tasks = [worker(asset_id, x) for x in data]
+            tasks = [worker(x) for x in data]
             await asyncio.gather(*tasks)
 
         succeeded = self._get_all_items(success_queue)
@@ -345,8 +346,8 @@ class ShowImageMixin:
 
     async def _show_image_worker(
         self,
-        asset_id,
         data,
+        asset_id,
         out_dir=None,
         return_image_data=False,
         _session=None,
@@ -357,9 +358,9 @@ class ShowImageMixin:
         Handles show_image call.
 
         Args:
-            asset_id (str): Asset id.
             data (list of str): Datapoints for the id. E.g. for cameras this is
                 image times.
+            asset_id (str): Asset id.
             out_dir (str, optional): Optionally write data to a directory.
             return_image_data (bool, optional): Optionally load image data
                 into PIL and include in returned data.
@@ -418,6 +419,6 @@ class ShowImageMixin:
                 parameters=call_params,
                 name=image_name,
                 content=img_data,
-                output_file=out_file,
+                filename=out_file,
             )
         )
