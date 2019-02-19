@@ -225,7 +225,6 @@ class IndexMixin:
         """
         call_params = locals()
         query_str = self._index_query_builder(skip=skip, **query_params)
-        call_record = Record(url=query_str, parameters=call_params)
 
         try:
             async with _session.get(
