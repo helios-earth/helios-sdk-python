@@ -94,21 +94,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         if isinstance(assets, dict):
             assets = [assets]
 
-        success_queue = asyncio.Queue()
-        failure_queue = asyncio.Queue()
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            worker = functools.partial(
-                self._bound_add_image_worker,
-                collection_id,
-                _session=session,
-                _success_queue=success_queue,
-                _failure_queue=failure_queue,
-            )
-            tasks = [worker(data) for data in assets]
-            await asyncio.gather(*tasks)
-
-        succeeded = self._get_all_items(success_queue)
-        failed = self._get_all_items(failure_queue)
+        succeeded, failed = await self._batch_process(
+            self._bound_add_image_worker, assets, collection_id=collection_id
+        )
 
         return succeeded, failed
 
@@ -118,8 +106,8 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
     async def _add_image_worker(
         self,
+        asset,
         collection_id,
-        data,
         _session=None,
         _success_queue=None,
         _failure_queue=None,
@@ -128,8 +116,8 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         Handles add_image call.
 
         Args:
+            asset (dict): Helios asset.
             collection_id (str): Collection ID.
-            data (dict): Helios asset.
             _session (aiohttp.ClientSession): Session instance.
             _success_queue (asyncio.Queue): Queue for successful calls.
             _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
@@ -145,7 +133,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             async with _session.post(
                 post_url,
                 headers=header,
-                data=data,
+                data=asset,
                 raise_for_status=True,
                 ssl=self._ssl_verify,
             ) as resp:
@@ -383,21 +371,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         if not isinstance(names, (list, tuple)):
             names = [names]
 
-        success_queue = asyncio.Queue()
-        failure_queue = asyncio.Queue()
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            worker = functools.partial(
-                self._bound_remove_image_worker,
-                collection_id,
-                _session=session,
-                _success_queue=success_queue,
-                _failure_queue=failure_queue,
-            )
-            tasks = [worker(name) for name in names]
-            await asyncio.gather(*tasks)
-
-        succeeded = self._get_all_items(success_queue)
-        failed = self._get_all_items(failure_queue)
+        succeeded, failed = await self._batch_process(
+            self._bound_remove_image_worker, names, collection_id=collection_id
+        )
 
         return succeeded, failed
 
@@ -407,8 +383,8 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
     async def _remove_image_worker(
         self,
+        asset,
         collection_id,
-        name,
         _session=None,
         _success_queue=None,
         _failure_queue=None,
@@ -417,8 +393,8 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         Handles remove_image call.
 
         Args:
+            asset (dict): Helios asset.
             collection_id (str): Collection ID.
-            name (dict): Helios asset.
             _session (aiohttp.ClientSession): Session instance.
             _success_queue (asyncio.Queue): Queue for successful calls.
             _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
@@ -428,7 +404,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         call_params = locals()
 
         del_url = '{}/{}/{}/images/{}'.format(
-            self._base_api_url, self._core_api, collection_id, name
+            self._base_api_url, self._core_api, collection_id, asset
         )
 
         try:

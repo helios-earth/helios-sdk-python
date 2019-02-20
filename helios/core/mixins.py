@@ -114,6 +114,79 @@ class SDKCore:
                 break
         return items
 
+    async def _batch_process(self, func, iterable, **kwargs):
+        """
+        Batch process each element in an iterable with a worker function.
+
+        This assumes the input argument to iterate over is in the first
+        position.
+
+        The worker function must also follow the design of all other workers
+        in the SDK. I.e. they must accept _success_queue, _failure_queue, and
+        _session as private input parameters.
+
+        Args:
+            func (function): Worker function reference.
+            iterable (list): List of data to be processed by the func.
+            **kwargs: Any function input arguments to pre-fill using
+                partial.  These parameters will be used for each item in the
+                iterable. E.g. f(iterable, a, b, c=5) ->
+                _batch_process(worker_func, iterable, a=val1, b=val2)
+
+        Returns:
+            tuple: A tuple containing the successful and failed API call
+                records.
+
+        """
+
+        n = len(iterable)
+
+        logger.info('Processing %s calls to %s.', n, func.__name__)
+
+        if '_success_queue' in kwargs:
+            success_queue = kwargs['_success_queue']
+        else:
+            success_queue = asyncio.Queue()
+            kwargs['_success_queue'] = success_queue
+
+        if '_failure_queue' in kwargs:
+            failure_queue = kwargs['_failure_queue']
+        else:
+            failure_queue = asyncio.Queue()
+            kwargs['_failure_queue'] = failure_queue
+
+        if '_session' in kwargs:
+            worker = functools.partial(func, **kwargs)
+            tasks = [asyncio.ensure_future(worker(x)) for x in iterable]
+            if n > 1:
+                await asyncio.gather(*tasks)
+            else:
+                await tasks[0]
+        else:
+            async with aiohttp.ClientSession(headers=self._auth_header) as session:
+                kwargs['_session'] = session
+                worker = functools.partial(func, **kwargs)
+                tasks = [asyncio.ensure_future(worker(x)) for x in iterable]
+                if n > 1:
+                    await asyncio.gather(*tasks)
+                else:
+                    await tasks[0]
+
+        succeeded = self._get_all_items(success_queue)
+        failed = self._get_all_items(failure_queue)
+
+        _n_succeeded = len(succeeded)
+        _n_failed = len(failed)
+        _log_message = f'{_n_succeeded} out of {n} successful'
+        if _n_succeeded == 0:
+            logger.error(_log_message)
+        elif _n_succeeded < n:
+            logger.warning(_log_message)
+        else:
+            logger.info(_log_message)
+
+        return succeeded, failed
+
 
 class IndexMixin:
     """Mixin for index queries."""
@@ -134,48 +207,36 @@ class IndexMixin:
                 'of {}. A value of {} was tried.'.format(max_skip, starting_skip)
             )
 
-        # Get all results.
-        success_queue = asyncio.Queue()
-        failure_queue = asyncio.Queue()
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            worker = functools.partial(
-                self._bound_index_worker,
-                query_params=kwargs,
-                _session=session,
-                _success_queue=success_queue,
-                _failure_queue=failure_queue,
-            )
+        initial_succeeded, initial_failed = await self._batch_process(
+            self._bound_index_worker, [starting_skip], query_params=kwargs
+        )
+        if initial_failed:
+            raise initial_failed[0].error
+        else:
+            initial_call = initial_succeeded[0]
 
-            await worker(starting_skip)
-            try:
-                initial_call = success_queue.get_nowait()
-            except asyncio.QueueEmpty:
-                failure = failure_queue.get_nowait()
-                raise failure.error
+        # Get total number of features available.
+        try:
+            total = initial_call.content['properties']['total']
+        except KeyError:
+            total = initial_call.content['total']
 
-            # Get total number of features available.
-            try:
-                total = initial_call.content['properties']['total']
-            except KeyError:
-                total = initial_call.content['total']
+        # If only one query was necessary, return immediately.
+        if total <= kwargs['limit']:
+            return [initial_call], []
 
-            # If only one query was necessary, return immediately.
-            if total <= kwargs['limit']:
-                return [initial_call], []
+        # Warn the user when truncation will occur. (max_skip is hit)
+        if total > max_skip:
+            logger.warning('Maximum skip level. Truncated results for: %s', kwargs)
 
-            # Warn the user when truncation will occur. (max_skip is hit)
-            if total > max_skip:
-                logger.warning('Maximum skip level. Truncated results for: %s', kwargs)
+        skips = [
+            skip
+            for skip in range(starting_skip + kwargs['limit'], total, kwargs['limit'])
+        ]
 
-            tasks = [
-                worker(skip)
-                for skip in range(starting_skip + kwargs['limit'], total, kwargs['limit'])
-            ]
-            logger.info('%s index queries required for: %s', len(tasks) + 1, kwargs)
-            await asyncio.gather(*tasks)
-
-        succeeded = self._get_all_items(success_queue)
-        failed = self._get_all_items(failure_queue)
+        succeeded, failed = await self._batch_process(
+            self._bound_index_worker, skips, query_params=kwargs
+        )
 
         # Put initial query back in list.
         succeeded.insert(0, initial_call)
@@ -251,20 +312,7 @@ class ShowMixin:
         if not isinstance(ids, (list, tuple)):
             ids = [ids]
 
-        success_queue = asyncio.Queue()
-        failure_queue = asyncio.Queue()
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            worker = functools.partial(
-                self._bound_show_worker,
-                _session=session,
-                _success_queue=success_queue,
-                _failure_queue=failure_queue,
-            )
-            tasks = [worker(id_) for id_ in ids]
-            await asyncio.gather(*tasks)
-
-        succeeded = self._get_all_items(success_queue)
-        failed = self._get_all_items(failure_queue)
+        succeeded, failed = await self._batch_process(self._bound_show_worker, ids)
 
         return succeeded, failed
 
@@ -320,23 +368,13 @@ class ShowImageMixin:
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
 
-        success_queue = asyncio.Queue()
-        failure_queue = asyncio.Queue()
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            worker = functools.partial(
-                self._bound_show_image_worker,
-                asset_id=asset_id,
-                out_dir=out_dir,
-                return_image_data=return_image_data,
-                _session=session,
-                _success_queue=success_queue,
-                _failure_queue=failure_queue,
-            )
-            tasks = [worker(x) for x in data]
-            await asyncio.gather(*tasks)
-
-        succeeded = self._get_all_items(success_queue)
-        failed = self._get_all_items(failure_queue)
+        succeeded, failed = await self._batch_process(
+            self._bound_show_image_worker,
+            data,
+            asset_id=asset_id,
+            out_dir=out_dir,
+            return_image_data=return_image_data,
+        )
 
         return succeeded, failed
 
