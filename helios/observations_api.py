@@ -6,7 +6,6 @@ documentation.  Some may have additional functionality for convenience.
 
 """
 import asyncio
-import functools
 import logging
 import os
 from collections import namedtuple, defaultdict
@@ -166,19 +165,19 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         call_params = locals()
 
-        query_str = '{}/{}/{}/preview'.format(
+        url = '{}/{}/{}/preview'.format(
             self._base_api_url, self._core_api, observation_id
         )
 
         try:
             async with _session.get(
-                query_str, raise_for_status=True, ssl=self._ssl_verify
+                url, raise_for_status=True, ssl=self._ssl_verify
             ) as resp:
                 image_content = await resp.read()
         except Exception as e:
-            logger.exception('Failed to GET %s', query_str)
+            logger.exception('Failed to GET %s', url)
             await _failure_queue.put(
-                ImageRecord(url=query_str, parameters=call_params, error=e)
+                ImageRecord(url=url, parameters=call_params, error=e)
             )
             return
 
@@ -201,7 +200,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 img_data = Image.open(BytesIO(image_content))
             except Exception as e:
                 await _failure_queue.put(
-                    ImageRecord(url=query_str, parameters=call_params, error=e)
+                    ImageRecord(url=url, parameters=call_params, error=e)
                 )
                 return
         else:
@@ -209,7 +208,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         await _success_queue.put(
             ImageRecord(
-                url=query_str,
+                url=url,
                 parameters=call_params,
                 name=image_name,
                 content=img_data,

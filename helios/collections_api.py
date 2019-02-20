@@ -6,7 +6,6 @@ documentation.  Some may have additional functionality for convenience.
 
 """
 import asyncio
-import functools
 import hashlib
 import logging
 
@@ -164,13 +163,13 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         """
 
         # Get the collection metadata that needs to be copied.
-        query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, collection_id)
+        url = '{}/{}/{}'.format(self._base_api_url, self._core_api, collection_id)
         async with aiohttp.ClientSession(headers=self._auth_header) as sess:
             try:
-                async with sess.get(query_str, raise_for_status=True) as resp:
+                async with sess.get(url, raise_for_status=True) as resp:
                     metadata = await resp.json()
             except Exception:
-                logger.exception('Failed to GET collection metadata. %s', query_str)
+                logger.exception('Failed to GET collection metadata. %s', url)
                 raise
 
         # Get the images that exist in the collection.
@@ -455,13 +454,13 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             )
 
         params_str = self._parse_query_inputs(**dict(limit=limit, marker=marker))
-        query_str = '{}/{}/{}?{}'.format(
+        url = '{}/{}/{}?{}'.format(
             self._base_api_url, self._core_api, collection_id, params_str
         )
 
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             async with session.get(
-                query_str, raise_for_status=True, ssl=self._ssl_verify
+                url, raise_for_status=True, ssl=self._ssl_verify
             ) as resp:
                 resp_json = await resp.json()
 

@@ -62,17 +62,16 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         async with aiohttp.ClientSession(headers=self._auth_header) as session:
             image_times = []
             while True:
-                query_str = '{}/{}/{}/images?time={}&limit={}'.format(
+                url = '{}/{}/{}/images?time={}&limit={}'.format(
                     self._base_api_url, self._core_api, camera_id, start_time, limit
                 )
-                # Get image times available.
                 try:
                     async with session.get(
-                        query_str, raise_for_status=True, ssl=self._ssl_verify
+                        url, raise_for_status=True, ssl=self._ssl_verify
                     ) as resp:
                         resp_json = await resp.json()
                 except aiohttp.ClientError:
-                    logger.exception('Failed to GET %s.', query_str)
+                    logger.exception('Failed to GET %s.', url)
                     raise
 
                 times = resp_json['times']
