@@ -16,23 +16,32 @@ This example creates an instance of the Cameras API, queries for New York
 cameras and then parses the camera IDs from the resulting GeoJSON information.
 
 ```python
+import asyncio
 import helios
 
-cameras = helios.Cameras()
+async def main():
+    async with helios.HeliosSession() as sess:
+        cameras = helios.Cameras(sess)
 
-# Retrieve GeoJSON Feature Collection for New York state cameras.
-ny_cams = cameras.index(state='New York')
+        # Retrieve GeoJSON Feature Collection for New York state cameras.        
+        ny_cams, failed_calls = await cameras.index(state='New York')
 
-# Gather the camera IDs from the results.
+        # Gather the camera IDs from the results.
+    
+        # Combines all id attributes from each GeoJSON feature using a convenience property.
+        ny_cams_ids = ny_cams.id
 
-# Combines all id attributes from each GeoJSON feature using a convenience property.
-ny_cams_ids = ny_cams.id
+        # Alternatively, you can iterate and extract individual fields from each feature.
+        ny_cams_ids_2 = [x.id for x in ny_cams.features]
+        
+# Python 3.6
+loop = asyncio.get_event_loop()
+results = loop.run_until_complete(main())
 
-# Alternatively, you can iterate and extract individual fields from each feature.
-ny_cams_ids_2 = [x.id for x in ny_cams.features]
+# Python 3.7
+results = asyncio.run(main())
 
 ```
-
 
 ## Installation
 
