@@ -158,17 +158,23 @@ class SDKCore:
             failure_queue = Queue()
             kwargs['_failure_queue'] = failure_queue
 
+        def _do_work(func, iterable):
+            """Helper function to do work in batch or direct call if single task."""
+            if len(iterable) > 1:
+                with ThreadPool(min(self._max_threads, n_tasks)) as pool:
+                    pool.map(func, iterable)
+            else:
+                func(iterable[0])
+
         if '_session' in kwargs:
             worker = functools.partial(func, **kwargs)
-            with ThreadPool(min(self._max_threads, n_tasks)) as pool:
-                pool.map(worker, iterable)
+            _do_work(worker, iterable)
         else:
             with requests.Session() as session:
                 session.headers.update(self._auth_header)
                 kwargs['_session'] = session
                 worker = functools.partial(func, **kwargs)
-                with ThreadPool(min(self._max_threads, n_tasks)) as pool:
-                    pool.map(worker, iterable)
+                _do_work(worker, iterable)
 
         succeeded = self._get_all_items(success_queue)
         failed = self._get_all_items(failure_queue)
