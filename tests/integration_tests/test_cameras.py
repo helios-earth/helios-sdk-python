@@ -20,15 +20,15 @@ def utc_range():
     return begin_date, end_date
 
 
-def test_cameras(utc_range):
+def test_cameras(utc_range, helios_session):
     # Create Cameras instance
-    cameras = helios.Cameras()
+    cameras = helios.Cameras(helios_session)
 
     # Perform index query
     index_results = cameras.index(state='new york')
 
     # Extract id from index query
-    id_ = index_results.id[0]
+    id_ = index_results[0].id[0]
 
     # Perform show query
     show_results = cameras.show(id_)

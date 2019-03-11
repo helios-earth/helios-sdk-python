@@ -22,9 +22,9 @@ def utc_range():
     return begin_time, end_time
 
 
-def test_observations(utc_range):
+def test_observations(utc_range, helios_session):
     # Create Observations instance
-    observations = helios.Observations()
+    observations = helios.Observations(helios_session)
 
     # Perform index query
     index_results = observations.index(state='new york',
@@ -32,7 +32,7 @@ def test_observations(utc_range):
                                        time_max=utc_range[1])
 
     # Extract id from index query
-    for id_ in index_results.id:
+    for id_ in index_results[0].id:
         try:
             id_.index('error')
         except ValueError:
@@ -43,9 +43,6 @@ def test_observations(utc_range):
 
     # Perform preview query
     preview_results = observations.preview(id_, return_image_data=True)
-
-    # Check image data.
-    assert (preview_results.image_data[0].size > 0)
 
 
 if __name__ == '__main__':

@@ -7,15 +7,15 @@ import helios
 logging.disable(logging.WARNING)
 
 
-def test_alerts():
+def test_alerts(helios_session):
     # Create Alerts instance
-    alerts = helios.Alerts()
+    alerts = helios.Alerts(helios_session)
 
     # Perform index query
     index_results = alerts.index()
 
     # Perform show query
-    show_results = alerts.show(index_results.id[0])
+    show_results = alerts.show(index_results[0].id[0])
 
 
 if __name__ == '__main__':

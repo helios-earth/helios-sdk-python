@@ -3,7 +3,7 @@ import pytest
 from helios import collections_api
 
 
-def test_collections_features(collections_json, record, record_fail):
+def test_collections_features(collections_json):
     collections_feature = collections_api.CollectionsFeature(collections_json)
     collections_fc = collections_api.CollectionsFeatureCollection(
         [collections_feature, collections_feature])
