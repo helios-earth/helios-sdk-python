@@ -18,18 +18,19 @@ cameras and then parses the camera IDs from the resulting GeoJSON information.
 ```python
 import helios
 
-cameras = helios.Cameras()
-
-# Retrieve GeoJSON Feature Collection for New York state cameras.
-ny_cams = cameras.index(state='New York')
-
-# Gather the camera IDs from the results.
-
-# Combines all id attributes from each GeoJSON feature using a convenience property.
-ny_cams_ids = ny_cams.id
-
-# Alternatively, you can iterate and extract individual fields from each feature.
-ny_cams_ids_2 = [x.id for x in ny_cams.features]
+with helios.HeliosSession() as sess:
+    cameras = helios.Cameras(sess)
+    
+    # Retrieve GeoJSON Feature Collection for New York state cameras.
+    ny_cams, failures = cameras.index(state='New York')
+    
+    # Gather the camera IDs from the results.
+    
+    # Combines all id attributes from each GeoJSON feature using a convenience property.
+    ny_cams_ids = ny_cams.id
+    
+    # Alternatively, you can iterate and extract individual fields from each feature.
+    ny_cams_ids_2 = [x.id for x in ny_cams.features]
 
 ```
 
