@@ -17,15 +17,16 @@ Creating a Session
 ------------------
 
 If authentication is stored on your machine starting a session is
-straightforward using the `async with` protocol.  Create a
+straightforward using the `with` protocol.  Create a
 :class:`HeliosSession <helios.core.session.HeliosSession>`
 instance without any inputs.  The authentication information 
 stored on your machine will automatically be applied.
 
-.. code-block:: python3
+.. code-block:: python
 
     import helios
-    async with helios.HeliosSession() as sess:
+
+    with helios.HeliosSession() as sess:
         print(sess)
     
 This will automatically make a call to the
@@ -37,11 +38,12 @@ authentication information needed to being using the core APIs.
 
 Alternatively, you can make a manual call to :meth:`start_session <helios.core.session.HeliosSession.start_session>`.
 
-.. code-block:: python3
+.. code-block:: python
 
     import helios
+
     sess = helios.HeliosSession()
-    await sess.start_session()
+    sess.start_session()
     print(sess)
 
 Token Expiration
@@ -60,33 +62,34 @@ with various configuration parameters.
 
 E.g. Limit the maximum concurrency:
 
-.. code-block:: python3
+.. code-block:: python
 
     import helios
-    async with helios.HeliosSession(max_concurrency=50) as sess:
+
+    with helios.HeliosSession(max_concurrency=50) as sess:
         print(sess)
 
 E.g. Override the base directory for storing tokens/credentials.json files:
 
-.. code-block:: python3
+.. code-block:: python
 
     import helios
-    async with helios.HeliosSession(base_dir='/tmp/custom') as sess:
+
+    with helios.HeliosSession(base_dir='/tmp/custom') as sess:
         print(sess)
 
 E.g. Using custom credentials outside of the standard :ref:`authentication`
 methods:
 
-.. code-block:: python3
+.. code-block:: python
 
    helios_client_id = '*your ID key*',
    helios_client_secret = '*your secret key*',
    helios_api_url = '*optional API URL override*'
 
-   async with helios.Session(
+   with helios.Session(
        client_id=helios_client_id,
        client_secret=helios_client_secret,
        api_url=helios_api_url
    ) as sess:
        print(sess)
-
