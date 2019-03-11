@@ -15,10 +15,10 @@ def concatenate_feature_collections(fc_tuple):
         import helios
         from helios.utilities.data_utils import concatenate_feature_collections
 
-        async with helios.HeliosSession() as sess:
+        with helios.HeliosSession() as sess:
             cams_inst = helios.Cameras(sess)
-            results1, failed = await cams_inst.index(state='new york')
-            results2, failed = await cams_inst.index(state='maryland')
+            results1, failed = cams_inst.index(state='new york')
+            results2, failed = cams_inst.index(state='maryland')
         combined = concatenate_feature_collections((results1, results2))
 
     Args:
