@@ -5,11 +5,10 @@ Methods are meant to represent the core functionality in the developer
 documentation.  Some may have additional functionality for convenience.
 
 """
-import asyncio
 import hashlib
 import logging
 
-import aiohttp
+import requests
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowImageMixin
 from helios.core.structure import Record
@@ -45,7 +44,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         super().__init__(session)
 
     @logging_utils.log_entrance_exit
-    async def add_image(self, assets, collection_id):
+    def add_image(self, assets, collection_id):
         """
         Add images to a collection from Helios assets.
 
@@ -64,13 +63,13 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         .. code-block:: python3
 
             import helios
-            async with helios.HeliosSession() as sess:
+            with helios.HeliosSession() as sess:
                 coll_inst = helios.Collections(sess)
                 camera_id = '...'
                 times = [...] # List of image times.
                 destination_id = '...'
                 data = [{'camera_id': camera_id, 'time': x} for x in times]
-                results, failures = await coll_inst.add_image(data, destination_id)
+                results, failures = coll_inst.add_image(data, destination_id)
 
         Args:
             assets (dict or list of dicts): Data containing any of these
@@ -93,17 +92,13 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         if isinstance(assets, dict):
             assets = [assets]
 
-        succeeded, failed = await self._batch_process(
-            self._bound_add_image_worker, assets, collection_id=collection_id
+        succeeded, failed = self._batch_process(
+            self._add_image_worker, assets, collection_id=collection_id
         )
 
         return succeeded, failed
 
-    async def _bound_add_image_worker(self, *args, **kwargs):
-        async with self._async_semaphore:
-            return await self._add_image_worker(*args, **kwargs)
-
-    async def _add_image_worker(
+    def _add_image_worker(
         self,
         asset,
         collection_id,
@@ -117,9 +112,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         Args:
             asset (dict): Helios asset.
             collection_id (str): Collection ID.
-            _session (aiohttp.ClientSession): Session instance.
-            _success_queue (asyncio.Queue): Queue for successful calls.
-            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+            _session (requests.Session): Session instance.
+            _success_queue (queue.Queue): Queue for successful calls.
+            _failure_queue (queue.Queue): Queue for unsuccessful calls.
 
         """
 
@@ -129,27 +124,24 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         post_url = '{}/collections/{}/images'.format(self._base_api_url, collection_id)
 
         try:
-            async with _session.post(
-                post_url,
-                headers=header,
-                data=asset,
-                raise_for_status=True,
-                ssl=self._ssl_verify,
-            ) as resp:
-                resp_json = await resp.json()
+            _session.headers.update(header)
+            resp = _session.post(post_url, json=asset, verify=self._ssl_verify)
+            resp.raise_for_status()
         except Exception as e:
             logger.exception('Failed to POST %s.', post_url)
-            await _failure_queue.put(
+            _failure_queue.put(
                 Record(url=post_url, parameters=call_params, error=e)
             )
             return
 
-        await _success_queue.put(
+        resp_json = resp.json()
+
+        _success_queue.put(
             Record(url=post_url, parameters=call_params, content=resp_json)
         )
 
     @logging_utils.log_entrance_exit
-    async def copy(self, collection_id, new_name):
+    def copy(self, collection_id, new_name):
         """
         Copy a collection and its contents to a new collection.
 
@@ -164,28 +156,30 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         # Get the collection metadata that needs to be copied.
         url = '{}/{}/{}'.format(self._base_api_url, self._core_api, collection_id)
-        async with aiohttp.ClientSession(headers=self._auth_header) as sess:
-            try:
-                async with sess.get(url, raise_for_status=True) as resp:
-                    metadata = await resp.json()
-            except Exception:
-                logger.exception('Failed to GET collection metadata. %s', url)
-                raise
+
+        try:
+            resp = requests.get(url, headers=self._auth_header, verify=self._ssl_verify)
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('Failed to GET collection metadata. %s', url)
+            raise
+
+        metadata = resp.json()
 
         # Get the images that exist in the collection.
-        image_names = await self.images(collection_id)
+        image_names = self.images(collection_id)
 
         # Create new collection.
-        new_id = await self.create(new_name, metadata['description'], metadata['tags'])
+        new_id = self.create(new_name, metadata['description'], metadata['tags'])
 
         # Add images to new collection.
         data = [{'collection_id': collection_id, 'image': x} for x in image_names]
-        _ = await self.add_image(data, new_id)
+        _ = self.add_image(data, new_id)
 
         return new_id
 
     @logging_utils.log_entrance_exit
-    async def create(self, name, description, tags=None):
+    def create(self, name, description, tags=None):
         """
         Create a new collection.
 
@@ -210,20 +204,22 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         post_url = '{}/{}'.format(self._base_api_url, self._core_api)
 
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.post(
-                post_url,
-                headers=header,
-                data=payload,
-                raise_for_status=True,
-                ssl=self._ssl_verify,
-            ) as resp:
-                resp_json = await resp.json()
+        header.update(self._auth_header)
+        try:
+            resp = requests.post(post_url, json=payload,
+                                 headers=header,
+                                 verify=self._ssl_verify)
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('Failed to create new collection.')
+            raise
+
+        resp_json = resp.json()
 
         return resp_json['collection_id']
 
     @logging_utils.log_entrance_exit
-    async def destroy(self, collection_id):
+    def destroy(self, collection_id):
         """
         Delete an empty collection.
 
@@ -241,14 +237,17 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         del_url = '{}/{}/{}'.format(self._base_api_url, self._core_api, collection_id)
 
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.delete(
-                del_url, raise_for_status=True, ssl=self._ssl_verify
-            ) as resp:
-                return await resp.json()
+        try:
+            resp = requests.delete(del_url, headers=self._auth_header)
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('Failed to DELETE collection.')
+            raise
+
+        return resp.json()
 
     @logging_utils.log_entrance_exit
-    async def empty(self, collection_id):
+    def empty(self, collection_id):
         """
         Bulk remove (up to 1000) images from a collection.
 
@@ -264,14 +263,17 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             self._base_api_url, self._core_api, collection_id
         )
 
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.delete(
-                empty_url, raise_for_status=True, ssl=self._ssl_verify
-            ) as resp:
-                return await resp.json()
+        try:
+            resp = requests.delete(empty_url, headers=self._auth_header)
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('Failed to empty collection.')
+            raise
+
+        return resp.json()
 
     @logging_utils.log_entrance_exit
-    async def images(self, collection_id, camera=None, old_flag=False):
+    def images(self, collection_id, camera=None, old_flag=False):
         """
         Get all image names in a given collection.
 
@@ -300,7 +302,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         good_images = []
         while True:
-            results = await self.show(collection_id, marker=mark_img)
+            results = self.show(collection_id, marker=mark_img)
 
             # Gather images.
             images_found = results.images
@@ -321,7 +323,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         return good_images
 
-    async def index(self, **kwargs):
+    def index(self, **kwargs):
         """
         Get collections matching the provided spatial, text, or metadata filters.
 
@@ -341,7 +343,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                     Failed API call records.
 
         """
-        succeeded, failed = await super().index(**kwargs)
+        succeeded, failed = super().index(**kwargs)
 
         content = []
         for record in succeeded:
@@ -351,7 +353,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         return CollectionsFeatureCollection(content), failed
 
     @logging_utils.log_entrance_exit
-    async def remove_image(self, names, collection_id):
+    def remove_image(self, names, collection_id):
         """
         Remove images from a collection.
 
@@ -370,17 +372,13 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         if not isinstance(names, (list, tuple)):
             names = [names]
 
-        succeeded, failed = await self._batch_process(
-            self._bound_remove_image_worker, names, collection_id=collection_id
+        succeeded, failed = self._batch_process(
+            self._remove_image_worker, names, collection_id=collection_id
         )
 
         return succeeded, failed
 
-    async def _bound_remove_image_worker(self, *args, **kwargs):
-        async with self._async_semaphore:
-            return await self._remove_image_worker(*args, **kwargs)
-
-    async def _remove_image_worker(
+    def _remove_image_worker(
         self,
         asset,
         collection_id,
@@ -394,9 +392,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         Args:
             asset (dict): Helios asset.
             collection_id (str): Collection ID.
-            _session (aiohttp.ClientSession): Session instance.
-            _success_queue (asyncio.Queue): Queue for successful calls.
-            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+            _session (requests.Session): Session instance.
+            _success_queue (queue.Queue): Queue for successful calls.
+            _failure_queue (queue.Queue): Queue for unsuccessful calls.
 
         """
 
@@ -407,23 +405,23 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         )
 
         try:
-            async with _session.delete(
-                del_url, raise_for_status=True, ssl=self._ssl_verify
-            ) as resp:
-                resp_json = await resp.json()
+            resp = _session.delete(del_url, verify=self._ssl_verify)
+            resp.raise_for_status()
         except Exception as e:
             logger.exception('Failed to DELETE %s.', del_url)
-            await _failure_queue.put(
+            _failure_queue.put(
                 Record(url=del_url, parameters=call_params, error=e)
             )
             return
 
-        await _success_queue.put(
+        resp_json = resp.json()
+
+        _success_queue.put(
             Record(url=del_url, parameters=call_params, content=resp_json)
         )
 
     @logging_utils.log_entrance_exit
-    async def show(self, collection_id, limit=200, marker=None):
+    def show(self, collection_id, limit=200, marker=None):
         """
         Get the attributes and image list for collections.
 
@@ -458,15 +456,16 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             self._base_api_url, self._core_api, collection_id, params_str
         )
 
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.get(
-                url, raise_for_status=True, ssl=self._ssl_verify
-            ) as resp:
-                resp_json = await resp.json()
+        try:
+            resp = requests.get(url, headers=self._auth_header, verify=self._ssl_verify)
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('Failed to call show for collection.')
+            raise
 
-        return CollectionsFeature(resp_json)
+        return CollectionsFeature(resp.json())
 
-    async def show_image(
+    def show_image(
         self, image_names, collection_id, out_dir=None, return_image_data=False
     ):
         """
@@ -489,7 +488,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                     Failed API calls.
 
         """
-        succeeded, failed = await super().show_image(
+        succeeded, failed = super().show_image(
             image_names,
             collection_id,
             out_dir=out_dir,
@@ -499,7 +498,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         return succeeded, failed
 
     @logging_utils.log_entrance_exit
-    async def update(self, collections_id, name=None, description=None, tags=None):
+    def update(self, collections_id, name=None, description=None, tags=None):
         """
         Update a collection.
 
@@ -536,15 +535,17 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             self._base_api_url, self._core_api, collections_id
         )
 
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
-            async with session.patch(
-                patch_url,
-                data=parms,
-                headers=header,
-                raise_for_status=True,
-                ssl=self._ssl_verify,
-            ) as resp:
-                return await resp.json()
+        header.update(self._auth_header)
+        try:
+            resp = requests.patch(patch_url, json=parms,
+                                  headers=header,
+                                  verify=self._ssl_verify)
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('Failed to update collection.')
+            raise
+
+        return resp.json()
 
 
 class CollectionsFeature:

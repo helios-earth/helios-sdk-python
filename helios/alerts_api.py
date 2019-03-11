@@ -43,7 +43,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
         """
         super().__init__(session)
 
-    async def index(self, **kwargs):
+    def index(self, **kwargs):
         """
         Get alerts matching the provided spatial, text, or
         metadata filters.
@@ -65,7 +65,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super().index(**kwargs)
+        succeeded, failed = super().index(**kwargs)
 
         content = []
         for record in succeeded:
@@ -74,7 +74,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
         return AlertsFeatureCollection(content), failed
 
-    async def show(self, alert_ids):
+    def show(self, alert_ids):
         """
         Get attributes for alerts.
 
@@ -90,7 +90,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super().show(alert_ids)
+        succeeded, failed = super().show(alert_ids)
 
         content = []
         for record in succeeded:

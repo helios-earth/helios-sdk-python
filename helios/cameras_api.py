@@ -7,7 +7,7 @@ documentation.  Some may have additional functionality for convenience.
 """
 import logging
 
-import aiohttp
+import requests
 from dateutil.parser import parse
 from helios.core.mixins import SDKCore, ShowMixin, ShowImageMixin, IndexMixin
 from helios.utilities import logging_utils
@@ -33,7 +33,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         super().__init__(session)
 
     @logging_utils.log_entrance_exit
-    async def images(self, camera_id, start_time, end_time=None, limit=500):
+    def images(self, camera_id, start_time, end_time=None, limit=500):
         """
         Get the image times available for a given camera in the media cache.
 
@@ -59,20 +59,20 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
         else:
             end = None
 
-        async with aiohttp.ClientSession(headers=self._auth_header) as session:
+        with requests.Session() as session:
+            session.headers.update(self._auth_header)
             image_times = []
             while True:
                 url = '{}/{}/{}/images?time={}&limit={}'.format(
                     self._base_api_url, self._core_api, camera_id, start_time, limit
                 )
                 try:
-                    async with session.get(
-                        url, raise_for_status=True, ssl=self._ssl_verify
-                    ) as resp:
-                        resp_json = await resp.json()
-                except aiohttp.ClientError:
+                    resp = session.get(url, verify=self._ssl_verify)
+                    resp.raise_for_status()
+                except Exception:
                     logger.exception('Failed to GET %s.', url)
                     raise
+                resp_json = resp.json()
 
                 times = resp_json['times']
 
@@ -114,7 +114,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         return image_times
 
-    async def index(self, **kwargs):
+    def index(self, **kwargs):
         """
         Get cameras matching the provided spatial, text, or
         metadata filters.
@@ -136,7 +136,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super().index(**kwargs)
+        succeeded, failed = super().index(**kwargs)
 
         content = []
         for record in succeeded:
@@ -145,7 +145,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         return CamerasFeatureCollection(content), failed
 
-    async def show(self, camera_ids):
+    def show(self, camera_ids):
         """
         Get attributes for cameras.
 
@@ -161,7 +161,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super().show(camera_ids)
+        succeeded, failed = super().show(camera_ids)
 
         content = []
         for record in succeeded:
@@ -169,7 +169,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         return CamerasFeatureCollection(content), failed
 
-    async def show_image(self, times, camera_id, out_dir=None, return_image_data=False):
+    def show_image(self, times, camera_id, out_dir=None, return_image_data=False):
         """
         Get images from the media cache.
 
@@ -196,7 +196,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super().show_image(
+        succeeded, failed = super().show_image(
             times, camera_id, out_dir=out_dir, return_image_data=return_image_data
         )
 

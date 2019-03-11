@@ -5,14 +5,13 @@ Methods are meant to represent the core functionality in the developer
 documentation.  Some may have additional functionality for convenience.
 
 """
-import asyncio
 import logging
 import os
 from collections import namedtuple, defaultdict
 from io import BytesIO
+from queue import Queue
 
-import aiofiles
-import aiohttp
+import requests
 from PIL import Image
 
 from helios.core.mixins import SDKCore, IndexMixin, ShowMixin
@@ -43,7 +42,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         """
         super().__init__(session)
 
-    async def index(self, **kwargs):
+    def index(self, **kwargs):
         """
         Get observations matching the provided spatial, text, or
         metadata filters.
@@ -56,25 +55,23 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         .. code-block:: python3
 
             import helios
-            async with helios.HeliosSession() as sess:
+            with helios.HeliosSession() as sess:
                 obs_inst = helios.Observations(sess)
                 state = 'Maryland'
                 bbox = [-169.352,1.137,-1.690,64.008]
                 sensors = 'sensors[visibility][min]=0&sensors[visibility][max]=1'
-                results, failures = await obs.index(state=state,
-                                                    bbox=bbox,
-                                                    sensors=sensors)
+                results, failures = obs.index(state=state, bbox=bbox, sensors=sensors)
 
         Usage example for transitions:
 
         .. code-block:: python3
 
             import helios
-            async with helios.HeliosSession() as sess:
+            with helios.HeliosSession() as sess:
                 obs_inst = helios.Observations(sess)
                 # transition from dry/wet to partial/fully-covered snow roads
                 sensors = 'sensors[road_weather][data][min]=6&sensors[road_weather][prev][max]=3'
-                results, failures = await obs.index(sensors=sensors_query)
+                results, failures = obs.index(sensors=sensors_query)
 
         .. _observations_index_documentation: https://helios.earth/developers/api/observations/#index
 
@@ -91,7 +88,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         """
 
-        succeeded, failed = await super().index(**kwargs)
+        succeeded, failed = super().index(**kwargs)
 
         content = []
         for record in succeeded:
@@ -101,7 +98,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         return ObservationsFeatureCollection(content), failed
 
     @logging_utils.log_entrance_exit
-    async def preview(self, observation_ids, out_dir=None, return_image_data=False):
+    def preview(self, observation_ids, out_dir=None, return_image_data=False):
         """
         Get preview images from observations.
 
@@ -127,8 +124,8 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
 
-        succeeded, failed = await self._batch_process(
-            self._bound_preview_worker,
+        succeeded, failed = self._batch_process(
+            self._preview_worker,
             observation_ids,
             out_dir=out_dir,
             return_image_data=return_image_data,
@@ -136,11 +133,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
         return succeeded, failed
 
-    async def _bound_preview_worker(self, *args, **kwargs):
-        async with self._async_semaphore:
-            return await self._preview_worker(*args, **kwargs)
-
-    async def _preview_worker(
+    def _preview_worker(
         self,
         observation_id,
         out_dir=None,
@@ -157,9 +150,9 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             out_dir (str, optional): Optionally write data to a directory.
             return_image_data (bool, optional): Optionally load image data
                 into PIL and include in returned data.
-            _session (aiohttp.ClientSession): Session instance.
-            _success_queue (asyncio.Queue): Queue for successful calls.
-            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+            _session (requests.Session): Session instance.
+            _success_queue (Queue): Queue for successful calls.
+            _failure_queue (Queue): Queue for unsuccessful calls.
 
         """
 
@@ -170,16 +163,16 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         )
 
         try:
-            async with _session.get(
-                url, raise_for_status=True, ssl=self._ssl_verify
-            ) as resp:
-                image_content = await resp.read()
+            resp = _session.get(url, verify=self._ssl_verify)
+            resp.raise_for_status()
         except Exception as e:
             logger.exception('Failed to GET %s', url)
-            await _failure_queue.put(
+            _failure_queue.put(
                 ImageRecord(url=url, parameters=call_params, error=e)
             )
             return
+
+        image_content = resp.content
 
         # Parse key from url.
         parsed_url = parsing_utils.parse_url(str(resp.url))
@@ -188,8 +181,8 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
         # Write image to file.
         if out_dir:
             out_file = os.path.join(out_dir, image_name)
-            async with aiofiles.open(out_file, 'wb') as f:
-                await f.write(image_content)
+            with open(out_file, 'wb') as f:
+                f.write(image_content)
         else:
             out_file = None
 
@@ -199,14 +192,14 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             try:
                 img_data = Image.open(BytesIO(image_content))
             except Exception as e:
-                await _failure_queue.put(
+                _failure_queue.put(
                     ImageRecord(url=url, parameters=call_params, error=e)
                 )
                 return
         else:
             img_data = None
 
-        await _success_queue.put(
+        _success_queue.put(
             ImageRecord(
                 url=url,
                 parameters=call_params,
@@ -216,7 +209,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             )
         )
 
-    async def show(self, observation_ids):
+    def show(self, observation_ids):
         """
         Get attributes for observations.
 

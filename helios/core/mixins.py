@@ -4,14 +4,14 @@ Mixins and core functionality.
 Note: Mixins, in this case, simply refers to shared code.
 
 """
-import asyncio
 import functools
 import logging
 import os
+from queue import Queue, Empty
 from io import BytesIO
+from multiprocessing.pool import ThreadPool
 
-import aiofiles
-import aiohttp
+import requests
 from PIL import Image
 
 from helios.core.structure import ImageRecord, Record
@@ -53,8 +53,8 @@ class SDKCore:
         return self._session.auth_header
 
     @property
-    def _async_semaphore(self):
-        return self._session.async_semaphore
+    def _max_threads(self):
+        return self._session.max_threads
 
     @property
     def _ssl_verify(self):
@@ -99,22 +99,25 @@ class SDKCore:
     @staticmethod
     def _get_all_items(queue):
         """
-        Gets all items off an async queue.
+        Gets all items off a queue.
+
         Args:
-            queue (asyncio.Queue): Queue to get items from.
+            queue (queue.Queue): Queue to get items from.
+
         Returns:
             list: Items from the queue.
+
         """
 
         items = []
         while True:
             try:
                 items.append(queue.get_nowait())
-            except asyncio.QueueEmpty:
+            except Empty:
                 break
         return items
 
-    async def _batch_process(self, func, iterable, **kwargs):
+    def _batch_process(self, func, iterable, **kwargs):
         """
         Batch process each element in an iterable with a worker function.
 
@@ -146,31 +149,28 @@ class SDKCore:
         if '_success_queue' in kwargs:
             success_queue = kwargs['_success_queue']
         else:
-            success_queue = asyncio.Queue()
+            success_queue = Queue()
             kwargs['_success_queue'] = success_queue
 
         if '_failure_queue' in kwargs:
             failure_queue = kwargs['_failure_queue']
         else:
-            failure_queue = asyncio.Queue()
+            failure_queue = Queue()
             kwargs['_failure_queue'] = failure_queue
+
+        n_tasks = len(iterable)
 
         if '_session' in kwargs:
             worker = functools.partial(func, **kwargs)
-            tasks = [asyncio.ensure_future(worker(x)) for x in iterable]
-            if n > 1:
-                await asyncio.gather(*tasks)
-            else:
-                await tasks[0]
+            with ThreadPool(min(self._max_threads, n_tasks)) as pool:
+                pool.map(worker, iterable)
         else:
-            async with aiohttp.ClientSession(headers=self._auth_header) as session:
+            with requests.Session() as session:
+                session.headers.update(self._auth_header)
                 kwargs['_session'] = session
                 worker = functools.partial(func, **kwargs)
-                tasks = [asyncio.ensure_future(worker(x)) for x in iterable]
-                if n > 1:
-                    await asyncio.gather(*tasks)
-                else:
-                    await tasks[0]
+                with ThreadPool(min(self._max_threads, n_tasks)) as pool:
+                    pool.map(worker, iterable)
 
         succeeded = self._get_all_items(success_queue)
         failed = self._get_all_items(failure_queue)
@@ -192,7 +192,7 @@ class IndexMixin:
     """Mixin for index queries."""
 
     @logging_utils.log_entrance_exit
-    async def index(self, **kwargs):
+    def index(self, **kwargs):
         max_limit = 100
         max_skip = 4000
 
@@ -207,8 +207,8 @@ class IndexMixin:
                 'of {}. A value of {} was tried.'.format(max_skip, starting_skip)
             )
 
-        initial_succeeded, initial_failed = await self._batch_process(
-            self._bound_index_worker, [starting_skip], query_params=kwargs
+        initial_succeeded, initial_failed = self._batch_process(
+            self._index_worker, [starting_skip], query_params=kwargs
         )
         if initial_failed:
             raise initial_failed[0].error
@@ -234,8 +234,8 @@ class IndexMixin:
             for skip in range(starting_skip + kwargs['limit'], total, kwargs['limit'])
         ]
 
-        succeeded, failed = await self._batch_process(
-            self._bound_index_worker, skips, query_params=kwargs
+        succeeded, failed = self._batch_process(
+            self._index_worker, skips, query_params=kwargs
         )
 
         # Put initial query back in list.
@@ -261,11 +261,7 @@ class IndexMixin:
 
         return query_str
 
-    async def _bound_index_worker(self, *args, **kwargs):
-        async with self._async_semaphore:
-            return await self._index_worker(*args, **kwargs)
-
-    async def _index_worker(
+    def _index_worker(
         self,
         skip,
         query_params,
@@ -279,27 +275,27 @@ class IndexMixin:
         Args:
             skip (int): Query skip.
             query_params (dict): Any optional search parameters.
-            _session (aiohttp.ClientSession): Session instance.
-            _success_queue (asyncio.Queue): Queue for successful calls.
-            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+            _session (requests.Session): Session instance.
+            _success_queue (queue.Queue): Queue for successful calls.
+            _failure_queue (queue.Queue): Queue for unsuccessful calls.
 
         """
         call_params = locals()
         query_str = self._index_query_builder(skip=skip, **query_params)
 
         try:
-            async with _session.get(
-                query_str, raise_for_status=True, ssl=self._ssl_verify
-            ) as resp:
-                resp_json = await resp.json()
+            resp = _session.get(query_str, verify=self._ssl_verify)
+            resp.raise_for_status()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            await _failure_queue.put(
+            _failure_queue.put(
                 Record(url=query_str, parameters=call_params, error=e)
             )
             return
 
-        await _success_queue.put(
+        resp_json = resp.json()
+
+        _success_queue.put(
             Record(url=query_str, parameters=call_params, content=resp_json)
         )
 
@@ -308,19 +304,15 @@ class ShowMixin:
     """Mixin for show queries"""
 
     @logging_utils.log_entrance_exit
-    async def show(self, ids):
+    def show(self, ids):
         if not isinstance(ids, (list, tuple)):
             ids = [ids]
 
-        succeeded, failed = await self._batch_process(self._bound_show_worker, ids)
+        succeeded, failed = self._batch_process(self._show_worker, ids)
 
         return succeeded, failed
 
-    async def _bound_show_worker(self, *args, **kwargs):
-        async with self._async_semaphore:
-            return await self._show_worker(*args, **kwargs)
-
-    async def _show_worker(
+    def _show_worker(
         self, asset_id, _session=None, _success_queue=None, _failure_queue=None
     ):
         """
@@ -328,9 +320,9 @@ class ShowMixin:
 
         Args:
             asset_id (str): Asset id.
-            _session (aiohttp.ClientSession): Session instance.
-            _success_queue (asyncio.Queue): Queue for successful calls.
-            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+            _session (requests.Session): Session instance.
+            _success_queue (queue.Queue): Queue for successful calls.
+            _failure_queue (queue.Queue): Queue for unsuccessful calls.
 
         """
 
@@ -339,18 +331,18 @@ class ShowMixin:
         query_str = '{}/{}/{}'.format(self._base_api_url, self._core_api, asset_id)
 
         try:
-            async with _session.get(
-                query_str, raise_for_status=True, ssl=self._ssl_verify
-            ) as resp:
-                resp_json = await resp.json()
+            resp = _session.get(query_str, verify=self._ssl_verify)
+            resp.raise_for_status()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            await _failure_queue.put(
+            _failure_queue.put(
                 Record(url=query_str, parameters=call_params, error=e)
             )
             return
 
-        await _success_queue.put(
+        resp_json = resp.json()
+
+        _success_queue.put(
             Record(url=query_str, parameters=call_params, content=resp_json)
         )
 
@@ -359,7 +351,7 @@ class ShowImageMixin:
     """Mixin for show_image queries"""
 
     @logging_utils.log_entrance_exit
-    async def show_image(self, data, asset_id, out_dir=None, return_image_data=False):
+    def show_image(self, data, asset_id, out_dir=None, return_image_data=False):
         if not isinstance(data, (list, tuple)):
             data = [data]
 
@@ -368,8 +360,8 @@ class ShowImageMixin:
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
 
-        succeeded, failed = await self._batch_process(
-            self._bound_show_image_worker,
+        succeeded, failed = self._batch_process(
+            self._show_image_worker,
             data,
             asset_id=asset_id,
             out_dir=out_dir,
@@ -378,11 +370,7 @@ class ShowImageMixin:
 
         return succeeded, failed
 
-    async def _bound_show_image_worker(self, *args, **kwargs):
-        async with self._async_semaphore:
-            return await self._show_image_worker(*args, **kwargs)
-
-    async def _show_image_worker(
+    def _show_image_worker(
         self,
         data,
         asset_id,
@@ -402,9 +390,9 @@ class ShowImageMixin:
             out_dir (str, optional): Optionally write data to a directory.
             return_image_data (bool, optional): Optionally load image data
                 into PIL and include in returned data.
-            _session (aiohttp.ClientSession): Session instance.
-            _success_queue (asyncio.Queue): Queue for successful calls.
-            _failure_queue (asyncio.Queue): Queue for unsuccessful calls.
+            _session (requests.Session): Session instance.
+            _success_queue (queue.Queue): Queue for successful calls.
+            _failure_queue (queue.Queue): Queue for unsuccessful calls.
 
         """
 
@@ -415,16 +403,16 @@ class ShowImageMixin:
         )
 
         try:
-            async with _session.get(
-                query_str, raise_for_status=True, ssl=self._ssl_verify
-            ) as resp:
-                image_content = await resp.read()
+            resp = _session.get(query_str, verify=self._ssl_verify)
+            resp.raise_for_status()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            await _failure_queue.put(
+            _failure_queue.put(
                 ImageRecord(url=query_str, parameters=call_params, error=e)
             )
             return
+
+        image_content = resp.content
 
         # Parse key from url.
         parsed_url = parsing_utils.parse_url(str(resp.url))
@@ -433,8 +421,8 @@ class ShowImageMixin:
         # Write image to file.
         if out_dir:
             out_file = os.path.join(out_dir, image_name)
-            async with aiofiles.open(out_file, 'wb') as f:
-                await f.write(image_content)
+            with open(out_file, 'wb') as f:
+                f.write(image_content)
         else:
             out_file = None
 
@@ -444,14 +432,14 @@ class ShowImageMixin:
             try:
                 img_data = Image.open(BytesIO(image_content))
             except Exception as e:
-                await _failure_queue.put(
+                _failure_queue.put(
                     ImageRecord(url=query_str, parameters=call_params, error=e)
                 )
                 return
         else:
             img_data = None
 
-        await _success_queue.put(
+        _success_queue.put(
             ImageRecord(
                 url=query_str,
                 parameters=call_params,
