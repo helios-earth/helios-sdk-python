@@ -142,9 +142,9 @@ class SDKCore:
 
         """
 
-        n = len(iterable)
+        n_tasks = len(iterable)
 
-        logger.info('Processing %s calls to %s.', n, func.__name__)
+        logger.info('Processing %s calls to %s.', n_tasks, func.__name__)
 
         if '_success_queue' in kwargs:
             success_queue = kwargs['_success_queue']
@@ -157,8 +157,6 @@ class SDKCore:
         else:
             failure_queue = Queue()
             kwargs['_failure_queue'] = failure_queue
-
-        n_tasks = len(iterable)
 
         if '_session' in kwargs:
             worker = functools.partial(func, **kwargs)
@@ -177,10 +175,10 @@ class SDKCore:
 
         _n_succeeded = len(succeeded)
         _n_failed = len(failed)
-        _log_message = f'{_n_succeeded} out of {n} successful'
+        _log_message = f'{_n_succeeded} out of {n_tasks} successful'
         if _n_succeeded == 0:
             logger.error(_log_message)
-        elif _n_succeeded < n:
+        elif _n_succeeded < n_tasks:
             logger.warning(_log_message)
         else:
             logger.info(_log_message)
