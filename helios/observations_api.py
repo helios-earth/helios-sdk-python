@@ -167,9 +167,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
             resp.raise_for_status()
         except Exception as e:
             logger.exception('Failed to GET %s', url)
-            _failure_queue.put(
-                ImageRecord(url=url, parameters=call_params, error=e)
-            )
+            _failure_queue.put(ImageRecord(url=url, parameters=call_params, error=e))
             return
 
         image_content = resp.content

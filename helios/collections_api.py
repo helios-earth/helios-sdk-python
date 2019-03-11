@@ -129,9 +129,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             resp.raise_for_status()
         except Exception as e:
             logger.exception('Failed to POST %s.', post_url)
-            _failure_queue.put(
-                Record(url=post_url, parameters=call_params, error=e)
-            )
+            _failure_queue.put(Record(url=post_url, parameters=call_params, error=e))
             return
 
         resp_json = resp.json()
@@ -206,9 +204,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         header.update(self._auth_header)
         try:
-            resp = requests.post(post_url, json=payload,
-                                 headers=header,
-                                 verify=self._ssl_verify)
+            resp = requests.post(
+                post_url, json=payload, headers=header, verify=self._ssl_verify
+            )
             resp.raise_for_status()
         except Exception:
             logger.exception('Failed to create new collection.')
@@ -409,9 +407,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
             resp.raise_for_status()
         except Exception as e:
             logger.exception('Failed to DELETE %s.', del_url)
-            _failure_queue.put(
-                Record(url=del_url, parameters=call_params, error=e)
-            )
+            _failure_queue.put(Record(url=del_url, parameters=call_params, error=e))
             return
 
         resp_json = resp.json()
@@ -537,9 +533,9 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
         header.update(self._auth_header)
         try:
-            resp = requests.patch(patch_url, json=parms,
-                                  headers=header,
-                                  verify=self._ssl_verify)
+            resp = requests.patch(
+                patch_url, json=parms, headers=header, verify=self._ssl_verify
+            )
             resp.raise_for_status()
         except Exception:
             logger.exception('Failed to update collection.')

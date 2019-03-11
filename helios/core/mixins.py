@@ -286,9 +286,7 @@ class IndexMixin:
             resp.raise_for_status()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            _failure_queue.put(
-                Record(url=query_str, parameters=call_params, error=e)
-            )
+            _failure_queue.put(Record(url=query_str, parameters=call_params, error=e))
             return
 
         resp_json = resp.json()
@@ -333,9 +331,7 @@ class ShowMixin:
             resp.raise_for_status()
         except Exception as e:
             logger.exception('Failed to GET %s', query_str)
-            _failure_queue.put(
-                Record(url=query_str, parameters=call_params, error=e)
-            )
+            _failure_queue.put(Record(url=query_str, parameters=call_params, error=e))
             return
 
         resp_json = resp.json()
