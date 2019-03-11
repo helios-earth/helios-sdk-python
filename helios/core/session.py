@@ -1,11 +1,9 @@
 """Manager for the authorization token required to access the Helios API."""
-import asyncio
 import json
 import logging
 import os
 
-import aiofiles
-import aiohttp
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +22,7 @@ class HeliosSession:
     .. code-block:: python3
 
         import helios
-        async with helios.HeliosSession() as sess:
+        with helios.HeliosSession() as sess:
             alerts_inst = helios.Alerts(sess)
 
     Also, for creating and storing a session instance:
@@ -33,7 +31,7 @@ class HeliosSession:
 
         import helios
         sess = helios.HeliosSession()
-        await sess.start_session() # Must manually start the session.
+        sess.start_session() # Must manually start the session.
         alerts_inst = helios.Alerts(sess)
 
     Args:
@@ -42,8 +40,8 @@ class HeliosSession:
         api_url (str, optional): Override the default API URL.
         base_directory (str, optional): Override the base directory for
             storage of tokens and credentials.json file.
-        max_concurrency (int, optional): The maximum concurrency allowed for
-            batch calls. Defaults to 500.
+        max_threads (int, optional): The maximum number of threads allowed for
+            batch calls.
         token_expiration_threshold (int, optional): The number of minutes
             to allow before token expiration.  E.g. if the token will expire
             in 29 minutes and the threshold is set to 30, a new token will
@@ -57,7 +55,7 @@ class HeliosSession:
         client_id (str): API key ID.
         client_secret (str): API key secret.
         api_url (str): API URL.
-        max_concurrency (int): Maximum concurrency allowed.
+        max_threads (int): Maximum concurrency allowed.
 
     """
 
@@ -67,14 +65,14 @@ class HeliosSession:
         client_secret=None,
         api_url=None,
         base_directory=None,
-        max_concurrency=500,
+        max_threads=64,
         token_expiration_threshold=60,
         ssl_verify=True,
     ):
         self.client_id = client_id
         self.client_secret = client_secret
         self.api_url = api_url
-        self.max_concurrency = max_concurrency
+        self.max_threads = max_threads
         self.ssl_verify = ssl_verify
 
         self._token_expiration_threshold = token_expiration_threshold
@@ -96,9 +94,6 @@ class HeliosSession:
             self.api_url = _DEFAULT_API_URL
         else:
             self.api_url = self.api_url.rstrip('/')
-
-        # Create async semaphore for concurrency limit.
-        self.async_semaphore = asyncio.Semaphore(value=self.max_concurrency)
 
     def _get_credentials(self):
         """Handles the various methods for referencing API credentials."""
@@ -126,25 +121,25 @@ class HeliosSession:
         if self.api_url is None:
             self.api_url = data.get('helios_api_url')
 
-    async def _read_token(self):
+    def _read_token(self):
         """Reads token from file."""
-        async with aiofiles.open(self._token_file, mode='r') as f:
-            self.token = json.loads(await f.read())
+        with open(self._token_file, mode='r') as f:
+            self.token = json.loads(f.read())
 
-    async def _write_token(self):
+    def _write_token(self):
         """Writes token to file."""
         if not os.path.exists(self._token_dir):
             os.makedirs(self._token_dir)
         try:
-            async with aiofiles.open(self._token_file, mode='w') as f:
-                await f.write(json.dumps(self.token))
+            with open(self._token_file, mode='w') as f:
+                f.write(json.dumps(self.token))
         except Exception:
             # Prevent a bad token file from persisting after an exception.
             if os.path.exists(self._token_file):
                 os.remove(self._token_file)
             raise
 
-    async def _get_new_token(self):
+    def _get_new_token(self):
         """
         Gets a fresh token and saves it.
 
@@ -160,26 +155,26 @@ class HeliosSession:
             'client_id': self.client_id,
             'client_secret': self.client_secret,
         }
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.post(
-                    token_url, data=data, ssl=self.ssl_verify, raise_for_status=True
-                ) as resp:
-                    json_resp = await resp.json()
-            except Exception:
-                logger.exception('Failed to acquire token.')
-                raise
+
+        try:
+            resp = requests.post(token_url, json=data, verify=self.ssl_verify)
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('Failed to acquire token.')
+            raise
+
+        json_resp = resp.json()
 
         self.token = {
             'name': 'Authorization',
             'value': 'Bearer ' + json_resp['access_token'],
         }
 
-        await self._write_token()
+        self._write_token()
 
         logger.info('Successfully acquired new token.')
 
-    async def verify_token(self):
+    def verify_token(self):
         """
         Verifies the token.
 
@@ -193,13 +188,15 @@ class HeliosSession:
 
         auth_header = {self.token['name']: self.token['value']}
         verify_url = self.api_url + '/session'
-        async with aiohttp.ClientSession(headers=auth_header) as session:
-            try:
-                async with session.get(verify_url, ssl=self.ssl_verify) as resp:
-                    json_resp = await resp.json()
-            except Exception:
-                logger.exception('Failed to verify token.')
-                raise
+
+        try:
+            resp = requests.get(verify_url, headers=auth_header)
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('Failed to verify token.')
+            raise
+
+        json_resp = resp.json()
 
         if not json_resp['name'] or not json_resp['expires_in']:
             return False
@@ -218,7 +215,7 @@ class HeliosSession:
 
         return True
 
-    async def start_session(self):
+    def start_session(self):
         """Starts the Helios session by finding a token."""
 
         # Create token filename based on authentication ID.
@@ -228,30 +225,24 @@ class HeliosSession:
         )
 
         try:
-            await self._read_token()
+            self._read_token()
         except (IOError, OSError):
             logger.warning(
                 'Could not read token file (%s). A new token will be acquired.',
                 self._token_file,
             )
-            await self._get_new_token()
+            self._get_new_token()
         else:
-            if not await self.verify_token():
-                await self._get_new_token()
+            if not self.verify_token():
+                self._get_new_token()
 
         self.auth_header = {self.token['name']: self.token['value']}
 
-    def __enter__(self) -> None:
-        raise TypeError("Use async with instead")
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    async def __aenter__(self):
+    def __enter__(self):
         if self.token is None:
-            await self.start_session()
+            self.start_session()
 
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         pass
