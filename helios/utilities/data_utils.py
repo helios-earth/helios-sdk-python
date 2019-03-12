@@ -6,7 +6,7 @@ from helios.collections_api import CollectionsFeatureCollection
 from helios.observations_api import ObservationsFeatureCollection
 
 
-def concatenate_feature_collections(fc_tuple):
+def concatenate_feature_collections(*args):
     """
     Concatenates FeatureCollections.
 
@@ -22,7 +22,7 @@ def concatenate_feature_collections(fc_tuple):
         combined = concatenate_feature_collections((results1, results2))
 
     Args:
-        fc_tuple (tuple): (fc0, fc1, fc2, ...) FeatureCollections to be
+        args: (fc0, fc1, fc2, ...) FeatureCollections to be
             combined.  All FeatureCollections must be of the same type.
 
     Returns:
@@ -30,23 +30,23 @@ def concatenate_feature_collections(fc_tuple):
 
     """
     # Check for consistent instance types.
-    if not all([isinstance(x, type(fc_tuple[0])) for x in fc_tuple]):
+    if not all([isinstance(x, type(args[0])) for x in args]):
         raise TypeError('FeatureCollection type mismatches found.')
 
-    if isinstance(fc_tuple[0], AlertsFeatureCollection):
+    if isinstance(args[0], AlertsFeatureCollection):
         fc_alias = AlertsFeatureCollection
-    elif isinstance(fc_tuple[0], CamerasFeatureCollection):
+    elif isinstance(args[0], CamerasFeatureCollection):
         fc_alias = CamerasFeatureCollection
-    elif isinstance(fc_tuple[0], CollectionsFeatureCollection):
+    elif isinstance(args[0], CollectionsFeatureCollection):
         fc_alias = CollectionsFeatureCollection
-    elif isinstance(fc_tuple[0], ObservationsFeatureCollection):
+    elif isinstance(args[0], ObservationsFeatureCollection):
         fc_alias = ObservationsFeatureCollection
     else:
         raise TypeError('Feature collection of unknown type.')
 
     # Gather all features and records from each feature collection.
     features = []
-    for fc in fc_tuple:
+    for fc in args:
         features.extend(fc.features)
 
     return fc_alias(features)
