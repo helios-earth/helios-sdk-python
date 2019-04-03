@@ -13,6 +13,7 @@ from multiprocessing.pool import ThreadPool
 
 import requests
 from PIL import Image
+from requests import adapters
 
 from helios.core.structure import ImageRecord, Record
 from helios.utilities import logging_utils, parsing_utils
@@ -158,10 +159,12 @@ class SDKCore:
             failure_queue = Queue()
             kwargs['_failure_queue'] = failure_queue
 
+        n_threads = min(self._max_threads, n_tasks)
+
         def _do_work(func, iterable):
             """Helper function to do work in batch or direct call if single task."""
             if len(iterable) > 1:
-                with ThreadPool(min(self._max_threads, n_tasks)) as pool:
+                with ThreadPool(n_threads) as pool:
                     pool.map(func, iterable)
             else:
                 func(iterable[0])
@@ -172,6 +175,10 @@ class SDKCore:
         else:
             with requests.Session() as session:
                 session.headers.update(self._auth_header)
+                session.mount(
+                    'https://',
+                    adapters.HTTPAdapter(pool_maxsize=n_threads, max_retries=2),
+                )
                 kwargs['_session'] = session
                 worker = functools.partial(func, **kwargs)
                 _do_work(worker, iterable)
