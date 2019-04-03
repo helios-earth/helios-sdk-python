@@ -45,6 +45,13 @@ class SDKCore:
 
         self._session = session
 
+        # Check for sessions that have not been started.
+        if session.auth_header is None:
+            raise ValueError(
+                'No authorization header was found in the session. '
+                'Make sure the session has been started.'
+            )
+
     @property
     def _base_api_url(self):
         return self._session.api_url
