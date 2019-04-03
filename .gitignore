@@ -11,6 +11,7 @@ build/*
 .idea
 .project
 .pydevproject
+env
 
 # docs
 docs/_build
