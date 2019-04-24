@@ -17,7 +17,7 @@ setup(name='helios-sdk',
                         'Pillow>=5.0.0,<6.0.0',
                         'python-dateutil>=2.7.0,<3.0.0'],
       extras_require={
-          'tests': ['pytest>=3.5.0,<4.0.0'],
+          'tests': ['pytest>=3.5.0,<5.0.0'],
       },
       python_requires='>=3.6',
       classifiers=[
