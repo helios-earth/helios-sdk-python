@@ -8,6 +8,25 @@ from .collections_api import Collections
 from .core.session import HeliosSession
 from .observations_api import Observations
 
+__APIS__ = {
+    'alerts': alerts_api.Alerts,
+    'cameras': cameras_api.Cameras,
+    'collections': collections_api.Collections,
+    'observations': observations_api.Observations,
+}
+
+DEFAULT_HELIOS_SESSION = None
+
+
+def _get_default_session(**kwargs):
+    """Gets the default HeliosSession."""
+
+    global DEFAULT_HELIOS_SESSION
+    if DEFAULT_HELIOS_SESSION is None:
+        DEFAULT_HELIOS_SESSION = HeliosSession(**kwargs)
+
+    return DEFAULT_HELIOS_SESSION
+
 
 def add_stderr_logger(level=logging.DEBUG):
     """
@@ -30,6 +49,20 @@ def add_stderr_logger(level=logging.DEBUG):
     logger.setLevel(level)
     logger.debug('Added a stderr logging handler to logger: %s', __name__)
     return handler
+
+
+def client(name):
+    """
+    Gets a core API instance using the default HeliosSession.
+
+    Args:
+        name (str): Name of API.
+
+    Returns:
+        Core API instance.
+
+    """
+    return _get_default_session().client(name)
 
 
 __version__ = '3.0.1'

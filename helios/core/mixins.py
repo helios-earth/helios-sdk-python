@@ -15,7 +15,7 @@ import requests
 from PIL import Image
 from requests import adapters
 
-from helios.core.session import HeliosSession
+import helios
 from helios.core.structure import ImageRecord, Record
 from helios.utilities import logging_utils, parsing_utils
 
@@ -44,7 +44,7 @@ class SDKCore:
 
         """
 
-        self._session = session or HeliosSession()
+        self._session = session or helios._get_default_session()
 
         # Check for sessions that have not been started.
         if self._session.auth_header is None:

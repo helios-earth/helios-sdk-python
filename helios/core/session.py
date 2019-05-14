@@ -16,25 +16,10 @@ _DEFAULT_BASE_DIR = os.path.join(os.path.expanduser('~'), '.helios')
 
 class HeliosSession:
     """
-    Handles parameters for Helios APIs.
+    Manages the state for a Helios configuration.
 
-    The Helios session supports the context manager protocol for initiating
-    a session:
-
-    .. code-block:: python3
-
-        import helios
-        with helios.HeliosSession() as sess:
-            alerts_inst = helios.Alerts(sess)
-
-    Also, for creating and storing a session instance:
-
-    .. code-block:: python3
-
-        import helios
-        sess = helios.HeliosSession()
-        sess.start_session() # Must manually start the session.
-        alerts_inst = helios.Alerts(sess)
+    The session will handle acquiring and verifying tokens as well as various
+    developer options.
 
     Args:
         client_id (str, optional): API key ID.
@@ -100,25 +85,19 @@ class HeliosSession:
         # Finally, start the session.
         self.start_session()
 
-    @property
-    def alerts(self):
-        """Get an alerts API instance using the current HeliosSession."""
-        return helios.alerts_api.Alerts(session=self)
+    def client(self, name):
+        """
+        Gets a core API instance using the current HeliosSession.
 
-    @property
-    def cameras(self):
-        """Get a cameras API instance using the current HeliosSession."""
-        return helios.cameras_api.Cameras(session=self)
+        Args:
+            name (str): Name of API.
 
-    @property
-    def collections(self):
-        """Get a collections API instance using the current HeliosSession."""
-        return helios.collections_api.Collections(session=self)
+        Returns:
+            Core API instance.
 
-    @property
-    def observations(self):
-        """Get an observations API instance using the current HeliosSession."""
-        return helios.observations_api.Observations(session=self)
+        """
+
+        return helios.__APIS__[name.lower()](session=self)
 
     def _get_credentials(self):
         """Handles the various methods for referencing API credentials."""
