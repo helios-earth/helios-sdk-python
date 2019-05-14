@@ -78,7 +78,7 @@ class HeliosSession:
         self._token_expiration_threshold = token_expiration_threshold
         self._base_directory = base_directory
 
-        # The following will be established upon entering a session.
+        # The following will be established upon starting a session.
         self.auth_header = None
         self.token = None
         self._token_file = None
@@ -94,6 +94,9 @@ class HeliosSession:
             self.api_url = _DEFAULT_API_URL
         else:
             self.api_url = self.api_url.rstrip('/')
+
+        # Finally, start the session.
+        self.start_session()
 
     def _get_credentials(self):
         """Handles the various methods for referencing API credentials."""
