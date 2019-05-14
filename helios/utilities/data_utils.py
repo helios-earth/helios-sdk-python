@@ -1,5 +1,4 @@
 """Utilities for working with SDK results."""
-
 from helios.alerts_api import AlertsFeatureCollection
 from helios.cameras_api import CamerasFeatureCollection
 from helios.collections_api import CollectionsFeatureCollection
@@ -15,10 +14,9 @@ def concatenate_feature_collections(*args):
         import helios
         from helios.utilities.data_utils import concatenate_feature_collections
 
-        with helios.HeliosSession() as sess:
-            cams_inst = helios.Cameras(sess)
-            results1, failed = cams_inst.index(state='new york')
-            results2, failed = cams_inst.index(state='maryland')
+        cameras = helios.client('cameras')
+        results1, failed = cameras.index(state='new york')
+        results2, failed = cameras.index(state='maryland')
         combined = concatenate_feature_collections((results1, results2))
 
     Args:
