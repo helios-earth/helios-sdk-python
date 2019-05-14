@@ -63,13 +63,13 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
         .. code-block:: python3
 
             import helios
-            with helios.HeliosSession() as sess:
-                coll_inst = helios.Collections(sess)
-                camera_id = '...'
-                times = [...] # List of image times.
-                destination_id = '...'
-                data = [{'camera_id': camera_id, 'time': x} for x in times]
-                results, failures = coll_inst.add_image(data, destination_id)
+
+            coll_inst = helios.client('collections')
+            camera_id = '...'
+            times = [...] # List of image times.
+            destination_id = '...'
+            data = [{'camera_id': camera_id, 'time': x} for x in times]
+            results, failures = coll_inst.add_image(data, destination_id)
 
         Args:
             assets (dict or list of dicts): Data containing any of these

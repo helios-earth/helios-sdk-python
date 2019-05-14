@@ -15,22 +15,34 @@ For more information visit [helios.earth](https://helios.earth/).
 This example creates an instance of the Cameras API, queries for New York 
 cameras and then parses the camera IDs from the resulting GeoJSON information.
 
+Creating core API instances:
 ```python
 import helios
 
-with helios.HeliosSession() as sess:
-    cameras = helios.Cameras(sess)
-    
-    # Retrieve GeoJSON Feature Collection for New York state cameras.
-    ny_cams, failures = cameras.index(state='New York')
-    
-    # Gather the camera IDs from the results.
-    
-    # Combines all id attributes from each GeoJSON feature using a convenience property.
-    ny_cams_ids = ny_cams.id
-    
-    # Alternatively, you can iterate and extract individual fields from each feature.
-    ny_cams_ids_2 = [x.id for x in ny_cams.features]
+alerts = helios.client('alerts')
+cameras = helios.client('cameras')
+collections = helios.client('collections')
+observations = helios.client('observations')
+
+```
+
+E.g. getting all camera IDs in New York State.
+
+```python
+import helios
+
+cameras = helios.client('cameras')
+
+# Retrieve GeoJSON Feature Collection for New York state cameras.
+results, failures = cameras.index(state='New York')
+
+# Gather the camera IDs from the results.
+
+# Convenience property: Combines all id attributes from each GeoJSON feature.
+ny_cams_ids = results.id
+
+# Alternatively, you can iterate and extract individual fields from each feature.
+ny_cams_ids_2 = [x.id for x in results.features]
 
 ```
 

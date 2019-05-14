@@ -3,31 +3,27 @@
 HeliosSession
 =============
 
+Manually creating a :class:`HeliosSession <helios.core.session.HeliosSession>`
+provides advanced access to a session configuration.
+
 A Helios :class:`HeliosSession <helios.core.session.HeliosSession>` depends
 on properly established authentication procedures.  See 
 :ref:`authentication` for more information.  It also stores configuration
 parameters and your authentication information and will fetch an API token.
 This token is required for any API calls.
 
-Once a session has been created, the token will be written to 
-a `.helios_token` file in your home directory.  This token 
-will be reused until it becomes invalid.
-
 Creating a Session
 ------------------
 
 If authentication is stored on your machine starting a session is
-straightforward using the `with` protocol.  Create a
-:class:`HeliosSession <helios.core.session.HeliosSession>`
-instance without any inputs.  The authentication information 
-stored on your machine will automatically be applied.
+straightforward.  Create a :class:`HeliosSession <helios.core.session.HeliosSession>`
+instance without any inputs.
 
 .. code-block:: python
 
     import helios
 
-    with helios.HeliosSession() as sess:
-        print(sess)
+    sess = helios.HeliosSession()
     
 This will automatically make a call to the
 :meth:`start_session <helios.core.session.HeliosSession.start_session>`
@@ -36,21 +32,11 @@ method to fetch the token.
 If successful, the ``sess`` instance will now have all the
 authentication information needed to being using the core APIs.
 
-Alternatively, you can make a manual call to :meth:`start_session <helios.core.session.HeliosSession.start_session>`.
-
-.. code-block:: python
-
-    import helios
-
-    sess = helios.HeliosSession()
-    sess.start_session()
-    print(sess)
-
 Token Expiration
 ~~~~~~~~~~~~~~~~
 
-Restarting Python if your token expires while the SDK is in use is not
-necessary.  Make additional :meth:`start_session <helios.core.session.HeliosSession.start_session>`
+If your token expires it is not necessary to restart Python. Call
+:meth:`start_session <helios.core.session.HeliosSession.start_session>`
 to perform the token verification process. This will acquire a new token if it
 has expired.
 
@@ -60,14 +46,13 @@ HeliosSession Configuration Parameters
 A :class:`HeliosSession <helios.core.session.HeliosSession>` can be initialized
 with various configuration parameters.
 
-E.g. Limit the maximum concurrency:
+E.g. Limit the maximum number of threads:
 
 .. code-block:: python
 
     import helios
 
-    with helios.HeliosSession(max_concurrency=50) as sess:
-        print(sess)
+    sess = helios.HeliosSession(max_threads=50)
 
 E.g. Override the base directory for storing tokens/credentials.json files:
 
@@ -75,8 +60,7 @@ E.g. Override the base directory for storing tokens/credentials.json files:
 
     import helios
 
-    with helios.HeliosSession(base_dir='/tmp/custom') as sess:
-        print(sess)
+    sess = helios.HeliosSession(base_dir='/tmp/custom')
 
 E.g. Using custom credentials outside of the standard :ref:`authentication`
 methods:
@@ -87,9 +71,24 @@ methods:
    helios_client_secret = '*your secret key*',
    helios_api_url = '*optional API URL override*'
 
-   with helios.Session(
+   sess = helios.Session(
        client_id=helios_client_id,
        client_secret=helios_client_secret,
        api_url=helios_api_url
-   ) as sess:
-       print(sess)
+   )
+
+Creating Core API Instances
+---------------------------
+
+Using a custom :class:`HeliosSession <helios.core.session.HeliosSession>` to
+create core API instances is straightforward.
+
+.. code-block:: python
+
+    import helios
+
+    sess = helios.HeliosSession(max_threads=50)
+    alerts = sess.client('alerts')
+    cameras = sess.client('cameras')
+    collections = sess.client('collections')
+    observations = sess.client('observations')
