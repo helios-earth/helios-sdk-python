@@ -92,3 +92,19 @@ create core API instances is straightforward.
     cameras = sess.client('cameras')
     collections = sess.client('collections')
     observations = sess.client('observations')
+
+Default HeliosSession
+---------------------
+
+For most cases the default :class:`HeliosSession <helios.core.session.HeliosSession>`
+will suffice.  The default :class:`HeliosSession <helios.core.session.HeliosSession>`
+is used when creating instances via the top-level :meth:`client <helios.client>`
+call.
+
+E.g.
+
+.. code-block:: python
+
+    import helios
+
+    alerts = helios.client('alerts')
