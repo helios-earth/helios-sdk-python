@@ -5,6 +5,8 @@ import os
 
 import requests
 
+import helios
+
 logger = logging.getLogger(__name__)
 
 # Defaults
@@ -97,6 +99,26 @@ class HeliosSession:
 
         # Finally, start the session.
         self.start_session()
+
+    @property
+    def alerts(self):
+        """Get an alerts API instance using the current HeliosSession."""
+        return helios.alerts_api.Alerts(session=self)
+
+    @property
+    def cameras(self):
+        """Get a cameras API instance using the current HeliosSession."""
+        return helios.cameras_api.Cameras(session=self)
+
+    @property
+    def collections(self):
+        """Get a collections API instance using the current HeliosSession."""
+        return helios.collections_api.Collections(session=self)
+
+    @property
+    def observations(self):
+        """Get an observations API instance using the current HeliosSession."""
+        return helios.observations_api.Observations(session=self)
 
     def _get_credentials(self):
         """Handles the various methods for referencing API credentials."""
