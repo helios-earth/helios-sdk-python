@@ -7,14 +7,15 @@ Note: Mixins, in this case, simply refers to shared code.
 import functools
 import logging
 import os
-from queue import Queue, Empty
 from io import BytesIO
 from multiprocessing.pool import ThreadPool
+from queue import Queue, Empty
 
 import requests
 from PIL import Image
 from requests import adapters
 
+from helios.core.session import HeliosSession
 from helios.core.structure import ImageRecord, Record
 from helios.utilities import logging_utils, parsing_utils
 
@@ -28,7 +29,7 @@ class SDKCore:
     This class must be inherited by any additional Core API classes.
     """
 
-    def __init__(self, session):
+    def __init__(self, session=None):
         """
         Initialize core API instance.
 
@@ -43,10 +44,10 @@ class SDKCore:
 
         """
 
-        self._session = session
+        self._session = session or HeliosSession()
 
         # Check for sessions that have not been started.
-        if session.auth_header is None:
+        if self._session.auth_header is None:
             raise ValueError(
                 'No authorization header was found in the session. '
                 'Make sure the session has been started.'

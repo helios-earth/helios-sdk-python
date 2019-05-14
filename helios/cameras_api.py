@@ -20,7 +20,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
 
     _core_api = 'cameras'
 
-    def __init__(self, session):
+    def __init__(self, session=None):
         """
         Initialize Cameras instance.
 
@@ -30,7 +30,7 @@ class Cameras(ShowImageMixin, ShowMixin, IndexMixin, SDKCore):
                 created for you.
 
         """
-        super().__init__(session)
+        super().__init__(session=session)
 
     @logging_utils.log_entrance_exit
     def images(self, camera_id, start_time, end_time=None, limit=500):

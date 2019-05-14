@@ -31,7 +31,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
 
     _core_api = 'collections'
 
-    def __init__(self, session):
+    def __init__(self, session=None):
         """
         Initialize Collection instance.
 
@@ -41,7 +41,7 @@ class Collections(ShowImageMixin, IndexMixin, SDKCore):
                 created for you.
 
         """
-        super().__init__(session)
+        super().__init__(session=session)
 
     @logging_utils.log_entrance_exit
     def add_image(self, assets, collection_id):

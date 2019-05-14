@@ -30,7 +30,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
 
     _core_api = 'observations'
 
-    def __init__(self, session):
+    def __init__(self, session=None):
         """
         Initialize Observations instance.
 
@@ -40,7 +40,7 @@ class Observations(ShowMixin, IndexMixin, SDKCore):
                 created for you.
 
         """
-        super().__init__(session)
+        super().__init__(session=session)
 
     def index(self, **kwargs):
         """

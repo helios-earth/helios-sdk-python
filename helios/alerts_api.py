@@ -33,7 +33,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
 
     _core_api = 'alerts'
 
-    def __init__(self, session):
+    def __init__(self, session=None):
         """
         Initialize Alerts instance.
 
@@ -41,7 +41,7 @@ class Alerts(ShowMixin, IndexMixin, SDKCore):
             session (helios.HeliosSession): A HeliosSession instance.
 
         """
-        super().__init__(session)
+        super().__init__(session=session)
 
     def index(self, **kwargs):
         """
