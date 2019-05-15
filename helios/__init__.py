@@ -1,8 +1,8 @@
 """Use the Helios APIs in Python"""
 import logging
 
-from . import core
 from . import utilities
+from . import core
 from .alerts_api import Alerts
 from .cameras_api import Cameras
 from .collections_api import Collections
