@@ -1,12 +1,13 @@
 """Use the Helios APIs in Python"""
 import logging
+
 from . import core
 from . import utilities
 from .alerts_api import Alerts
 from .cameras_api import Cameras
 from .collections_api import Collections
-from .core.session import HeliosSession
 from .observations_api import Observations
+from .core.session import HeliosSession
 
 __APIS__ = {
     'alerts': alerts_api.Alerts,
