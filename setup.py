@@ -14,7 +14,7 @@ setup(name='helios-sdk',
       license='MIT',
       install_requires=['requests>=2.0.0,<3.0.0',
                         'numpy>=1.13.0,<2.0.0',
-                        'Pillow>=5.0.0,<6.0.0',
+                        'Pillow>=5.0.0,<7.0.0',
                         'python-dateutil>=2.7.0,<3.0.0'],
       extras_require={
           'tests': ['pytest>=3.5.0,<5.0.0'],
