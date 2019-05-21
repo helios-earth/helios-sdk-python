@@ -85,6 +85,15 @@ class HeliosSession:
         # Finally, start the session.
         self.start_session()
 
+    def __enter__(self):
+        if self.token is None:
+            self.start_session()
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
     def _get_credentials(self):
         """Handles the various methods for referencing API credentials."""
         if self._base_directory is None:
@@ -241,12 +250,3 @@ class HeliosSession:
                 self._get_new_token()
 
         self.auth_header = {self.token['name']: self.token['value']}
-
-    def __enter__(self):
-        if self.token is None:
-            self.start_session()
-
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
