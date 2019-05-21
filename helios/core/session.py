@@ -85,20 +85,6 @@ class HeliosSession:
         # Finally, start the session.
         self.start_session()
 
-    def client(self, name):
-        """
-        Gets a core API instance using the current HeliosSession.
-
-        Args:
-            name (str): Name of API.
-
-        Returns:
-            Core API instance.
-
-        """
-
-        return helios.__APIS__[name.lower()](session=self)
-
     def _get_credentials(self):
         """Handles the various methods for referencing API credentials."""
         if self._base_directory is None:
@@ -177,6 +163,20 @@ class HeliosSession:
         self._write_token()
 
         logger.info('Successfully acquired new token.')
+
+    def client(self, name):
+        """
+        Gets a core API instance using the current HeliosSession.
+
+        Args:
+            name (str): Name of API.
+
+        Returns:
+            Core API instance.
+
+        """
+
+        return helios.__APIS__[name.lower()](session=self)
 
     def verify_token(self):
         """
