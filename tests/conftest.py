@@ -7,7 +7,6 @@ from helios.core.structure import Record
 @pytest.fixture(scope='session')
 def helios_session():
     sess = helios.HeliosSession()
-    sess.start_session()
 
     return sess
 

@@ -2,6 +2,8 @@
 import json
 import logging
 import os
+from datetime import datetime, timedelta
+from pathlib import Path
 
 import requests
 
@@ -9,14 +11,158 @@ import helios
 
 logger = logging.getLogger(__name__)
 
-# Defaults
-_DEFAULT_API_URL = r'https://api.helios.earth/v1'
-_DEFAULT_BASE_DIR = os.path.join(os.path.expanduser('~'), '.helios')
+_DEFAULT_API_URL = 'https://api.helios.earth/v1'
+
+
+class Authentication:
+    """
+    Authentication API.
+
+    Args:
+        client_id (str): API key ID.
+        client_secret (str): API key secret.
+        api_url (str): Override the default API URL.
+
+    """
+
+    def __init__(self, client_id, client_secret, api_url=None):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.api_url = api_url or _DEFAULT_API_URL
+
+        # To be safe.
+        self.api_url = self.api_url.rstrip('/')
+
+    def get_access_token(self):
+        """
+        Gets a new access token.
+
+        Returns:
+            Token: Helios API access token.
+
+        """
+
+        logger.info('Acquiring a new token.')
+
+        token_url = self.api_url + '/oauth/token'
+        data = {
+            'grant_type': 'client_credentials',
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+        }
+
+        try:
+            resp = requests.post(token_url, json=data)
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('Failed to acquire token.')
+            raise
+
+        json_resp = resp.json()
+
+        logger.info('Successfully acquired a new token.')
+
+        return Token(**json_resp)
+
+    def get_current_user(self, token):
+        """
+        Return a compact list of current token attributes, such as the
+        token expiration date.
+
+        Args:
+            token (Token): A Helios Token.
+
+        Returns:
+            dict: Token attributes.
+
+        Raises:
+            ValueError: If current token is invalid or expired.
+
+        """
+
+        url = self.api_url + '/session'
+
+        try:
+            resp = requests.get(url, headers=token.auth_header)
+            resp.raise_for_status()
+        except Exception:
+            logger.exception('Failed to get token expiration time.')
+            raise
+
+        json_resp = resp.json()
+
+        if json_resp['name'] is None:
+            _msg = 'Token appears to be invalid or expired.'
+            logger.error(_msg)
+            raise ValueError(_msg)
+
+        return json_resp
+
+
+class Token:
+    """
+    Helios token.
+
+    Args:
+        access_token (str): Access token.
+        expires_in (int): Seconds until expiration. WARNING: this value can be
+            misleading.  If reading from a token file the value will not be
+            current.
+        kwargs: Any other optional token attributes.
+
+    """
+
+    def __init__(self, access_token, expires_in=None, **kwargs):
+        self.access_token = access_token
+        self._expires_in = expires_in
+
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    @property
+    def auth_header(self):
+        """Authentication header for API requests."""
+        try:
+            return {'Authorization': 'Bearer ' + self.access_token}
+        except KeyError:
+            logger.error('A token must be acquired to establish an auth header.')
+            raise
+
+    @property
+    def expired(self):
+        """True if token is expired, False otherwise."""
+        now = datetime.now()
+        if now >= self.expiration:
+            return True
+        else:
+            return False
+
+    @property
+    def expiration(self):
+        """Gets the expiration time."""
+        now = datetime.now()
+        delta = timedelta(seconds=self._expires_in)
+        return now + delta
+
+    def to_json(self):
+        """
+        Serializes token to JSON.
+
+        Returns:
+            str: JSON serialized string.
+
+        """
+
+        output_dict = {
+            k: v for k, v in vars(self).items() if not k.startswith(('_', '__'))
+        }
+
+        return json.dumps(output_dict, skipkeys=True)
 
 
 class HeliosSession:
     """
-    Manages the state for a Helios configuration.
+    Manages configuration and authentication details for the Helios APIs.
 
     The session will handle acquiring and verifying tokens as well as various
     developer options.
@@ -35,14 +181,6 @@ class HeliosSession:
             be acquired because expiration time is below the threshold.
         ssl_verify (bool, optional): Use SSL verification for all HTTP
             requests.  Defaults to True.
-
-    Attributes:
-        auth_header (dict): Authentication header for HTTP requests.
-        token (dict): API token.
-        client_id (str): API key ID.
-        client_secret (str): API key secret.
-        api_url (str): API URL.
-        max_threads (int): Maximum concurrency allowed.
 
     """
 
@@ -65,49 +203,62 @@ class HeliosSession:
         self._token_expiration_threshold = token_expiration_threshold
         self._base_directory = base_directory
 
-        # The following will be established upon starting a session.
-        self.auth_header = None
-        self.token = None
-        self._token_file = None
-        self._token_dir = None
-
+        # Handle optional parameter settings.
         if self._base_directory is None:
-            self._base_directory = _DEFAULT_BASE_DIR
-
-        if None in (self.client_id, self.client_secret):
-            self._get_credentials()
+            self._base_directory = Path.home() / '.helios'
+        else:
+            self._base_directory = Path(self._base_directory)
 
         if self.api_url is None:
             self.api_url = _DEFAULT_API_URL
         else:
             self.api_url = self.api_url.rstrip('/')
 
-        # Finally, start the session.
-        self.start_session()
+        if None in (self.client_id, self.client_secret):
+            self._get_credentials()
 
-    def __enter__(self):
-        if self.token is None:
-            self.start_session()
+        # Create token filename based on authentication ID.
+        self._token_dir = self._base_directory / '.tokens'
+        self._token_file = self._token_dir / (self.client_id + '.helios_token')
 
-        return self
+        # Create an instances of the auth API.
+        self.auth_api = Authentication(
+            self.client_id, self.client_secret, api_url=self.api_url
+        )
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        # Establish self.token.
+        try:
+            self.read_token()
+        except (IOError, OSError):
+            logger.warning(
+                'Could not read token file (%s). A new token will be acquired.',
+                self._token_file,
+            )
+            self.get_new_token()
+        except (ValueError, KeyError, TypeError):
+            logger.warning(
+                'Token was invalid or expired. A new token will be ' 'acquired.'
+            )
+            self.get_new_token()
+
+    @property
+    def auth_header(self):
+        """Authentication header for API requests."""
+        self.verify_token()
+
+        return self.token.auth_header
 
     def _get_credentials(self):
         """Handles the various methods for referencing API credentials."""
-        if self._base_directory is None:
-            self._base_directory = _DEFAULT_BASE_DIR
+
+        credentials_file = self._base_directory / 'credentials.json'
 
         if 'helios_client_id' in os.environ and 'helios_client_secret' in os.environ:
             logger.info('Credentials found in environment variables.')
             data = os.environ
-        elif os.path.exists(os.path.join(self._base_directory, 'credentials.json')):
-            self._credentials_file = os.path.join(
-                self._base_directory, 'credentials.json'
-            )
-            logger.info('Credentials found in credentials.json file.')
-            with open(self._credentials_file, 'r') as f:
+        elif credentials_file.exists():
+            logger.info('Credentials found in file: %s', str(credentials_file))
+            with open(credentials_file, mode='r', encoding='utf-8') as f:
                 data = json.load(f)
         else:
             raise Exception(
@@ -120,58 +271,55 @@ class HeliosSession:
         if self.api_url is None:
             self.api_url = data.get('helios_api_url')
 
-    def _read_token(self):
+    def read_token(self):
         """Reads token from file."""
-        with open(self._token_file, mode='r') as f:
-            self.token = json.loads(f.read())
 
-    def _write_token(self):
+        logger.info('Reading token from file: %s', self._token_file)
+
+        with open(self._token_file, mode='r', encoding='utf-8') as f:
+            contents = json.loads(f.read())
+            token = Token(**contents)
+            # Must get the real expires_in value when reading from an old file.
+            real_expiration = self.auth_api.get_current_user(token)['expires_in']
+            token._expires_in = real_expiration
+
+        self.token = token
+
+    def write_token(self):
         """Writes token to file."""
-        if not os.path.exists(self._token_dir):
-            os.makedirs(self._token_dir)
+
+        logger.info('Writing token to file: %s', self._token_file)
+
+        if not self._token_file.parent.exists():
+            self._token_file.parent.mkdir(parents=True)
+
         try:
-            with open(self._token_file, mode='w') as f:
-                f.write(json.dumps(self.token))
+            with open(self._token_file, mode='w', encoding='utf-8') as f:
+                f.write(self.token.to_json())
         except Exception:
             # Prevent a bad token file from persisting after an exception.
-            if os.path.exists(self._token_file):
-                os.remove(self._token_file)
+            if self._token_file.exists():
+                self._token_file.unlink()
             raise
 
-    def _get_new_token(self):
+    def verify_token(self):
         """
-        Gets a fresh token and saves it.
+        Verifies that token has not expired.
 
-        The token will be acquired and then written to file for reuse. If the
-        request fails over https, http will be used as a fallback.
+        If the token has expired a new token will be acquired.
 
         """
-        logger.info('Acquiring a new token.')
 
-        token_url = self.api_url + '/oauth/token'
-        data = {
-            'grant_type': 'client_credentials',
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
-        }
+        if self.token.expired:
+            logger.info('Token has expired.')
+            self.get_new_token()
 
-        try:
-            resp = requests.post(token_url, json=data, verify=self.ssl_verify)
-            resp.raise_for_status()
-        except Exception:
-            logger.exception('Failed to acquire token.')
-            raise
+    def get_new_token(self):
+        """Gets a new token for the current Helios session."""
 
-        json_resp = resp.json()
-
-        self.token = {
-            'name': 'Authorization',
-            'value': 'Bearer ' + json_resp['access_token'],
-        }
-
-        self._write_token()
-
-        logger.info('Successfully acquired new token.')
+        logger.info('Getting a new token.')
+        self.token = self.auth_api.get_access_token()
+        self.write_token()
 
     def client(self, name):
         """
@@ -185,68 +333,6 @@ class HeliosSession:
 
         """
 
+        self.verify_token()
+
         return helios.__APIS__[name.lower()](session=self)
-
-    def verify_token(self):
-        """
-        Verifies the token.
-
-        If the token is bad or if the expiration time is less than the
-        threshold False will be returned.
-
-        Returns:
-            bool: True if current token is valid, False otherwise.
-
-        """
-
-        auth_header = {self.token['name']: self.token['value']}
-        verify_url = self.api_url + '/session'
-
-        try:
-            resp = requests.get(verify_url, headers=auth_header)
-            resp.raise_for_status()
-        except Exception:
-            logger.exception('Failed to verify token.')
-            raise
-
-        json_resp = resp.json()
-
-        if not json_resp['name'] or not json_resp['expires_in']:
-            return False
-
-        # Check token expiration time.
-        expiration = json_resp['expires_in'] / 60.0
-        if expiration < self._token_expiration_threshold:
-            logger.warning(
-                'Token expiration (%d) is less than the threshold (%d).',
-                expiration,
-                self._token_expiration_threshold,
-            )
-            return False
-
-        logger.info('Token is valid for %d minutes.', expiration)
-
-        return True
-
-    def start_session(self):
-        """Starts the Helios session by finding a token."""
-
-        # Create token filename based on authentication ID.
-        self._token_dir = os.path.join(self._base_directory, '.tokens')
-        self._token_file = os.path.join(
-            self._token_dir, self.client_id + '.helios_token'
-        )
-
-        try:
-            self._read_token()
-        except (IOError, OSError):
-            logger.warning(
-                'Could not read token file (%s). A new token will be acquired.',
-                self._token_file,
-            )
-            self._get_new_token()
-        else:
-            if not self.verify_token():
-                self._get_new_token()
-
-        self.auth_header = {self.token['name']: self.token['value']}
