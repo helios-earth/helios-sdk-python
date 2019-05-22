@@ -7,7 +7,7 @@ CURRENT_DIR = Path(__file__).parent
 
 
 def get_version():
-    version_file = CURRENT_DIR / 'appbundler/__version__.py'
+    version_file = CURRENT_DIR / 'helios/__version__.py'
     with open(version_file) as fp:
         tmp = {}
         exec(fp.read(), tmp)
