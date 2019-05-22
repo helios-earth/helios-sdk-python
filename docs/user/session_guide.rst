@@ -88,7 +88,7 @@ Default HeliosSession
 
 For most cases the default :class:`HeliosSession <helios.core.session.HeliosSession>`
 will suffice.  The default is used when creating instances via the top-level
-:meth:`client <helios.client>` call.
+:meth:`client <helios.__init__.client>` call.
 
 E.g.
 
