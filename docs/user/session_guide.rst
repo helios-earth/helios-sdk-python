@@ -25,20 +25,10 @@ instance without any inputs.
 
     sess = helios.HeliosSession()
     
-This will automatically make a call to the
-:meth:`start_session <helios.core.session.HeliosSession.start_session>`
-method to fetch the token.
+This will automatically fetch a token.
     
 If successful, the ``sess`` instance will now have all the
 authentication information needed to being using the core APIs.
-
-Token Expiration
-~~~~~~~~~~~~~~~~
-
-If your token expires it is not necessary to restart Python. Call
-:meth:`start_session <helios.core.session.HeliosSession.start_session>`
-to perform the token verification process. This will acquire a new token if it
-has expired.
 
 HeliosSession Configuration Parameters
 --------------------------------------
@@ -97,9 +87,8 @@ Default HeliosSession
 ---------------------
 
 For most cases the default :class:`HeliosSession <helios.core.session.HeliosSession>`
-will suffice.  The default :class:`HeliosSession <helios.core.session.HeliosSession>`
-is used when creating instances via the top-level :meth:`client <helios.client>`
-call.
+will suffice.  The default is used when creating instances via the top-level
+:meth:`client <helios.client>` call.
 
 E.g.
 
