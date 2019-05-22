@@ -1,16 +1,25 @@
+from pathlib import Path
+
 from setuptools import find_packages
 from setuptools import setup
 
-version = '3.0.1'
+CURRENT_DIR = Path(__file__).parent
+
+
+def get_version():
+    version_file = CURRENT_DIR / 'appbundler/__version__.py'
+    with open(version_file) as fp:
+        tmp = {}
+        exec(fp.read(), tmp)
+    return tmp['__version__']
+
 
 setup(name='helios-sdk',
-      version=version,
+      version=get_version(),
       description='Python SDK for the Helios APIs.',
       author='Michael Bayer',
       author_email='mbayer@harris.com',
       url='https://github.com/harris-helios/helios-sdk-python',
-      download_url='https://github.com/harris-helios/'
-                   'helios-sdk-python/archive/{}.tar.gz'.format(version),
       license='MIT',
       install_requires=['requests>=2.0.0,<3.0.0',
                         'numpy>=1.13.0,<2.0.0',
