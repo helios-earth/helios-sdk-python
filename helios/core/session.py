@@ -139,7 +139,7 @@ class Token:
 
     @property
     def expiration(self):
-        """Gets the expiration time."""
+        """The expiration time."""
         now = datetime.now()
         delta = timedelta(seconds=self._expires_in)
         return now + delta
