@@ -335,4 +335,4 @@ class HeliosSession:
 
         self.verify_token()
 
-        return helios.__APIS__[name.lower()](session=self)
+        return helios.__apis__[name.lower()](session=self)

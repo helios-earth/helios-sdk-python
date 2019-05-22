@@ -1,6 +1,4 @@
 """Use the Helios APIs in Python"""
-import logging
-
 from . import utilities
 from . import core
 from .alerts_api import Alerts
@@ -9,7 +7,16 @@ from .collections_api import Collections
 from .observations_api import Observations
 from .core.session import HeliosSession
 
-__APIS__ = {
+# Import package metadata.
+from .__version__ import __version__
+
+# Set default logging handler to avoid "No handler found" warnings.
+import logging
+from logging import NullHandler
+
+logging.getLogger(__name__).addHandler(NullHandler())
+
+__apis__ = {
     'alerts': alerts_api.Alerts,
     'cameras': cameras_api.Cameras,
     'collections': collections_api.Collections,
@@ -66,4 +73,4 @@ def client(name):
     return _get_default_session().client(name)
 
 
-__version__ = '3.0.1'
+del NullHandler
