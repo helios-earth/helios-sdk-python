@@ -5,7 +5,7 @@
 
 .. image:: https://img.shields.io/badge/Git-repo-blue.svg?style=flat-square
     :alt: GitHub Repository
-    :target: https://github.com/harris-helios/helios-sdk-python
+    :target: https://github.com/helios-earth/helios-sdk-python
 
 .. image:: https://img.shields.io/pypi/v/helios-sdk.svg?style=flat-square
     :alt: PyPI
@@ -13,7 +13,7 @@
 
 .. image:: https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square
     :alt: License
-    :target: https://github.com/harris-helios/helios-sdk-python/blob/master/LICENSE
+    :target: https://github.com/helios-earth/helios-sdk-python/blob/master/LICENSE
 
 -----------------
 
@@ -22,7 +22,7 @@ Helios-SDK-Python
 
 Use the Helios APIs in Python.
 
-Helios® weather analytics from Harris Corporation provide fast and 
+Helios® weather analytics from NV5 Geospatial provide fast and 
 accurate local ground weather intelligence to assist organizations 
 with real-time decision making. Helios analyzes content from 
 thousands of existing public and private video cameras, providing 
