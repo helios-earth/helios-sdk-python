@@ -2,11 +2,11 @@
 
 [![Documentation](https://img.shields.io/badge/SDK-documentation-blue.svg?style=flat-square)](https://helios-sdk-python.readthedocs.io/en/latest/)
 [![PyPI](https://img.shields.io/pypi/v/helios-sdk.svg?style=flat-square)](https://pypi.python.org/pypi/helios-sdk)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](https://github.com/harris-helios/helios-sdk-python/blob/master/LICENSE)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](https://github.com/helios-earth/helios-sdk-python/blob/master/LICENSE)
 
 Use the Helios APIs in Python.
 
-Helios® weather analytics from Harris Corporation provide fast and accurate local ground weather intelligence to assist organizations with real-time decision making. Helios analyzes content from thousands of existing public and private video cameras, providing immediate confirmation of ground weather condition changes at a detailed local level.
+Helios® weather analytics from NV5 Geospatial provide fast and accurate local ground weather intelligence to assist organizations with real-time decision making. Helios analyzes content from thousands of existing public and private video cameras, providing immediate confirmation of ground weather condition changes at a detailed local level.
 
 For more information visit [helios.earth](https://helios.earth/).
 
@@ -47,7 +47,7 @@ pip install helios-sdk
 * __For the bleeding edge, install from the GitHub source:__
 
 ```sh
-git clone https://github.com/harris-helios/helios-sdk-python.git
+git clone https://github.com/helios-earth/helios-sdk-python.git
 ```
 
 Then `cd` to the helios-sdk-python folder and run the install command:
@@ -60,7 +60,7 @@ pip install .
 
 ## Authentication
 
-All Helios API methods require valid authentication and are protected using the OAuth 2.0 "client credentials" flow.  The general process for authenticating requests involves first requesting an access token using the developer API key pair, and then requesting protected data using the access token.  [Request access](https://www.harris.com/forms/sishelioscontactus) if you would like to obtain an API key.
+All Helios API methods require valid authentication and are protected using the OAuth 2.0 "client credentials" flow.  The general process for authenticating requests involves first requesting an access token using the developer API key pair, and then requesting protected data using the access token.  [Request access](https://www.nv5geospatialsoftware.com/Company/Contact-Us) if you would like to obtain an API key.
 
 ### Using Environment Variables
 1. Add __"helios\_client\_id"__: "your ID key"
