@@ -53,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'helios'
-copyright = '2018, Harris Corporation'
+copyright = '2023, NV5 Geospatial'
 author = 'Michael Bayer'
 
 # The version info for the project you're documenting, acts as replacement for
