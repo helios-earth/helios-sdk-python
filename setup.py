@@ -7,9 +7,9 @@ setup(name='helios-sdk',
       version=version,
       description='Use the Helios APIs in Python',
       author='Michael Bayer',
-      author_email='mbayer@harris.com',
-      url='https://github.com/harris-helios/helios-sdk-python',
-      download_url='https://github.com/harris-helios/'
+      author_email='jonathan.cochrane@nv5.com',
+      url='https://github.com/helios-earth/helios-sdk-python',
+      download_url='https://github.com/helios-earth/'
                    'helios-sdk-python/archive/{}.tar.gz'.format(version),
       license='MIT',
       install_requires=['requests>=2.0.0',

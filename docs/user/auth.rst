@@ -7,7 +7,7 @@ All Helios API methods require valid authentication and are protected using
 the OAuth 2.0 "client credentials" flow.  The general process for 
 authenticating requests involves first requesting an access token using the 
 developer API key pair, and then requesting protected data using the access 
-token.  `Request access <https://www.harris.com/forms/sishelioscontactus>`_
+token.  `Request access <https://www.nv5geospatialsoftware.com/Company/Contact-Us>`_
 if you would like to obtain an API key.
 
 Using Environment Variables
